@@ -10,6 +10,7 @@
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": false,
+    "jsx": "react-jsx",
     "declaration": true,
     "declarationMap": true,
     "outDir": "dist",
