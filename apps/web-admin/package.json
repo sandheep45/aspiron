@@ -10,7 +10,9 @@
    },
   "dependencies": {
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "@aspiron/api-client": "workspace:*",
+    "@aspiron/tanstack-client": "workspace:*"
   },
    "devDependencies": {
      "@types/node": "^24.10.1",

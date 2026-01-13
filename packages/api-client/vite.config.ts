@@ -17,8 +17,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'TanstackClient',
-      fileName: 'tanstack-client',
+      name: 'ApiClient',
+      fileName: 'api-client',
     },
     rollupOptions: {
       external: [],

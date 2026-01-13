@@ -1,16 +1,30 @@
 {
-  "name": "api-client",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@aspiron/api-client",
+  "private": false,
+  "version": "0.0.1",
   "type": "module",
+  "main": "./dist/api-client.umd.js",
+  "module": "./dist/api-client.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/api-client.js",
+      "require": "./dist/api-client.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
-    "vite": "npm:rolldown-vite@7.2.5"
+    "vite": "npm:rolldown-vite@7.2.5",
+    "vite-plugin-dts": "^4.5.4"
   },
   "pnpm": {
     "overrides": {
