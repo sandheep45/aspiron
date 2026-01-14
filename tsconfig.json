@@ -1,4 +1,10 @@
 {
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@aspiron/*": ["aspiron/*"]
+    }
+  },
   "files": [],
   "references": [
     {

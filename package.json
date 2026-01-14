@@ -3,15 +3,28 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "dev": "pnpm --filter cool-app dev",
     "prepare": "husky",
-    "lint": "biome check .",
-    "format": "biome format --write .",
-    "lint:fix": "biome check --write --unsafe ."
+    "lint:fix": "biome check --write --unsafe .",
+    "install:all": "pnpm -r --parallel install",
+    "build:all": "pnpm -r --parallel build",
+    "build:rust": "cargo build",
+    "dev:all": "pnpm -r --parallel dev",
+    "dev:js": "pnpm -r --parallel dev --filter !mobile-student",
+    "test:js": "pnpm test --workspaces",
+    "test:rust": "cargo test",
+    "format:js": "biome format . --write",
+    "lint:js": "biome lint .",
+    "check:js": "biome check .",
+    "check:all": "cargo check --all-targets --all-features && pnpm biome check ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@7.2.5"
+    }
+  },
   "packageManager": "pnpm@10.28.0",
   "devDependencies": {
     "@biomejs/biome": "latest",

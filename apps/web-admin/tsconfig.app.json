@@ -19,10 +19,9 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": "../..",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["apps/web-admin/src/*"],
-      "@aspiron/*": ["packages/*/src"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]

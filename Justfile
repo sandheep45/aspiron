@@ -9,8 +9,6 @@ RUST_BINDINGS_CRATE := "packages/contracts-rust"
 GENERATED_TS_DIR    := "packages/dummy-lib/src"
 
 CACHE_DIR           := ".cache"
-RUST_BUILD_STAMP    := "{{CACHE_DIR}}/rust-build.stamp"
-JS_BUILD_STAMP      := "{{CACHE_DIR}}/js-build.stamp"
 
 # ==================================================
 # Default / Help
@@ -114,12 +112,13 @@ clean:
 build-js:
     #!/usr/bin/env bash
     set -euo pipefail
-    mkdir -p {{CACHE_DIR}}
+    CACHE_DIR=".cache"
+    mkdir -p "$CACHE_DIR"
 
-    if [[ ! -f {{JS_BUILD_STAMP}} || pnpm-lock.yaml -nt {{JS_BUILD_STAMP}} ]]; then
+    if [[ ! -f "$CACHE_DIR/js-build.stamp" || pnpm-lock.yaml -nt "$CACHE_DIR/js-build.stamp" ]]; then
         echo "Building JS (cache miss)…"
-        pnpm run build --workspaces
-        touch {{JS_BUILD_STAMP}}
+        pnpm -r --parallel build
+        touch "$CACHE_DIR/js-build.stamp"
     else
         echo "Skipping JS build (cache hit)"
     fi
@@ -163,12 +162,13 @@ create-nest appDir appName:
 build-rust:
     #!/usr/bin/env bash
     set -euo pipefail
-    mkdir -p {{CACHE_DIR}}
+    CACHE_DIR=".cache"
+    mkdir -p "$CACHE_DIR"
 
-    if [[ ! -f {{RUST_BUILD_STAMP}} || Cargo.lock -nt {{RUST_BUILD_STAMP}} ]]; then
+    if [[ ! -f "$CACHE_DIR/rust-build.stamp" || Cargo.lock -nt "$CACHE_DIR/rust-build.stamp" ]]; then
         echo "Building Rust (cache miss)…"
         cargo build
-        touch {{RUST_BUILD_STAMP}}
+        touch "$CACHE_DIR/rust-build.stamp"
     else
         echo "Skipping Rust build (cache hit)"
     fi
