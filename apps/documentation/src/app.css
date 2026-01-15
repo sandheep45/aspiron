@@ -36,6 +36,23 @@
 	h1, h2, h3, h4, h5, h6 {
 		@apply font-semibold tracking-tight;
 	}
+
+	::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+
+	::-webkit-scrollbar-track {
+		@apply bg-surface-100 dark:bg-surface-800;
+	}
+
+	::-webkit-scrollbar-thumb {
+		@apply bg-surface-300 dark:bg-surface-600 rounded-full;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		@apply bg-surface-400 dark:bg-surface-500;
+	}
 }
 
 @layer components {

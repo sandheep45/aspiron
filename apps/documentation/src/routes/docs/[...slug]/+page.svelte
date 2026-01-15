@@ -1,13 +1,12 @@
 <script lang="ts">
-import Callout from '$components/Callout.svelte'
 import type { PageData } from './$types'
 
 const { data }: { data: PageData } = $props()
 </script>
 
 <svelte:head>
-	<title>{data.content.title} - Documentation Hub</title>
-	<meta name="description" content={data.content.description || 'Documentation page'} />
+	<title>{data.content.title} - Aspiron Documentation</title>
+	<meta name="description" content={data.content.description || 'Aspiron documentation'} />
 </svelte:head>
 
 <article class="prose prose-slate max-w-none dark:prose-invert">
@@ -15,9 +14,9 @@ const { data }: { data: PageData } = $props()
 </article>
 
 <div class="mt-8 flex items-center justify-between border-t border-surface-200 pt-8 dark:border-surface-700">
-	{#if data.content.previous}
+	{#if data.previous}
 		<a
-			href="/docs/{data.content.previous}"
+			href="/docs/{data.previous}"
 			class="text-sm text-surface-600 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100"
 		>
 			← Previous
@@ -25,9 +24,9 @@ const { data }: { data: PageData } = $props()
 	{:else}
 		<div></div>
 	{/if}
-	{#if data.content.next}
+	{#if data.next}
 		<a
-			href="/docs/{data.content.next}"
+			href="/docs/{data.next}"
 			class="text-sm text-surface-600 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100"
 		>
 			Next →

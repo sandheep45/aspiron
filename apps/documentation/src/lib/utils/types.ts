@@ -3,6 +3,9 @@ export interface Doc {
   title: string
   description?: string
   order: number
+  section: string
+  previous?: string
+  next?: string
 }
 
 export interface SearchResult {

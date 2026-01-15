@@ -1,6 +1,6 @@
 <script lang="ts">
 import { AlertTriangle, CheckCircle, Info, XCircle } from '@lucide/svelte'
-import { cn } from '$utils/index.ts'
+import { cn } from '$lib/utils/index.ts'
 
 type CalloutType = 'info' | 'success' | 'warning' | 'error'
 
