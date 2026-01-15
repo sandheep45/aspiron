@@ -10,3 +10,20 @@ todo = "deny"
 dbg_macro = "deny"
 print_stdout = "deny"
 print_stderr = "deny"
+
+[workspace.dependencies]
+tokio = { version = "*", features = ["full"] }
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+serde_with = "*"
+thiserror = "*"
+anyhow = "*"
+tracing = { version = "*", default-features = false, features = ["std", "attributes"] }
+tracing-subscriber = { version = "*", features = ["env-filter", "fmt", "json"] }
+uuid = { version = "*", features = ["v4", "serde"] }
+chrono = { version = "*", features = ["serde"] }
+sea-orm = "*"
+async-std = { version = "*", features = ["attributes"] }
+validator = { version = "*", features = ["derive"] }
+
+migrations = { path = "./apps/migrations" }

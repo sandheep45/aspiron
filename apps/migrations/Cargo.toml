@@ -4,6 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sea-orm-migration = "*"
+sea-orm = "*"
+tokio = { version = "*", features = ["full"] }
+dotenvy = "*"
 
-[lints]
-workspace = true
+[features]
+default = ["runtime-async-std-native-tls"]
+runtime-async-std-native-tls = [
+  "sea-orm-migration/runtime-async-std-native-tls",
+]
