@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: aspiron-meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-aSampleMasterKey}
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - meili_data_aspiron:/data.ms
+    restart: unless-stopped
+
+volumes:
+  meili_data_aspiron:

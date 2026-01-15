@@ -1,29 +1,25 @@
 <script lang="ts">
-	import '../app.css'
-	import { page } from '$app/stores'
-	import Header from '$components/Header.svelte'
-	import Sidebar from '$components/Sidebar.svelte'
-	import favicon from '$lib/assets/favicon.svg'
+import '../app.css'
 
-	const { children } = $props()
+const { children } = $props()
 
-	const isDocsPage = $derived($page.url.pathname.startsWith('/docs'))
+const _isDocsPage = $derived($page.url.pathname.startsWith('/docs'))
 
-	let sidebarOpen = $state(false)
+let _sidebarOpen = $state(false)
 
-	function closeSidebar() {
-		sidebarOpen = false
-	}
+function closeSidebar() {
+  _sidebarOpen = false
+}
 
-	function openSidebar() {
-		sidebarOpen = true
-	}
+function _openSidebar() {
+  _sidebarOpen = true
+}
 
-	$effect(() => {
-		if ($page.url.pathname.startsWith('/docs')) {
-			closeSidebar()
-		}
-	})
+$effect(() => {
+  if ($page.url.pathname.startsWith('/docs')) {
+    closeSidebar()
+  }
+})
 </script>
 
 <svelte:head>

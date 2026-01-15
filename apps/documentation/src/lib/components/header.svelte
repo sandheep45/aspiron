@@ -1,18 +1,6 @@
 <script lang="ts">
-import {
-  Brain,
-  Github,
-  HelpCircle,
-  Menu,
-  Moon,
-  Search,
-  Sun,
-} from '@lucide/svelte'
-import { Combobox, Modal } from '@skeletonlabs/skeleton-svelte'
+import { type Hit, MeiliSearch } from 'meilisearch'
 import { goto } from '$app/navigation'
-import { page } from '$app/stores'
-import { docs } from '$lib/docs.ts'
-import type { Doc } from '$lib/utils/types.ts'
 
 interface Props {
   sidebarOpen?: boolean
@@ -22,52 +10,74 @@ interface Props {
 // biome-ignore lint/correctness/noUnusedVariables: used in template
 const { sidebarOpen = false, onOpenSidebar }: Props = $props()
 
-let searchOpen = $state(false)
-let searchQuery = $state('')
+let _searchOpen = $state(false)
+let _searchQuery = $state('')
 let isDark = $state(false)
+let searchResults = $state<Hit[]>([])
+let _isSearching = $state(false)
 
-type DocItem = {
-  label: string
-  value: string
-  description?: string
+const client = new MeiliSearch({
+  host: 'http://localhost:7700',
+  apiKey: 'aSampleMasterKey', // In production, use env var
+})
+
+async function performSearch(query: string) {
+  if (!query.trim()) {
+    searchResults = []
+    return
+  }
+
+  _isSearching = true
+  try {
+    const index = client.index('docs')
+    const response = await index.search(query, {
+      limit: 10,
+      attributesToHighlight: ['title', 'description'],
+      highlightPreTag: '<mark>',
+      highlightPostTag: '</mark>',
+    })
+    searchResults = response.hits
+    console.log('Search results:', searchResults) // Debug
+  } catch (error) {
+    console.error('Search error:', error)
+    searchResults = []
+  } finally {
+    _isSearching = false
+  }
 }
 
-const docItems: DocItem[] = $derived(
-  docs.map((doc: Doc) => ({
-    label: doc.title,
-    value: doc.slug,
-    description: doc.description,
-  })),
-)
+let searchTimeout: ReturnType<typeof setTimeout>
+function _handleQueryChange(query: string) {
+  _searchQuery = query
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => performSearch(query), 200)
+}
 
-const filteredItems = $derived(
-  searchQuery
-    ? docItems.filter(
-        (item) =>
-          item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    : [],
-)
+function _handleResultClick(slug: string) {
+  _searchOpen = false
+  _searchQuery = ''
+  searchResults = []
+  goto(`/docs/${slug}`)
+}
 
-function handleThemeChange() {
+function _handleThemeChange() {
   isDark = !isDark
   document.documentElement.classList.toggle('dark', isDark)
   localStorage.setItem('theme', isDark ? 'dark' : 'light')
 }
 
-function handleSelection(details: { value: string[] }) {
-  searchOpen = false
-  searchQuery = ''
-  if (details.value.length > 0) {
-    goto(`/docs/${details.value[0]}`)
+function _handleModalOpenChange(details: { open: boolean }) {
+  _searchOpen = details.open
+  if (!details.open) {
+    _searchQuery = ''
+    searchResults = []
   }
 }
 
-function handleModalOpenChange(details: { open: boolean }) {
-  searchOpen = details.open
-  if (!details.open) {
-    searchQuery = ''
+function handleKeydown(event: KeyboardEvent) {
+  if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+    event.preventDefault()
+    _searchOpen = true
   }
 }
 
@@ -78,7 +88,12 @@ $effect(() => {
   document.documentElement.classList.toggle('dark', isDark)
 })
 
-const navLinks = [
+$effect(() => {
+  document.addEventListener('keydown', handleKeydown)
+  return () => document.removeEventListener('keydown', handleKeydown)
+})
+
+const _navLinks = [
   { href: '/docs/intro', label: 'Introduction' },
   { href: '/docs/mvp-scope', label: 'MVP Scope' },
   { href: '/docs/student-journey', label: 'Student Journey' },
@@ -184,36 +199,69 @@ const navLinks = [
 </header>
 
 <Modal
-	open={searchOpen}
-	onOpenChange={handleModalOpenChange}
-	backdropBackground="bg-black/50"
-	positionerPadding="p-4"
-	contentBase="bg-surface-100-900 rounded-xl shadow-2xl p-4 max-w-2xl w-full mx-auto mt-20"
+  open={searchOpen}
+  onOpenChange={handleModalOpenChange}
+  backdropBackground="bg-black/50"
+  positionerPadding="p-4"
+  contentBase="bg-surface-100-900 rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-auto"
 >
-	{#snippet content()}
-		<div class="relative">
-			<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-surface-400-500 z-10" />
-			<Combobox
-				data={filteredItems}
-				placeholder="Search documentation..."
-				onValueChange={handleSelection}
-				inputGroupBase="grid-cols-1"
-				inputGroupInput="w-full rounded-lg border border-surface-200-700 bg-surface-50-900 py-3 pl-10 pr-4 text-surface-900-50 placeholder-surface-400-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-				inputGroupButton="hidden"
-				contentBackground="bg-surface-100-900 border border-surface-200-700"
-				contentMaxHeight="max-h-80"
-				optionBase="btn justify-start w-full text-surface-900-50"
-				optionHover="hover:bg-surface-200-700"
-			>
-				{#snippet item(option)}
-					<div class="flex flex-col">
-						<span class="font-medium">{option.label}</span>
-						{#if option.description}
-							<span class="text-xs text-surface-500-400">{option.description}</span>
-						{/if}
-					</div>
-				{/snippet}
-			</Combobox>
-		</div>
-	{/snippet}
+  {#snippet content()}
+    <style>
+      mark {
+        background-color: rgb(59 130 246 / 0.3);
+        color: inherit;
+        padding: 0 2px;
+        border-radius: 2px;
+      }
+    </style>
+    <div class="relative">
+      <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-surface-400-500 z-10" />
+      <input
+        type="text"
+        placeholder="Search documentation..."
+        bind:value={searchQuery}
+        oninput={(e) => handleQueryChange((e.target as HTMLInputElement).value)}
+        class="w-full rounded-lg border border-surface-200-700 bg-surface-50-900 py-3 pl-10 pr-4 text-surface-900-50 placeholder-surface-400-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+      />
+      {#if isSearching}
+        <div class="mt-4 text-center text-surface-500-400">
+          <div class="inline-flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-surface-400 border-t-primary-500 rounded-full animate-spin"></div>
+            Searching...
+          </div>
+        </div>
+      {:else if searchResults.length > 0}
+        <div class="mt-4 max-h-80 overflow-y-auto space-y-1">
+          {#each searchResults as result}
+            <button
+              onclick={() => handleResultClick(result.slug)}
+              class="w-full text-left p-3 rounded-lg hover:bg-surface-200-700 transition-colors border border-transparent hover:border-surface-300-600"
+            >
+              <div class="font-medium text-surface-900-50">
+                {#if result._formatted?.title}
+                  {@html result._formatted.title}
+                {:else}
+                  {result.title}
+                {/if}
+              </div>
+              {#if result._formatted?.description || result.description}
+                <div class="text-sm text-surface-500-400 mt-1">
+                  {#if result._formatted?.description}
+                    {@html result._formatted.description}
+                  {:else}
+                    {result.description}
+                  {/if}
+                </div>
+              {/if}
+              {#if result.section}
+                <div class="text-xs text-surface-400-500 mt-1">{result.section}</div>
+              {/if}
+            </button>
+          {/each}
+        </div>
+      {:else if searchQuery && !isSearching}
+        <div class="mt-4 text-center text-surface-500-400">No results found for "{searchQuery}"</div>
+      {/if}
+    </div>
+  {/snippet}
 </Modal>

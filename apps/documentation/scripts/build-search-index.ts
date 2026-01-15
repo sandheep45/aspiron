@@ -1,15 +1,21 @@
+import dotenv from 'dotenv'
 import fs from 'fs'
 import matter from 'gray-matter'
+import { MeiliSearch } from 'meilisearch'
 import path from 'path'
+
+dotenv.config({ path: path.join(process.cwd(), '../../.env') })
 
 const docsDir = path.join(process.cwd(), 'src/lib/docs')
 const outputFile = path.join(process.cwd(), 'src/lib/utils/search-index.ts')
 
 interface SearchEntry {
+  id: string
   slug: string
   title: string
   description?: string
   content: string
+  section: string
   order: number
 }
 
@@ -25,10 +31,12 @@ for (const file of files) {
   const { data, content: body } = matter(content)
 
   entries.push({
+    id: file.replace('.md', ''),
     slug: file.replace('.md', ''),
     title: data.title,
     description: data.description,
     content: body,
+    section: data.section || 'General',
     order: data.order || 99,
   })
 }
@@ -42,3 +50,45 @@ export type SearchEntry = typeof searchIndex[number];
 
 fs.writeFileSync(outputFile, output)
 console.log(`Generated search index with ${entries.length} documents`)
+
+// Index into MeiliSearch
+const meiliHost = process.env.MEILI_HOST || 'http://localhost:7700'
+const meiliKey = process.env.MEILI_MASTER_KEY || 'aSampleMasterKey'
+
+const client = new MeiliSearch({
+  host: meiliHost,
+  apiKey: meiliKey,
+})
+
+async function indexDocs() {
+  try {
+    const index = client.index('docs')
+    await index.addDocuments(entries)
+    console.log(`Indexed ${entries.length} documents into MeiliSearch`)
+
+    // Configure index settings
+    await index.updateSettings({
+      searchableAttributes: ['title', 'content', 'description'],
+      displayedAttributes: ['id', 'slug', 'title', 'description', 'section'],
+      rankingRules: [
+        'words',
+        'typo',
+        'proximity',
+        'attribute',
+        'sort',
+        'exactness',
+      ],
+      typoTolerance: {
+        enabled: true,
+      },
+      pagination: {
+        maxTotalHits: 100,
+      },
+    })
+    console.log('Updated MeiliSearch index settings')
+  } catch (error) {
+    console.error('Error indexing into MeiliSearch:', error)
+  }
+}
+
+indexDocs()

@@ -47,6 +47,9 @@ importers:
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
+      meilisearch:
+        specifier: ^0.45.0
+        version: 0.45.0
       shiki:
         specifier: ^3.21.0
         version: 3.21.0
@@ -72,6 +75,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.18(rolldown-vite@7.2.5(@types/node@24.10.7)(jiti@2.6.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.7
       mdsvex:
         specifier: ^0.12.6
         version: 0.12.6(svelte@5.46.3)
@@ -4093,6 +4099,9 @@ packages:
     resolution: {integrity: sha512-pupx2gzWh3hDtm/iDW4WuCpljmyHbHi34r7ktOqpPGvyiM4MyfNgdJ3qMizXdgCErmvYC9Nn/qyjePy+4ss9Wg==}
     peerDependencies:
       svelte: ^3.56.0 || ^4.0.0 || ^5.0.0-next.120
+
+  meilisearch@0.45.0:
+    resolution: {integrity: sha512-+zCzEqE+CumY4icB0Vox180adZqaNtnr60hJWGiEdmol5eWmksfY8rYsTcz87styXC2ZOg+2yF56gdH6oyIBTA==}
 
   memoize-one@5.2.1:
     resolution: {integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==}
@@ -9886,6 +9895,8 @@ snapshots:
       svelte: 5.46.3
       unist-util-visit: 2.0.3
       vfile-message: 2.0.4
+
+  meilisearch@0.45.0: {}
 
   memoize-one@5.2.1: {}
 
