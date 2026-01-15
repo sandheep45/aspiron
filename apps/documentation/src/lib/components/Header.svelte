@@ -11,15 +11,16 @@ import {
 import { Combobox, Modal } from '@skeletonlabs/skeleton-svelte'
 import { goto } from '$app/navigation'
 import { page } from '$app/stores'
-import { docs } from '$lib/docs'
-import type { Doc } from '$lib/utils/types'
+import { docs } from '$lib/docs.ts'
+import type { Doc } from '$lib/utils/types.ts'
 
 interface Props {
-		sidebarOpen?: boolean
-		onOpenSidebar?: () => void
-	}
+  sidebarOpen?: boolean
+  onOpenSidebar?: () => void
+}
 
-	let { sidebarOpen = false, onOpenSidebar }: Props = $props()
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const { sidebarOpen = false, onOpenSidebar }: Props = $props()
 
 let searchOpen = $state(false)
 let searchQuery = $state('')
@@ -87,7 +88,7 @@ const navLinks = [
 </script>
 
 <header
-	class="sticky top-0 z-40 w-full border-b border-surface-200-800 bg-gradient-to-r from-primary-50 via-white to-primary-50 dark:from-primary-950 dark:via-surface-900 dark:to-primary-950 backdrop-blur supports-[backdrop-filter]:bg-gradient-to-r dark:from-primary-950/95 dark:via-surface-900/95 dark:to-primary-950/95"
+	class="sticky top-0 z-40 w-full border-b border-surface-200-800 bg-white dark:bg-surface-900 backdrop-blur"
 >
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
