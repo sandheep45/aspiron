@@ -1,10 +1,25 @@
 <script lang="ts">
-import { Brain, Github, HelpCircle, Moon, Search, Sun } from '@lucide/svelte'
+import {
+  Brain,
+  Github,
+  HelpCircle,
+  Menu,
+  Moon,
+  Search,
+  Sun,
+} from '@lucide/svelte'
 import { Combobox, Modal } from '@skeletonlabs/skeleton-svelte'
 import { goto } from '$app/navigation'
 import { page } from '$app/stores'
-import { docs } from '$lib/docs.ts'
-import type { Doc } from '$lib/utils/types.ts'
+import { docs } from '$lib/docs'
+import type { Doc } from '$lib/utils/types'
+
+interface Props {
+		sidebarOpen?: boolean
+		onOpenSidebar?: () => void
+	}
+
+	let { sidebarOpen = false, onOpenSidebar }: Props = $props()
 
 let searchOpen = $state(false)
 let searchQuery = $state('')
@@ -76,7 +91,6 @@ const navLinks = [
 >
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
-			<!-- Logo & Brand -->
 			<div class="flex items-center gap-3">
 				<a href="/" class="flex items-center gap-3 group">
 					<div
@@ -91,7 +105,6 @@ const navLinks = [
 				</a>
 			</div>
 
-			<!-- Navigation -->
 			<nav class="hidden lg:flex items-center gap-1">
 				{#each navLinks as link}
 					<a
@@ -110,9 +123,15 @@ const navLinks = [
 				{/each}
 			</nav>
 
-			<!-- Actions -->
+			<button
+				onclick={onOpenSidebar}
+				class="lg:hidden flex h-10 w-10 items-center justify-center rounded-lg bg-surface-200-700 text-surface-600-400 transition-all hover:bg-surface-300-600 hover:text-surface-900-50"
+				aria-label="Open menu"
+			>
+				<Menu class="h-5 w-5" />
+			</button>
+
 			<div class="flex items-center gap-2">
-				<!-- Search Button -->
 				<button
 					onclick={() => (searchOpen = true)}
 					class="flex h-10 items-center gap-2 rounded-lg border border-surface-200-700 bg-surface-50-900 px-4 text-sm text-surface-500-400 transition-all hover:border-primary-300 hover:bg-white dark:hover:bg-surface-800"
@@ -129,7 +148,6 @@ const navLinks = [
 
 				<div class="h-6 w-px bg-surface-200-700"></div>
 
-				<!-- Theme Toggle -->
 				<button
 					onclick={handleThemeChange}
 					class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-200-700 text-surface-600-400 transition-all hover:bg-surface-300-600 hover:text-surface-900-50"
@@ -142,7 +160,6 @@ const navLinks = [
 					{/if}
 				</button>
 
-				<!-- Help -->
 				<a
 					href="/docs/intro"
 					class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-200-700 text-surface-600-400 transition-all hover:bg-surface-300-600 hover:text-surface-900-50"
@@ -151,7 +168,6 @@ const navLinks = [
 					<HelpCircle class="h-5 w-5" />
 				</a>
 
-				<!-- GitHub -->
 				<a
 					href="https://github.com"
 					target="_blank"
