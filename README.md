@@ -14,7 +14,7 @@ Monorepo containing the Rust backend API and database migrations for the Aspiron
 | **Configuration** | Environment variables |
 | **Error Handling** | thiserror + anyhow |
 | **Authentication** | JWT (planned) |
-| **API Documentation** | utoipa (planned) |
+| **API Documentation** | utoipa |
 | **Containerization** | Docker (planned) |
 | **CI/CD** | GitHub Actions (planned) |
 
@@ -36,7 +36,8 @@ aspiron/
 │   │   │   │   ├── config.rs    # Config loading from env
 │   │   │   │   ├── error.rs     # Error types + IntoResponse
 │   │   │   │   ├── telemetry.rs # Logging/tracing initialization
-│   │   │   │   └── app.rs       # App struct, router setup, route registry
+│   │   │   │   ├── app.rs       # App struct, router setup, route registry
+│   │   │   │   └── openapi.rs   # OpenAPI spec
 │   │   │   ├── routes/     # HTTP handlers
 │   │   │   │   ├── mod.rs
 │   │   │   │   ├── health.rs    # Health check endpoint
@@ -78,9 +79,9 @@ aspiron/
 - [ ] Auth middleware
 
 ### ⏳ Phase 4: Core Routes
+- [x] OpenAPI integration
+- [ ] Swagger UI (future)
 - [ ] User CRUD endpoints
-- [ ] OpenAPI integration
-- [ ] Swagger UI
 
 ### ⏳ Phase 5: Testing
 - [ ] Unit tests
@@ -123,6 +124,87 @@ cargo run -p migrations
 
 ```bash
 cargo test --workspace
+```
+
+## OpenAPI Documentation
+
+The backend uses [utoipa](https://github.com/juhaku/utoipa) to generate OpenAPI 3.0 specifications from code annotations.
+
+### Available Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api-docs/openapi.json` | OpenAPI 3.0 specification in JSON format |
+
+### Adding OpenAPI Documentation to Routes
+
+Use `utoipa` attributes to document your endpoints:
+
+```rust
+use axum::{Json, Router, routing::get};
+use serde::Serialize;
+use utoipa::ToSchema;
+
+#[derive(Serialize, ToSchema)]
+pub struct HealthResponse {
+    #[schema(example = "healthy")]
+    pub status: String,
+    #[schema(example = "0.1.0")]
+    pub version: String,
+}
+
+#[utoipa::path(
+    get,
+    path = "/health",
+    tag = "Health",
+    responses(
+        (status = 200, description = "Server is healthy", body = HealthResponse)
+    )
+)]
+pub async fn health() -> Json<HealthResponse> {
+    Json(HealthResponse {
+        status: "healthy".to_string(),
+        version: "0.1.0".to_string(),
+    })
+}
+```
+
+### OpenAPI Spec Example
+
+```json
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Aspiron API",
+    "version": "0.1.0",
+    "description": "Backend API for the Aspiron project"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 ```
 
 ## Route Registry

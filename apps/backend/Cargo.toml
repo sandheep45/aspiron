@@ -16,7 +16,7 @@ anyhow = "*"
 validator = { version = "*", features = ["derive"] }
 bcrypt = "*"
 cookie = "*"
-utoipa = { version = "*", features = ["axum_extras"] }
+utoipa = "4.2.3"
 reqwest = { version = "*", features = ["json", "native-tls"] }
 once_cell = "*"
 serde = { version = "*", features = ["derive"] }
