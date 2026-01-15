@@ -1,8 +1,21 @@
-# Aspiron Backend
+# Aspiron
 
-Monorepo containing the Rust backend API and database migrations for the Aspiron project.
+Student-first learning and productivity platform for competitive exam preparation (State PGT, JEE, NEET).
+
+## Overview
+
+Aspiron is built around the belief that **systems beat motivation**. The platform provides structured learning paths, AI-assisted recall, and community support to help students achieve their exam goals.
+
+### Core Philosophy
+
+- **Student-First Design**: Every feature is designed for the student's actual experience, not administrative convenience
+- **Systems Over Motivation**: Build habits and structures that work regardless of daily motivation
+- **Context Persistence**: The platform remembers where the student is in their preparation journey
+- **Recall-Focused Learning**: Spaced repetition and memory-aware features to maximize retention
 
 ## Tech Stack
+
+### Backend (Rust)
 
 | Component | Technology |
 |-----------|------------|
@@ -18,232 +31,230 @@ Monorepo containing the Rust backend API and database migrations for the Aspiron
 | **Containerization** | Docker (planned) |
 | **CI/CD** | GitHub Actions (planned) |
 
+### Frontend (SvelteKit + TypeScript)
+
+| Component | Technology |
+|-----------|------------|
+| **Framework** | SvelteKit 2 |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS v4 |
+| **UI Components** | Skeleton UI |
+| **Markdown** | mdsvex |
+| **State Management** | TanStack Query |
+| **Theme** | Dark/Light mode support |
+
 ## Project Structure
 
 ```
 aspiron/
-├── Cargo.toml              # Workspace config
-├── .env.example            # Environment template
+├── Cargo.toml                    # Rust workspace config
+├── package.json                  # Node.js workspace config
+├── pnpm-workspace.yaml           # pnpm monorepo config
+├── .env.example                  # Environment template
 ├── .github/
-│   └── workflows/          # CI/CD (future)
+│   └── workflows/                # CI/CD (future)
 ├── apps/
-│   ├── backend/            # Main API server
+│   ├── backend/                  # Rust API server
 │   │   ├── src/
-│   │   │   ├── main.rs     # Entry point
-│   │   │   ├── lib.rs      # Library exports
-│   │   │   ├── setup/      # Foundation modules
+│   │   │   ├── main.rs           # Entry point
+│   │   │   ├── lib.rs            # Library exports
+│   │   │   ├── setup/            # Foundation modules
 │   │   │   │   ├── mod.rs
-│   │   │   │   ├── config.rs    # Config loading from env
-│   │   │   │   ├── error.rs     # Error types + IntoResponse
-│   │   │   │   ├── telemetry.rs # Logging/tracing initialization
-│   │   │   │   ├── app.rs       # App struct, router setup, route registry
-│   │   │   │   └── openapi.rs   # OpenAPI spec
-│   │   │   ├── routes/     # HTTP handlers
+│   │   │   │   ├── config.rs     # Config loading from env
+│   │   │   │   ├── error.rs      # Error types + IntoResponse
+│   │   │   │   ├── telemetry.rs  # Logging/tracing initialization
+│   │   │   │   ├── app.rs        # App struct, router setup, route registry
+│   │   │   │   └── openapi.rs    # OpenAPI spec
+│   │   │   ├── routes/           # HTTP handlers
 │   │   │   │   ├── mod.rs
-│   │   │   │   ├── health.rs    # Health check endpoint
-│   │   │   │   ├── auth.rs      # Placeholder for auth routes
-│   │   │   │   └── users.rs     # Placeholder for user routes
-│   │   │   ├── services/   # Business logic (placeholders)
-│   │   │   └── middleware/ # Auth middleware (placeholder)
+│   │   │   │   ├── health.rs     # Health check endpoint
+│   │   │   │   ├── auth.rs       # Placeholder for auth routes
+│   │   │   │   └── users.rs      # Placeholder for user routes
+│   │   │   ├── services/         # Business logic (placeholders)
+│   │   │   └── middleware/       # Auth middleware (placeholder)
 │   │   └── Cargo.toml
-│   └── migrations/         # SeaORM migrations
+│   ├── migrations/               # SeaORM migrations
+│   │   ├── src/
+│   │   │   ├── lib.rs            # Entity exports
+│   │   │   └── main.rs           # Migration runner
+│   │   └── Cargo.toml
+│   └── documentation/            # SvelteKit documentation site
 │       ├── src/
-│       │   ├── lib.rs      # Entity exports
-│       │   └── main.rs     # Migration runner
-│       └── Cargo.toml
-└── README.md
+│       │   ├── app.css           # Global styles with Tailwind v4
+│       │   ├── app.html          # HTML template
+│       │   ├── lib/
+│       │   │   ├── components/   # Reusable UI components
+│       │   │   │   ├── Header.svelte
+│       │   │   │   ├── Sidebar.svelte
+│       │   │   │   ├── Callout.svelte
+│       │   │   │   └── Search.svelte
+│       │   │   ├── docs/         # Documentation content
+│       │   │   │   ├── docs.ts   # Navigation configuration
+│       │   │   │   └── *.md      # Documentation pages (26 pages)
+│       │   │   └── utils/
+│       │   │       ├── types.ts
+│       │   │       └── search-index.ts
+│       │   └── routes/
+│       │       ├── +page.svelte         # Homepage
+│       │       └── docs/[...slug]/      # Documentation pages
+│       ├── static/               # Static assets
+│       ├── package.json
+│       └── svelte.config.js
+├── README.md
+└── AGENTS.md                     # AI agent instructions
 ```
 
-## Implementation Status
+## Features
 
-### ✅ Phase 1: Foundation (Complete)
-- [x] Project structure setup
-- [x] Workspace configuration
-- [x] Config loading from environment variables
-- [x] Error handling setup (AppError enum)
-- [x] Tracing/logging initialization (telemetry module)
-- [x] App struct and router setup
-- [x] Health check endpoint
-- [x] Route registry (routes printed at startup)
+### Learning Modules
 
-### ⏳ Phase 2: Database (Next)
-- [ ] User entity
-- [ ] Session entity (for JWT blacklist)
-- [ ] Migration files
-- [ ] Entity sharing between crates
+- **Video Learning**: Playback controls, bookmarks, timestamps, transcripts
+- **Live Classes**: Scheduled sessions, chat, AI-generated summaries
+- **Teacher Notes**: PDF viewer, offline access, structured organization
+- **Student Notes**: Personal annotations synced to video timestamps
+- **Notes Sharing**: Privacy controls (private/peer/shared/public)
 
-### ⏳ Phase 3: Authentication
-- [ ] JWT token creation/verification
-- [ ] Bcrypt password hashing
-- [ ] Auth routes (register, login, logout)
-- [ ] Auth middleware
+### Assessment
 
-### ⏳ Phase 4: Core Routes
-- [x] OpenAPI integration
-- [ ] Swagger UI (future)
-- [ ] User CRUD endpoints
+- **Practice Quizzes**: MCQs, numericals, detailed solutions
+- **Tests & Mock Exams**: Chapter, section, and full mock exams
+- **AI Proctoring**: Soft proctoring with focus scores (no cameras)
 
-### ⏳ Phase 5: Testing
-- [ ] Unit tests
-- [ ] Integration tests with testcontainers
-- [ ] Mocking dependencies
+### AI Features
 
-### ⏳ Phase 6: CI/CD & Deployment
-- [ ] GitHub Actions workflow
-- [ ] Docker build/push
-- [ ] VPS deployment
+- **Context-Aware AI Chat**: Global assistant aware of exam/subject context
+- **AI Recall Check**: Memory-aware revision system (key feature)
+- **Revision Mode**: Focus on wrong questions, formula review
+- **Test Analysis**: Post-test summaries, improvement plans
+
+### Community
+
+- **Peer Forum**: Structured doubt resolution threads
+- **Community Bot**: Virtual tutor, emotional support
+- **Smart Notifications**: Ethical nudges, recall reminders
+
+### Safety
+
+- **Exam Integrity**: AI disable toggle, copy/paste blocking during tests
+
+## Documentation
+
+The project includes comprehensive documentation at `/docs`:
+
+### Introduction
+
+- [Introduction](/docs/intro) - Platform overview, problem statement, core philosophy
+- [MVP Scope](/docs/mvp-scope) - What's included/excluded, 1-year roadmap
+- [Student Journey](/docs/student-journey) - Day 1 onboarding, daily flows, revision
+- [Design Philosophy](/docs/design-philosophy) - Student-first principles
+- [Roadmap](/docs/roadmap) - 5-phase plan (Now → Month 12)
+
+### Core Concepts
+
+- [Core Concepts](/docs/core-concepts) - Architecture overview
+- [Context Layer](/docs/context-layer) - Exam/subject/target year persistence
+- [Learning Structure](/docs/learning-structure) - Subject → Chapter → Topic hierarchy
+- [Notes System](/docs/notes-system) - Teacher/student notes architecture
+- [Progress Tracking](/docs/progress-tracking) - Student and teacher views
+
+### Learning
+
+- [Video Learning](/docs/video-learning)
+- [Live Classes](/docs/live-classes)
+- [Teacher Notes](/docs/teacher-notes)
+- [Student Notes](/docs/student-notes)
+- [Notes Sharing](/docs/notes-sharing)
+
+### Assessment
+
+- [Practice Quizzes](/docs/practice-quizzes)
+- [Tests & Mock Exams](/docs/tests-mock-exams)
+- [AI Proctoring](/docs/ai-proctoring)
+
+### AI Features
+
+- [Context AI Chat](/docs/context-ai-chat)
+- [AI Recall Check](/docs/ai-recall-check)
+- [Revision Mode](/docs/revision-mode)
+- [Test Analysis](/docs/test-analysis)
+
+### Community
+
+- [Peer Forum](/docs/peer-forum)
+- [Community Bot](/docs/community-bot)
+- [Notifications](/docs/notifications)
+
+### Safety
+
+- [Exam Integrity](/docs/exam-integrity)
 
 ## Development
 
 ### Prerequisites
 
-- Rust 1.75+
+- Rust 1.75+ (for backend)
+- Node.js 20+ (for frontend)
 - PostgreSQL 16+ (or Docker)
+- pnpm 9+
 
 ### Setup
 
 ```bash
-# Install just (task runner)
-cargo install just
+# Install dependencies
+pnpm install
 
-# Copy environment template
-cp .env.example .env
-# Edit .env with your database credentials
+# Copy environment templates
+cp apps/backend/.env.example apps/backend/.env
 
-# Build the project
-cargo build --workspace
+# Build all apps
+pnpm build
 
-# Run the backend (using just)
-just run-rust backend
+# Run development server (documentation)
+pnpm --filter documentation run dev
+```
 
-# Run migrations (placeholder)
+### Running Individual Apps
+
+```bash
+# Run Rust backend
+pnpm run-rust backend
+# or
+cd apps/backend && cargo run
+
+# Run documentation site
+pnpm --filter documentation run dev
+
+# Run migrations
 cargo run -p migrations
 ```
 
 ### Running Tests
 
 ```bash
+# All tests
+pnpm test
+
+# Backend tests only
 cargo test --workspace
+
+# Frontend tests only
+pnpm --filter documentation run test
 ```
 
-## OpenAPI Documentation
+## Backend Documentation
 
-The backend uses [utoipa](https://github.com/juhaku/utoipa) to generate OpenAPI 3.0 specifications from code annotations.
+### OpenAPI Documentation
 
-### Available Endpoints
+The backend uses [utoipa](https://github.com/juhaku/utoipa) to generate OpenAPI 3.0 specifications.
+
+**Available Endpoints:**
 
 | Endpoint | Description |
 |----------|-------------|
 | `/api-docs/openapi.json` | OpenAPI 3.0 specification in JSON format |
+| `/health` | Health check endpoint |
 
-### Adding OpenAPI Documentation to Routes
-
-Use `utoipa` attributes to document your endpoints:
-
-```rust
-use axum::{Json, Router, routing::get};
-use serde::Serialize;
-use utoipa::ToSchema;
-
-#[derive(Serialize, ToSchema)]
-pub struct HealthResponse {
-    #[schema(example = "healthy")]
-    pub status: String,
-    #[schema(example = "0.1.0")]
-    pub version: String,
-}
-
-#[utoipa::path(
-    get,
-    path = "/health",
-    tag = "Health",
-    responses(
-        (status = 200, description = "Server is healthy", body = HealthResponse)
-    )
-)]
-pub async fn health() -> Json<HealthResponse> {
-    Json(HealthResponse {
-        status: "healthy".to_string(),
-        version: "0.1.0".to_string(),
-    })
-}
-```
-
-### OpenAPI Spec Example
-
-```json
-{
-  "openapi": "3.0.3",
-  "info": {
-    "title": "Aspiron API",
-    "version": "0.1.0",
-    "description": "Backend API for the Aspiron project"
-  },
-  "servers": [
-    {
-      "url": "http://localhost:8080",
-      "description": "Local development server"
-    }
-  ],
-  "paths": {
-    "/health": {
-      "get": {
-        "tags": ["Health"],
-        "responses": {
-          "200": {
-            "description": "Server is healthy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-## Route Registry
-
-The backend includes a global route registry that automatically tracks all registered routes and prints them at startup.
-
-**Example output:**
-```
-═════════════════════
-   Available Routes   
-═════════════════════
-  GET /api/health
-═════════════════════
-```
-
-**Registering new routes:**
-
-Routes are registered automatically in `create_app()`:
-
-```rust
-pub fn create_app() -> axum::Router {
-    let router = axum::Router::new()
-        .nest("/api", routes::health::router())
-        .nest("/api", routes::users::router())
-        .layer(tower_http::trace::TraceLayer::new_for_http())
-        .layer(tower_http::cors::CorsLayer::permissive());
-
-    // Routes are automatically registered
-    let mut registry = ROUTE_REGISTRY.write().unwrap();
-    registry.register("GET", "/api/health");
-    registry.register("GET", "/api/users");
-    registry.register("POST", "/api/users");
-    drop(registry);
-
-    router
-}
-```
-
-## Environment Variables
+### Environment Variables
 
 ```bash
 # Server
@@ -261,7 +272,6 @@ DATABASE_NAME=aspiron
 # JWT (future)
 JWT_SECRET=your-secret-key-min-32-chars
 JWT_EXPIRY_HOURS=24
-JWT_COOKIE_NAME=jwt
 
 # Logging
 LOG_LEVEL=info       # debug, info, warn, error
@@ -270,10 +280,61 @@ LOG_FORMAT=pretty    # pretty (human-readable) or json
 
 ## Code Style
 
-- **Linting**: Clippy (workspace defaults configured)
-- **Formatting**: rustfmt (standard)
+### Backend (Rust)
+
+- **Linting**: Clippy
+- **Formatting**: rustfmt
 - **Panics**: Denied in lints
 - **Debug**: `dbg!` macro denied in production code
+
+### Frontend
+
+- **Linting**: Biome
+- **Formatting**: Prettier
+- **TypeScript**: Strict mode enabled
+
+## Implementation Status
+
+### ✅ Phase 1: Foundation (Complete)
+- [x] Project structure setup
+- [x] Workspace configuration (Rust + Node.js)
+- [x] Backend foundation (config, errors, telemetry)
+- [x] Health check endpoint
+- [x] Route registry
+- [x] OpenAPI integration
+- [x] Documentation site with 26 pages
+- [x] Categorized navigation
+
+### ⏳ Phase 2: Database (Next)
+- [ ] User entity
+- [ ] Session entity (for JWT blacklist)
+- [ ] Migration files
+- [ ] Entity sharing between crates
+
+### ⏳ Phase 3: Authentication
+- [ ] JWT token creation/verification
+- [ ] Bcrypt password hashing
+- [ ] Auth routes (register, login, logout)
+- [ ] Auth middleware
+
+### ⏳ Phase 4: Core Routes
+- [ ] User CRUD endpoints
+- [ ] Exam/Subject/Topic routes
+- [ ] Video/Notes routes
+- [ ] Quiz/Test routes
+
+### ⏳ Phase 5: AI Integration
+- [ ] Context-aware chat service
+- [ ] Recall check algorithm
+- [ ] Test analysis generation
+- [ ] Community bot
+
+### ⏳ Phase 6: Testing & CI/CD
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] GitHub Actions workflow
+- [ ] Docker build/push
+- [ ] VPS deployment
 
 ## License
 
