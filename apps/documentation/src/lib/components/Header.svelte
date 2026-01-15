@@ -95,7 +95,7 @@ const navLinks = [
 			<div class="flex items-center gap-3">
 				<a href="/" class="flex items-center gap-3 group">
 					<div
-						class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white shadow-lg shadow-primary-500/30 transition-transform group-hover:scale-105"
+						class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-surface-900 dark:text-white shadow-lg shadow-primary-500/30 transition-transform group-hover:scale-105"
 					>
 						<Brain class="h-6 w-6" />
 					</div>
