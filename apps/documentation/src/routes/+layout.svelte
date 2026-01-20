@@ -23,33 +23,36 @@ $effect(() => {
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
-	<title>Documentation Hub</title>
-	<meta name="description" content="Comprehensive documentation for our project" />
+  <link rel="icon" />
+  <title>Documentation Hub</title>
+  <meta
+    name="description"
+    content="Comprehensive documentation for our project"
+  />
 </svelte:head>
 
 <div class="min-h-screen bg-white dark:bg-surface-900">
-	<Header onOpenSidebar={openSidebar} />
+  <Header onOpenSidebar={openSidebar} />
 
-	<div class="flex">
-		{#if isDocsPage}
-			<!-- Backdrop overlay for mobile -->
-			{#if sidebarOpen}
-				<button
-					class="fixed inset-0 z-40 bg-black/50 lg:hidden"
-					onclick={closeSidebar}
-					aria-label="Close sidebar"
-				></button>
-			{/if}
+  <div class="flex">
+    {#if isDocsPage}
+      <!-- Backdrop overlay for mobile -->
+      {#if sidebarOpen}
+        <button
+          class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onclick={closeSidebar}
+          aria-label="Close sidebar"
+        ></button>
+      {/if}
 
-			<!-- Sidebar -->
-			<Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-		{/if}
+      <!-- Sidebar -->
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+    {/if}
 
-		<main class="flex-1">
-			<div class="container mx-auto px-4 py-8">
-				{@render children()}
-			</div>
-		</main>
-	</div>
+    <main class="flex-1">
+      <div class="container mx-auto px-4 py-8">
+        {@render children()}
+      </div>
+    </main>
+  </div>
 </div>
