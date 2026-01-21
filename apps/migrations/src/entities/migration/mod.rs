@@ -1,1 +1,8 @@
-
+pub mod m20260120_00000_create_enums;
+pub mod m20260120_00001_create_auth_tables;
+pub mod m20260120_00002_create_content_tables;
+pub mod m20260120_00003_create_learning_tables;
+pub mod m20260120_00004_create_assessment_tables;
+pub mod m20260120_00005_create_community_tables;
+pub mod m20260120_00006_create_notification_tables;
+pub mod m20260120_00007_create_live_tables;

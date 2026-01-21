@@ -8,7 +8,12 @@ axum = { version = "*", features = ["macros"] }
 tower = { version = "*", features = ["util", "filter"] }
 tower-http = { version = "*", features = ["cors", "trace", "request-id"] }
 jsonwebtoken = { version = "*", features = ["rust_crypto"] }
-sea-orm = { version = "*", features = ["runtime-tokio-native-tls", "with-uuid", "mock", "sqlx-postgres"] }
+sea-orm = { version = "*", features = [
+  "runtime-tokio-native-tls",
+  "with-uuid",
+  "mock",
+  "sqlx-postgres",
+] }
 tracing-subscriber = { version = "*", features = ["env-filter", "fmt", "json"] }
 uuid = { version = "*", features = ["v4", "serde"] }
 config = "*"
@@ -16,7 +21,7 @@ anyhow = "*"
 validator = { version = "*", features = ["derive"] }
 bcrypt = "*"
 cookie = "*"
-utoipa = "4.2.3"
+utoipa = "5.4.0"
 reqwest = { version = "*", features = ["json", "native-tls"] }
 once_cell = "*"
 serde = { version = "*", features = ["derive"] }

@@ -5,9 +5,9 @@ edition = "2024"
 
 [dependencies]
 sea-orm-migration = "*"
-sea-orm = "*"
 tokio = { version = "*", features = ["full"] }
 dotenvy = "*"
+backend = { path = "../backend" }
 
 [features]
 default = ["runtime-async-std-native-tls"]

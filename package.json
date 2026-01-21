@@ -34,7 +34,7 @@
     "lint-staged": "^16.2.7"
   },
   "lint-staged": {
-    "*": [
+    "*.{js,ts,tsx,jsx,json,css,md}": [
       "biome check --write --unsafe",
       "biome format --write"
     ]
