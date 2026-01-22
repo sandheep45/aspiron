@@ -1,13 +1,19 @@
 <script lang="ts">
-import { Brain, GraduationCap, Users } from '@lucide/svelte'
+import {
+  ArrowRight,
+  BookOpen,
+  Brain,
+  GraduationCap,
+  Users,
+} from '@lucide/svelte'
 
-const _heroStats = [
+const heroStats = [
   { value: '3', label: 'Exams Supported' },
   { value: '26', label: 'Documentation Pages' },
   { value: 'AI-Powered', label: 'Learning Assistant' },
 ]
 
-const _features = [
+const features = [
   {
     icon: Brain,
     title: 'Memory-Aware Learning',

@@ -1,6 +1,17 @@
 <script lang="ts">
+import {
+  Brain,
+  Github,
+  HelpCircle,
+  Menu,
+  Moon,
+  Search,
+  Sun,
+} from '@lucide/svelte'
+import { Modal } from '@skeletonlabs/skeleton-svelte'
 import { type Hit, MeiliSearch } from 'meilisearch'
 import { goto } from '$app/navigation'
+import { page } from '$app/stores'
 
 interface Props {
   sidebarOpen?: boolean
@@ -9,11 +20,11 @@ interface Props {
 
 const { sidebarOpen = false, onOpenSidebar }: Props = $props()
 
-let _searchOpen = $state(false)
-let _searchQuery = $state('')
+let searchOpen = $state(false)
+let searchQuery = $state('')
 let isDark = $state(false)
 let searchResults = $state<Hit[]>([])
-let _isSearching = $state(false)
+let isSearching = $state(false)
 
 const client = new MeiliSearch({
   host: 'http://localhost:7700',
@@ -26,7 +37,7 @@ async function performSearch(query: string) {
     return
   }
 
-  _isSearching = true
+  isSearching = true
   try {
     const index = client.index('docs')
     const response = await index.search(query, {
@@ -41,34 +52,34 @@ async function performSearch(query: string) {
     console.error('Search error:', error)
     searchResults = []
   } finally {
-    _isSearching = false
+    isSearching = false
   }
 }
 
 let searchTimeout: ReturnType<typeof setTimeout>
-function _handleQueryChange(query: string) {
-  _searchQuery = query
+function handleQueryChange(query: string) {
+  searchQuery = query
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => performSearch(query), 200)
 }
 
-function _handleResultClick(slug: string) {
-  _searchOpen = false
-  _searchQuery = ''
+function handleResultClick(slug: string) {
+  searchOpen = false
+  searchQuery = ''
   searchResults = []
   goto(`/docs/${slug}`)
 }
 
-function _handleThemeChange() {
+function handleThemeChange() {
   isDark = !isDark
   document.documentElement.classList.toggle('dark', isDark)
   localStorage.setItem('theme', isDark ? 'dark' : 'light')
 }
 
-function _handleModalOpenChange(details: { open: boolean }) {
-  _searchOpen = details.open
+function handleModalOpenChange(details: { open: boolean }) {
+  searchOpen = details.open
   if (!details.open) {
-    _searchQuery = ''
+    searchQuery = ''
     searchResults = []
   }
 }
@@ -76,7 +87,7 @@ function _handleModalOpenChange(details: { open: boolean }) {
 function handleKeydown(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
     event.preventDefault()
-    _searchOpen = true
+    searchOpen = true
   }
 }
 
@@ -92,7 +103,7 @@ $effect(() => {
   return () => document.removeEventListener('keydown', handleKeydown)
 })
 
-const _navLinks = [
+const navLinks = [
   { href: '/docs/intro', label: 'Introduction' },
   { href: '/docs/mvp-scope', label: 'MVP Scope' },
   { href: '/docs/student-journey', label: 'Student Journey' },

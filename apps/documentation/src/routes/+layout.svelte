@@ -1,18 +1,21 @@
 <script lang="ts">
 import '../app.css'
+import { page } from '$app/stores'
+import Header from '$lib/components/header.svelte'
+import Sidebar from '$lib/components/sidebar.svelte'
 
 const { children } = $props()
 
-const _isDocsPage = $derived($page.url.pathname.startsWith('/docs'))
+const isDocsPage = $derived($page.url.pathname.startsWith('/docs'))
 
-let _sidebarOpen = $state(false)
+let sidebarOpen = $state(false)
 
 function closeSidebar() {
-  _sidebarOpen = false
+  sidebarOpen = false
 }
 
-function _openSidebar() {
-  _sidebarOpen = true
+function openSidebar() {
+  sidebarOpen = true
 }
 
 $effect(() => {

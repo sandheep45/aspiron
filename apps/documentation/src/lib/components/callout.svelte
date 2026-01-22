@@ -1,6 +1,6 @@
 <script lang="ts">
 import { AlertTriangle, CheckCircle, Info, XCircle } from '@lucide/svelte'
-import { cn } from '$lib/utils/index.ts'
+import { cn } from '$lib/utils/index'
 
 type CalloutType = 'info' | 'success' | 'warning' | 'error'
 
@@ -39,17 +39,17 @@ const config = {
   },
 }
 
-const Icon = config[type].icon
+const Icon = $derived(config[type].icon)
 </script>
 
-<div class={cn('my-6 rounded-lg border p-4', config[type].colors)}>
-	<div class="mb-2 flex items-center gap-2">
-		<Icon class={cn('h-5 w-5', config[type].iconColor)} />
-		{#if title}
-			<span class="font-semibold">{title}</span>
-		{/if}
-	</div>
-	<div class="text-sm">
-		{@render children?.()}
-	</div>
+<div class={cn("my-6 rounded-lg border p-4", config[type].colors)}>
+  <div class="mb-2 flex items-center gap-2">
+    <Icon class={cn("h-5 w-5", config[type].iconColor)} />
+    {#if title}
+      <span class="font-semibold">{title}</span>
+    {/if}
+  </div>
+  <div class="text-sm">
+    {@render children?.()}
+  </div>
 </div>

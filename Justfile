@@ -247,7 +247,8 @@ watch-types:
 
 build-with-types: generate-types build
 test-with-types:  generate-types test
-build-all:        generate-types build
+# build-all:        generate-types build
+build-all:        build
 test-all:         generate-types test
 
 

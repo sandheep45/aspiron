@@ -10,7 +10,8 @@
       "!**/build",
       "!**/.cache",
       "!**/storybook-static",
-      "!**/target"
+      "!**/target",
+      "!**/.svelte-kit"
     ],
     "ignoreUnknown": true
   },
@@ -51,9 +52,6 @@
       "suspicious": {
         "noArrayIndexKey": "off"
       },
-      "correctness": {
-        "useImportExtensions": "error"
-      },
       "nursery": {
         "useSortedClasses": "error"
       }
@@ -76,6 +74,9 @@
   "css": {
     "formatter": {
       "quoteStyle": "single"
+    },
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "overrides": [
@@ -85,18 +86,23 @@
         "rules": {
           "style": {
             "useTemplate": "off"
+          },
+          "correctness": {
+            "useImportExtensions": "off"
           }
         }
       }
     },
     {
-      "includes": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts"],
+      "includes": ["apps/*/src/**/*.svelte", "packages/*/src/**/*.svelte"],
       "linter": {
         "rules": {
           "complexity": {
             "noExcessiveCognitiveComplexity": "off"
           },
           "correctness": {
+            "noUnusedImports": "off",
+            "noUnusedVariables": "off",
             "useImportExtensions": "off"
           }
         }
