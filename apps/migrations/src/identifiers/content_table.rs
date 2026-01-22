@@ -1,3 +1,6 @@
+use sea_orm_migration::prelude::*;
+
+#[derive(Iden)]
 pub enum ContentSubjectTableIdentifier {
     Table,
     Id,
@@ -6,6 +9,7 @@ pub enum ContentSubjectTableIdentifier {
     CreateAt,
 }
 
+#[derive(Iden)]
 pub enum ContentChapterTableIdentifier {
     Table,
     Id,
@@ -14,6 +18,7 @@ pub enum ContentChapterTableIdentifier {
     OrderNumber,
 }
 
+#[derive(Iden)]
 pub enum ContentTopicTableIdentifier {
     Table,
     Id,
@@ -22,6 +27,7 @@ pub enum ContentTopicTableIdentifier {
     OrderNumber,
 }
 
+#[derive(Iden)]
 pub enum ContentVideoTableIdentifier {
     Table,
     Id,
