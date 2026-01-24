@@ -1,4 +1,8 @@
+use sea_orm_migration::prelude::*;
+
+#[derive(Iden)]
 pub enum LearningNotesTableIdentifier {
+    #[iden = "learning_notes"]
     Table,
     Id,
     OwnerType,
@@ -8,7 +12,7 @@ pub enum LearningNotesTableIdentifier {
     VideoTimestamp,
     ContentType,
     Content,
-    EnternalUrl,
+    ExternalUrl,
     ExternalType,
     IsPublic,
     TrustLevel,
@@ -17,7 +21,9 @@ pub enum LearningNotesTableIdentifier {
     DeletedAt,
 }
 
+#[derive(Iden)]
 pub enum LearningProgressTableIdentifier {
+    #[iden = "learning_progress"]
     Table,
     Id,
     UserId,
@@ -26,7 +32,9 @@ pub enum LearningProgressTableIdentifier {
     LastAccessedAt,
 }
 
+#[derive(Iden)]
 pub enum LearningRecallSessionTableIdentifier {
+    #[iden = "learning_recall_sessions"]
     Table,
     Id,
     UserId,
@@ -36,7 +44,9 @@ pub enum LearningRecallSessionTableIdentifier {
     CompletedAt,
 }
 
+#[derive(Iden)]
 pub enum LearningRecallAnswerTableIdentifier {
+    #[iden = "learning_recall_answers"]
     Table,
     Id,
     SessionId,

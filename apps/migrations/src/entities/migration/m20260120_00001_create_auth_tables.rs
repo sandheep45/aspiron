@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 
-use crate::identifiers::auth_table::AuthTableIdentifiers;
+use crate::identifiers::auth_table::UserTableIdentifiers;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -11,41 +11,41 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(AuthTableIdentifiers::Table)
+                    .table(UserTableIdentifiers::Table)
                     .col(
-                        ColumnDef::new(AuthTableIdentifiers::Id)
+                        ColumnDef::new(UserTableIdentifiers::Id)
                             .uuid()
                             .not_null()
                             .primary_key(),
                     )
                     .col(
-                        ColumnDef::new(AuthTableIdentifiers::Email)
+                        ColumnDef::new(UserTableIdentifiers::Email)
                             .string()
                             .unique_key()
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(AuthTableIdentifiers::PasswordHash)
+                        ColumnDef::new(UserTableIdentifiers::PasswordHash)
                             .string()
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(AuthTableIdentifiers::IsActive)
+                        ColumnDef::new(UserTableIdentifiers::IsActive)
                             .boolean()
                             .default(true),
                     )
                     .col(
-                        ColumnDef::new(AuthTableIdentifiers::CreatedAt)
+                        ColumnDef::new(UserTableIdentifiers::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(AuthTableIdentifiers::UpdatedAt)
+                        ColumnDef::new(UserTableIdentifiers::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(AuthTableIdentifiers::Role)
+                        ColumnDef::new(UserTableIdentifiers::Role)
                             .custom("user_type")
                             .not_null(),
                     )
@@ -57,7 +57,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(AuthTableIdentifiers::Table).to_owned())
+            .drop_table(Table::drop().table(UserTableIdentifiers::Table).to_owned())
             .await
     }
 }

@@ -1,7 +1,8 @@
 use sea_orm_migration::prelude::*;
 
 #[derive(Iden)]
-pub enum AuthTableIdentifiers {
+pub enum UserTableIdentifiers {
+    #[iden = "user"]
     Table,
     Id,
     Email,

@@ -1,4 +1,8 @@
+use sea_orm_migration::prelude::*;
+
+#[derive(Iden)]
 pub enum CommunityThreadTableIdentifier {
+    #[iden = "community-threads"]
     Table,
     Id,
     UserId,
@@ -7,7 +11,9 @@ pub enum CommunityThreadTableIdentifier {
     CreatedAt,
 }
 
+#[derive(Iden)]
 pub enum CommunityPostsTableIdentifier {
+    #[iden = "community_posts"]
     Table,
     Id,
     ThreadId,
@@ -16,7 +22,9 @@ pub enum CommunityPostsTableIdentifier {
     CreatedAt,
 }
 
+#[derive(Iden)]
 pub enum CommunityBotEventsTableIdentifier {
+    #[iden = "community_bot_events"]
     Table,
     Id,
     ThreadId,

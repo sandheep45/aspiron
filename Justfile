@@ -176,11 +176,11 @@ build-rust:
 test-rust *ARGS:
     cargo test {{ARGS}}
 
-run-rust app:
-    cargo run -p {{app}}
+run-rust app *ARGS:
+    cargo run -p {{app}} {{ARGS}}
 
-run-rust-migration:
-    cargo run -p storage-migrations
+run-rust-migration *ARGS:
+    cargo run -p storage-migrations {{ARGS}}
 
 add-rust-dep crate package *flags:
     cargo add --package {{crate}} {{package}} {{flags}}
