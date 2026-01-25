@@ -26,10 +26,12 @@ reqwest = { version = "*", features = ["json", "native-tls"] }
 once_cell = "*"
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
+chrono = { version = "*", features = ["serde"] }
 thiserror = "*"
 tracing = "*"
 tokio = { version = "*", features = ["full"] }
 tokio-postgres = "*"
+rand = "*"
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"
