@@ -32,7 +32,16 @@ tracing = "*"
 tokio = { version = "*", features = ["full"] }
 tokio-postgres = "*"
 rand = "*"
+clap = { version = "*", features = ["derive"] }
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"
 testcontainers = "*"
+
+[features]
+seed = []
+
+[[bin]]
+name = "seed"
+path = "src/seeds/main.rs"
+required-features = ["seed"]

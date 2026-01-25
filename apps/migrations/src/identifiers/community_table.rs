@@ -2,7 +2,7 @@ use sea_orm_migration::prelude::*;
 
 #[derive(Iden)]
 pub enum CommunityThreadTableIdentifier {
-    #[iden = "community-threads"]
+    #[iden = "community_threads"]
     Table,
     Id,
     UserId,

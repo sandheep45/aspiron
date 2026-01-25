@@ -5,10 +5,16 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 # Configuration
 # ==================================================
 
-RUST_BINDINGS_CRATE := "packages/contracts-rust"
-GENERATED_TS_DIR    := "packages/dummy-lib/src"
+# Rust packages
+BACKEND_PACKAGE := "backend"
+MIGRATIONS_PACKAGE := "migrations"
 
-CACHE_DIR           := ".cache"
+# Frontend apps
+DOCUMENTATION_APP := "documentation"
+MOBILE_APP := "mobile-student"
+
+# Directories
+CACHE_DIR := ".cache"
 
 # ==================================================
 # Default / Help
@@ -139,6 +145,28 @@ dev-js-all:
     pnpm -r --parallel dev
 
 # ==================================================
+# Mobile App (Expo)
+# ==================================================
+
+dev-mobile:
+    pnpm --filter {{MOBILE_APP}} start
+
+build-mobile:
+    pnpm --filter {{MOBILE_APP}} build
+
+build-mobile-android:
+    pnpm --filter {{MOBILE_APP}} build:android
+
+build-mobile-ios:
+    pnpm --filter {{MOBILE_APP}} build:ios
+
+build-mobile-web:
+    pnpm --filter {{MOBILE_APP}} build:web
+
+test-mobile:
+    pnpm --filter {{MOBILE_APP}} test
+
+# ==================================================
 # JavaScript App Scaffolding
 # ==================================================
 
@@ -180,13 +208,31 @@ run-rust app *ARGS:
     cargo run -p {{app}} {{ARGS}}
 
 run-rust-migration *ARGS:
-    cargo run -p storage-migrations {{ARGS}}
+    cargo run -p {{MIGRATIONS_PACKAGE}} {{ARGS}}
 
 add-rust-dep crate package *flags:
     cargo add --package {{crate}} {{package}} {{flags}}
 
 add-rust-dev-dep crate package *flags:
     cargo add --package {{crate}} --dev {{package}} {{flags}}
+
+# ==================================================
+# Database Management
+# ==================================================
+
+# Migration command (unified)
+migrate *ARGS:
+    cargo run -p {{MIGRATIONS_PACKAGE}} {{ARGS}}
+
+# Database seeding (unified command)
+seed type="all" *extra_args:
+    cargo run -p {{BACKEND_PACKAGE}} --features seed --bin seed -- {{type}} --progress {{extra_args}}
+
+# Migration + seeding workflow
+fresh-db:
+    migrate -- reset
+    migrate
+    seed
 
 create-rust-app name dir="packages":
     #!/usr/bin/env bash
@@ -217,44 +263,36 @@ create-rust-app name dir="packages":
 # ==================================================
 # Rust → TypeScript Bindings (ts-rs)
 # ==================================================
+# Note: This section is preserved for future use when TypeScript bindings are needed
+# Currently disabled as no contracts-rust package exists
 
-generate-types:
-    #!/usr/bin/env bash
-    set -euo pipefail
+# generate-types:
+#     #!/usr/bin/env bash
+#     set -euo pipefail
+#     echo "TypeScript bindings generation not yet implemented"
 
-    echo "Generating TS bindings from {{RUST_BINDINGS_CRATE}}..."
-    cargo test -p contracts-rust export_bindings
-
-    echo "Refreshing {{GENERATED_TS_DIR}}..."
-    rm -rf "{{GENERATED_TS_DIR}}"/*
-    mkdir -p "{{GENERATED_TS_DIR}}"
-
-    cp -r "{{RUST_BINDINGS_CRATE}}/bindings/"* "{{GENERATED_TS_DIR}}/"
-    echo "TypeScript bindings updated."
-
-watch-types:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    cargo watch \
-        -w "{{RUST_BINDINGS_CRATE}}/src" \
-        -x "test -p contracts-rust export_bindings" \
-        -s "rm -rf {{GENERATED_TS_DIR}}/* && cp -r {{RUST_BINDINGS_CRATE}}/bindings/* {{GENERATED_TS_DIR}}/"
+# watch-types:
+#     #!/usr/bin/env bash
+#     set -euo pipefail
+#     echo "TypeScript bindings watching not yet implemented"
 
 # ==================================================
 # Workflows
 # ==================================================
 
-build-with-types: generate-types build
-test-with-types:  generate-types test
-# build-all:        generate-types build
 build-all:        build
-test-all:         generate-types test
+test-all:         test
+
+# Full development setup
+setup-dev: install migrate seed
+
+# Reset database (migrate down, up, seed)
+reset-db: fresh-db
 
 
 
 # ==================================================
-# Unified Development (Backend + Frontend)
+# Unified Development (Backend + Frontend + Mobile)
 # ==================================================
 
 dev:
@@ -269,14 +307,44 @@ dev:
 
     RUST_PID=$!
 
-    # Start all frontend apps (JS)
-    echo "[frontend] starting frontend apps..."
-    just dev-js-all &
+    # Start documentation site
+    echo "[documentation] starting documentation site..."
+    just dev-js documentation &
 
-    JS_PID=$!
+    DOC_PID=$!
+
+    # Start mobile app (if not already running)
+    echo "[mobile] starting mobile app..."
+    just dev-mobile &
+
+    MOBILE_PID=$!
+
+    # Trap Ctrl+C and forward to all processes
+    trap "echo 'Stopping development environment…'; kill $RUST_PID $DOC_PID $MOBILE_PID; wait; exit 0" INT TERM
+
+    # Wait for all processes
+    wait $RUST_PID $DOC_PID $MOBILE_PID
+
+dev-backend-frontend:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    echo "Starting backend + frontend development environment…"
+
+    # Start Rust backend
+    echo "[backend] starting Rust backend..."
+    just run-rust backend &
+
+    RUST_PID=$!
+
+    # Start documentation site
+    echo "[documentation] starting documentation site..."
+    just dev-js documentation &
+
+    DOC_PID=$!
 
     # Trap Ctrl+C and forward to both processes
-    trap "echo 'Stopping development environment…'; kill $RUST_PID $JS_PID; wait; exit 0" INT TERM
+    trap "echo 'Stopping development environment…'; kill $RUST_PID $DOC_PID; wait; exit 0" INT TERM
 
     # Wait for both processes
-    wait $RUST_PID $JS_PID
+    wait $RUST_PID $DOC_PID

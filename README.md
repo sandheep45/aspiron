@@ -21,7 +21,10 @@ Aspiron is built around the belief that **systems beat motivation**. The platfor
 |-----------|------------|
 | **Framework** | Axum 0.8 |
 | **ORM** | SeaORM 1.1 |
-| **Database** | PostgreSQL |
+| **Database** | PostgreSQL 16+ |
+| **Migrations** | SeaORM Migrations |
+| **Seeding** | Custom CLI with progress tracking |
+| **Entity Models** | Comprehensive SeaORM entities |
 | **Async Runtime** | tokio |
 | **Logging** | tracing + telemetry |
 | **Configuration** | Environment variables |
@@ -43,6 +46,17 @@ Aspiron is built around the belief that **systems beat motivation**. The platfor
 | **State Management** | TanStack Query |
 | **Theme** | Dark/Light mode support |
 
+### Mobile (React Native + Expo)
+
+| Component | Technology |
+|-----------|------------|
+| **Framework** | Expo 54+ |
+| **Navigation** | Expo Router 6+ |
+| **Language** | TypeScript |
+| **UI Components** | Expo Vector Icons |
+| **Platform Support** | iOS, Android, Web |
+| **Development** | Expo Go + Development Build |
+
 ## Project Structure
 
 ```
@@ -50,6 +64,7 @@ aspiron/
 ├── Cargo.toml                    # Rust workspace config
 ├── package.json                  # Node.js workspace config
 ├── pnpm-workspace.yaml           # pnpm monorepo config
+├── Justfile                      # Task runner commands
 ├── .env.example                  # Environment template
 ├── .github/
 │   └── workflows/                # CI/CD (future)
@@ -58,6 +73,43 @@ aspiron/
 │   │   ├── src/
 │   │   │   ├── main.rs           # Entry point
 │   │   │   ├── lib.rs            # Library exports
+│   │   │   ├── entries/          # Core business logic modules
+│   │   │   │   ├── mod.rs        # Module exports
+│   │   │   │   ├── entities/     # SeaORM entity models
+│   │   │   │   │   ├── user.rs
+│   │   │   │   │   ├── content_subject.rs
+│   │   │   │   │   ├── content_chapter.rs
+│   │   │   │   │   ├── content_topic.rs
+│   │   │   │   │   ├── content_video.rs
+│   │   │   │   │   ├── learning_progress.rs
+│   │   │   │   │   ├── learning_notes.rs
+│   │   │   │   │   ├── assessment_quiz.rs
+│   │   │   │   │   ├── assessment_question.rs
+│   │   │   │   │   ├── assessment_attempt.rs
+│   │   │   │   │   ├── community_thread.rs
+│   │   │   │   │   ├── community_post.rs
+│   │   │   │   │   ├── live_session.rs
+│   │   │   │   │   ├── live_session_recording.rs
+│   │   │   │   │   ├── notification_event.rs
+│   │   │   │   │   └── notification_log.rs
+│   │   │   │   ├── entitiy_enums/ # Database enums
+│   │   │   │   │   ├── user_types.rs
+│   │   │   │   │   ├── exam_types.rs
+│   │   │   │   │   ├── content_owner_types.rs
+│   │   │   │   │   ├── notes_content_type.rs
+│   │   │   │   │   ├── learning_recall_question_type.rs
+│   │   │   │   │   ├── learning_recall_session_status.rs
+│   │   │   │   │   ├── trust_level.rs
+│   │   │   │   │   ├── notification_event_type.rs
+│   │   │   │   │   └── notification_logs_types.rs
+│   │   │   │   ├── dtos/         # Data transfer objects
+│   │   │   │   │   ├── payload/  # Request payloads
+│   │   │   │   │   └── response/ # Response models
+│   │   │   │   └── seeds/        # Database seeding system
+│   │   │   │       ├── main.rs   # CLI entry point
+│   │   │   │       ├── runner.rs # Seeding engine
+│   │   │   │       ├── config.rs # Seeding configuration
+│   │   │   │       └── entities/ # Entity-specific seeders
 │   │   │   ├── setup/            # Foundation modules
 │   │   │   │   ├── mod.rs
 │   │   │   │   ├── config.rs     # Config loading from env
@@ -75,31 +127,55 @@ aspiron/
 │   │   └── Cargo.toml
 │   ├── migrations/               # SeaORM migrations
 │   │   ├── src/
-│   │   │   ├── lib.rs            # Entity exports
-│   │   │   └── main.rs           # Migration runner
+│   │   │   ├── lib.rs            # Migration exports
+│   │   │   ├── main.rs           # Migration runner
+│   │   │   ├── entities/
+│   │   │   │   ├── migration/    # Migration files
+│   │   │   │   │   ├── m20260120_00000_create_enums.rs
+│   │   │   │   │   ├── m20260120_00001_create_auth_tables.rs
+│   │   │   │   │   ├── m20260120_00002_create_content_tables.rs
+│   │   │   │   │   ├── m20260120_00003_create_learning_tables.rs
+│   │   │   │   │   ├── m20260120_00004_create_assessment_tables.rs
+│   │   │   │   │   ├── m20260120_00005_create_community_tables.rs
+│   │   │   │   │   ├── m20260120_00006_create_live_tables.rs
+│   │   │   │   │   └── m20260120_00007_create_notification_tables.rs
+│   │   │   │   └── identifiers/  # Table constant definitions
+│   │   │   │       ├── mod.rs
+│   │   │   │       ├── auth_table.rs
+│   │   │   │       ├── content_table.rs
+│   │   │   │       ├── learning_table.rs
+│   │   │   │       ├── assessment_table.rs
+│   │   │   │       ├── community_table.rs
+│   │   │   │       ├── live_table.rs
+│   │   │   │       └── notification_table.rs
 │   │   └── Cargo.toml
-│   └── documentation/            # SvelteKit documentation site
-│       ├── src/
-│       │   ├── app.css           # Global styles with Tailwind v4
-│       │   ├── app.html          # HTML template
-│       │   ├── lib/
-│       │   │   ├── components/   # Reusable UI components
-│       │   │   │   ├── Header.svelte
-│       │   │   │   ├── Sidebar.svelte
-│       │   │   │   ├── Callout.svelte
-│       │   │   │   └── Search.svelte
-│       │   │   ├── docs/         # Documentation content
-│       │   │   │   ├── docs.ts   # Navigation configuration
-│       │   │   │   └── *.md      # Documentation pages (26 pages)
-│       │   │   └── utils/
-│       │   │       ├── types.ts
-│       │   │       └── search-index.ts
-│       │   └── routes/
-│       │       ├── +page.svelte         # Homepage
-│       │       └── docs/[...slug]/      # Documentation pages
-│       ├── static/               # Static assets
+│   ├── documentation/            # SvelteKit documentation site
+│   │   ├── src/
+│   │   │   ├── app.css           # Global styles with Tailwind v4
+│   │   │   ├── app.html          # HTML template
+│   │   │   ├── lib/
+│   │   │   │   ├── components/   # Reusable UI components
+│   │   │   │   │   ├── Header.svelte
+│   │   │   │   │   ├── Sidebar.svelte
+│   │   │   │   │   ├── Callout.svelte
+│   │   │   │   │   └── Search.svelte
+│   │   │   │   ├── docs/         # Documentation content
+│   │   │   │   │   ├── docs.ts   # Navigation configuration
+│   │   │   │   │   └── *.md      # Documentation pages (26 pages)
+│   │   │   │   └── utils/
+│   │   │   │       ├── types.ts
+│   │   │   │       └── search-index.ts
+│   │   │   └── routes/
+│   │   │       ├── +page.svelte         # Homepage
+│   │   │       └── docs/[...slug]/      # Documentation pages
+│   │   ├── static/               # Static assets
+│   │   ├── package.json
+│   │   └── svelte.config.js
+│   └── mobile-student/          # React Native mobile app
+│       ├── app/                  # Expo Router app directory
 │       ├── package.json
-│       └── svelte.config.js
+│       ├── tsconfig.json
+│       └── expo.json (generated)
 ├── README.md
 └── AGENTS.md                     # AI agent instructions
 ```
@@ -193,14 +269,16 @@ The project includes comprehensive documentation at `/docs`:
 ### Prerequisites
 
 - Rust 1.75+ (for backend)
-- Node.js 20+ (for frontend)
+- Node.js 20+ (for frontend & mobile)
 - PostgreSQL 16+ (or Docker)
 - pnpm 9+
+- Expo Go app (for mobile development)
+- Expo CLI (optional, for advanced mobile development)
 
 ### Setup
 
 ```bash
-# Install dependencies
+# Install all dependencies (including mobile)
 pnpm install
 
 # Copy environment templates
@@ -209,23 +287,34 @@ cp apps/backend/.env.example apps/backend/.env
 # Build all apps
 pnpm build
 
-# Run development server (documentation)
+# Set up database
+just migrate-up
+just seed  # Seed development data
+
+# Start development servers
 pnpm --filter documentation run dev
 ```
 
 ### Running Individual Apps
 
 ```bash
-# Run Rust backend
-pnpm run-rust backend
-# or
-cd apps/backend && cargo run
+# Rust backend
+just run-rust backend
 
-# Run documentation site
-pnpm --filter documentation run dev
+# Documentation site
+just dev-js documentation
 
-# Run migrations
-cargo run -p migrations
+# Mobile app (requires Expo Go)
+just dev-mobile
+
+# Database operations
+just migrate-up      # Run pending migrations
+just migrate-down    # Rollback last migration
+just seed            # Seed all development data
+just seed users      # Seed only users
+just seed content    # Seed only content hierarchy
+just seed assessments # Seed only assessments
+just seed community  # Seed only community data
 ```
 
 ### Running Tests
@@ -240,6 +329,69 @@ cargo test --workspace
 # Frontend tests only
 pnpm --filter documentation run test
 ```
+
+## Database Architecture
+
+### Entity System
+
+The platform uses a comprehensive SeaORM entity system organized into logical domains:
+
+#### Core Entities
+- **User**: Student and teacher accounts with role-based access
+- **Content**: Subject → Chapter → Topic → Video hierarchy
+- **Learning**: Progress tracking, notes, and recall sessions
+- **Assessment**: Quizzes, questions, and attempt tracking
+- **Community**: Threads, posts, and bot interactions
+- **Live**: Sessions and recordings
+- **Notifications**: Events and delivery logs
+
+#### Database Enums
+- **User Types**: Student, Teacher, Admin
+- **Exam Types**: PGT, JEE, NEET, etc.
+- **Content Owner Types**: System, Teacher, Student
+- **Learning Recall Types**: Multiple choice, Numerical, Short answer
+- **Notification Types**: System, Learning, Community, Assessment
+
+### Migration System
+
+The database uses SeaORM migrations with a structured approach:
+
+```bash
+# Migration files (chronological order)
+m20260120_00000_create_enums.rs          # Database enums
+m20260120_00001_create_auth_tables.rs   # Users and sessions
+m20260120_00002_create_content_tables.rs # Content hierarchy
+m20260120_00003_create_learning_tables.rs # Learning data
+m20260120_00004_create_assessment_tables.rs # Assessments
+m20260120_00005_create_community_tables.rs # Community features
+m20260120_00006_create_live_tables.rs     # Live sessions
+m20260120_00007_create_notification_tables.rs # Notifications
+```
+
+### Seeding System
+
+A comprehensive CLI-based seeding system for development data:
+
+```bash
+# Seed all development data
+just seed
+
+# Seed specific categories
+just seed users          # User accounts
+just seed content        # Content hierarchy (subjects/chapters/topics/videos)
+just seed assessments    # Quizzes and questions
+just seed community      # Forum threads and posts
+
+# Validate data integrity
+just seed validate --deep
+```
+
+**Seeding Features:**
+- Batch processing with configurable sizes
+- Progress indicators for large datasets
+- Data integrity validation
+- Transaction-based operations
+- Modular entity-specific seeders
 
 ## Backend Documentation
 
@@ -305,13 +457,17 @@ LOG_FORMAT=pretty    # pretty (human-readable) or json
 - [x] Documentation site with 26 pages
 - [x] Categorized navigation
 
-### ⏳ Phase 2: Database (Next)
-- [ ] User entity
-- [ ] Session entity (for JWT blacklist)
-- [ ] Migration files
-- [ ] Entity sharing between crates
+### ✅ Phase 2: Database (Complete)
+- [x] Complete SeaORM entity system (15+ entities)
+- [x] Database enums (8+ enum types)
+- [x] Migration files (8 comprehensive migrations)
+- [x] Entity sharing between crates
+- [x] Comprehensive seeding system with CLI
+- [x] Data integrity validation
+- [x] Batch processing and progress tracking
+- [x] Table identifiers and relationships
 
-### ⏳ Phase 3: Authentication
+### ⏳ Phase 3: Authentication (Next)
 - [ ] JWT token creation/verification
 - [ ] Bcrypt password hashing
 - [ ] Auth routes (register, login, logout)
@@ -335,6 +491,14 @@ LOG_FORMAT=pretty    # pretty (human-readable) or json
 - [ ] GitHub Actions workflow
 - [ ] Docker build/push
 - [ ] VPS deployment
+
+### 🚀 Phase 7: Mobile App (Started)
+- [x] Expo React Native setup
+- [x] TypeScript configuration
+- [x] Navigation structure
+- [ ] Student-specific features
+- [ ] API integration
+- [ ] Offline capabilities
 
 ## License
 
