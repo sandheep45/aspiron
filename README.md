@@ -359,13 +359,22 @@ The database uses SeaORM migrations with a structured approach:
 ```bash
 # Migration files (chronological order)
 m20260120_00000_create_enums.rs          # Database enums
-m20260120_00001_create_auth_tables.rs   # Users and sessions
+m20260120_00001_create_user_tables.rs   # Users and sessions
 m20260120_00002_create_content_tables.rs # Content hierarchy
 m20260120_00003_create_learning_tables.rs # Learning data
 m20260120_00004_create_assessment_tables.rs # Assessments
 m20260120_00005_create_community_tables.rs # Community features
 m20260120_00006_create_live_tables.rs     # Live sessions
 m20260120_00007_create_notification_tables.rs # Notifications
+m20260120_00008_create_rbac_enums.rs     # RBAC enums
+m20260120_00009_create_roles_table.rs     # Roles table
+m20260120_00010_create_permissions_table.rs # Permissions table
+m20260120_00011_create_role_permissions_table.rs # Role-permission assignments
+m20260120_00012_create_user_roles_table.rs # User-role assignments
+m20260120_00013_create_audit_logs_table.rs # Audit logging
+m20260120_00014_create_resource_permissions_table.rs # Resource-level permissions
+m20260120_00015_create_user_sessions_table.rs # User sessions
+m20260120_00016_create_user_profiles_table.rs # User profiles
 ```
 
 ### Seeding System
@@ -377,16 +386,19 @@ A comprehensive CLI-based seeding system for development data:
 just seed
 
 # Seed specific categories
-just seed users          # User accounts
-just seed content        # Content hierarchy (subjects/chapters/topics/videos)
-just seed assessments    # Quizzes and questions
-just seed community      # Forum threads and posts
+just seed rbac          # RBAC system (roles, permissions, assignments)
+just seed users         # User accounts with role assignments
+just seed content       # Content hierarchy (subjects/chapters/topics/videos)
+just seed assessments   # Quizzes and questions
+just seed community     # Forum threads and posts
 
 # Validate data integrity
 just seed validate --deep
 ```
 
 **Seeding Features:**
+- RBAC system seeding with role-permission assignments
+- Automatic role assignment to users based on user type
 - Batch processing with configurable sizes
 - Progress indicators for large datasets
 - Data integrity validation

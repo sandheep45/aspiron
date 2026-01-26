@@ -9,6 +9,7 @@ use crate::entries::{exam_types::ExamTypeEnums, user_types::UserTypeEnums};
 #[derive(Debug, Clone, Default)]
 pub struct RelationshipMap {
     pub user_ids: HashMap<UserTypeEnums, Vec<Uuid>>,
+    pub role_ids: HashMap<UserTypeEnums, Uuid>,
     pub subject_ids: HashMap<ExamTypeEnums, Vec<Uuid>>,
     pub chapter_map: HashMap<Uuid, Vec<Uuid>>, // subject_id -> chapter_ids
     pub topic_map: HashMap<Uuid, Vec<Uuid>>,   // chapter_id -> topic_ids
@@ -94,7 +95,10 @@ impl<'a> SeedRunner<'a> {
 
         let txn = self.db.begin().await?;
 
-        // Phase 1: Independent entities
+        // Phase 1: RBAC system (must be seeded before users)
+        self.seed_rbac(&txn).await?;
+
+        // Phase 2: Independent entities
         self.seed_users(&txn).await?;
         self.seed_subjects(&txn).await?;
 

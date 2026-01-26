@@ -7,7 +7,6 @@ pub enum UserTableIdentifiers {
     Id,
     Email,
     PasswordHash,
-    Role,
     IsActive,
     CreatedAt,
     UpdatedAt,

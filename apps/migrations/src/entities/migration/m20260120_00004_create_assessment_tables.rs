@@ -9,8 +9,8 @@ use crate::identifiers::{
         AssessmentAttemptsTableIdentifier, AssessmentProctoringSignalTableIdentifier,
         AssessmentQuestionsTableIdentifier, AssessmentQuizzesTableIdentifier,
     },
-    auth_table::UserTableIdentifiers,
     content_table::ContentTopicTableIdentifier,
+    user_table::UserTableIdentifiers,
 };
 
 #[derive(DeriveMigrationName)]

@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use backend::seeds::{DatabaseManager, SeedConfig, SeedRunner};
+use backend::setup::telemetry;
 
 #[derive(Parser)]
 #[command(name = "seed")]
@@ -56,7 +57,7 @@ pub enum SeedCommand {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt::init();
+    telemetry::init_from_env();
 
     let cli = SeedCli::parse();
 

@@ -1,9 +1,9 @@
 use anyhow::Result;
 use bcrypt::{DEFAULT_COST, hash};
-use sea_orm::{ActiveModelTrait, DatabaseTransaction, Set};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseTransaction, EntityTrait, QueryFilter, Set};
 use uuid::Uuid;
 
-use crate::entries::entities::user;
+use crate::entries::entities::{user, user_role};
 use crate::entries::entitiy_enums::user_types::UserTypeEnums;
 use crate::seeds::runner::SeedRunner;
 
@@ -27,7 +27,6 @@ impl<'a> SeedRunner<'a> {
                 is_active: Set(true),
                 created_at: Set(chrono::Utc::now().into()),
                 updated_at: Set(chrono::Utc::now().into()),
-                role: Set(UserTypeEnums::ADMIN),
             };
 
             user_model.insert(txn).await?;
@@ -48,7 +47,6 @@ impl<'a> SeedRunner<'a> {
                 is_active: Set(true),
                 created_at: Set(chrono::Utc::now().into()),
                 updated_at: Set(chrono::Utc::now().into()),
-                role: Set(UserTypeEnums::TEACHER),
             };
 
             user_model.insert(txn).await?;
@@ -69,12 +67,19 @@ impl<'a> SeedRunner<'a> {
                 is_active: Set(true),
                 created_at: Set(chrono::Utc::now().into()),
                 updated_at: Set(chrono::Utc::now().into()),
-                role: Set(UserTypeEnums::STUDENT),
             };
 
             user_model.insert(txn).await?;
             student_ids.push(user_id);
         }
+
+        // Assign roles to users
+        self.assign_roles_to_users(txn, &admin_ids, UserTypeEnums::ADMIN)
+            .await?;
+        self.assign_roles_to_users(txn, &teacher_ids, UserTypeEnums::TEACHER)
+            .await?;
+        self.assign_roles_to_users(txn, &student_ids, UserTypeEnums::STUDENT)
+            .await?;
 
         // Store in relationship map
         self.relationship_map
@@ -88,7 +93,48 @@ impl<'a> SeedRunner<'a> {
             .insert(UserTypeEnums::STUDENT, student_ids);
 
         if self.config.show_progress {
-            println!("✅ Seeded 43 users (3 admins, 10 teachers, 30 students)");
+            println!(
+                "✅ Seeded 43 users (3 admins, 10 teachers, 30 students) with role assignments"
+            );
+        }
+
+        Ok(())
+    }
+
+    async fn assign_roles_to_users(
+        &mut self,
+        txn: &DatabaseTransaction,
+        user_ids: &[Uuid],
+        user_type: UserTypeEnums,
+    ) -> Result<()> {
+        // Get the role ID for this user type
+        let role_id = *self
+            .relationship_map
+            .role_ids
+            .get(&user_type)
+            .ok_or_else(|| anyhow::anyhow!("Role ID not found for user type: {:?}", user_type))?;
+
+        for &user_id in user_ids {
+            // Check if user role already exists
+            let existing_user_role = user_role::Entity::find()
+                .filter(user_role::Column::UserId.eq(user_id))
+                .filter(user_role::Column::RoleId.eq(role_id))
+                .one(txn)
+                .await?;
+
+            if existing_user_role.is_none() {
+                let user_role_model = user_role::ActiveModel {
+                    id: Set(Uuid::new_v4()),
+                    user_id: Set(user_id),
+                    role_id: Set(role_id),
+                    assigned_by: Set(None), // System assignment
+                    assigned_at: Set(chrono::Utc::now().into()),
+                    expires_at: Set(None), // No expiration
+                    is_active: Set(true),
+                };
+
+                user_role_model.insert(txn).await?;
+            }
         }
 
         Ok(())

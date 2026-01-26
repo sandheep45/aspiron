@@ -1,4 +1,3 @@
-use crate::entries::entitiy_enums::user_types::UserTypeEnums;
 use sea_orm::prelude::DateTimeWithTimeZone;
 use sea_orm::*;
 use uuid::Uuid;
@@ -14,7 +13,6 @@ pub struct Model {
     pub is_active: bool,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
-    pub role: UserTypeEnums,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

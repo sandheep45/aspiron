@@ -17,4 +17,8 @@ pub mod live_session;
 pub mod live_session_recording;
 pub mod notification_event;
 pub mod notification_log;
+pub mod permission;
+pub mod role;
+pub mod role_permission;
 pub mod user;
+pub mod user_role;

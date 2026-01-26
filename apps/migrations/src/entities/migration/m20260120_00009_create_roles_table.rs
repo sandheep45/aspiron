@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 
-use crate::identifiers::auth_table::UserTableIdentifiers;
+use crate::identifiers::rbac_table::RoleTableIdentifiers;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -11,43 +11,41 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(UserTableIdentifiers::Table)
+                    .table(RoleTableIdentifiers::Table)
                     .col(
-                        ColumnDef::new(UserTableIdentifiers::Id)
+                        ColumnDef::new(RoleTableIdentifiers::Id)
                             .uuid()
                             .not_null()
                             .primary_key(),
                     )
                     .col(
-                        ColumnDef::new(UserTableIdentifiers::Email)
-                            .string()
-                            .unique_key()
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(UserTableIdentifiers::PasswordHash)
-                            .string()
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(UserTableIdentifiers::IsActive)
-                            .boolean()
-                            .default(true),
-                    )
-                    .col(
-                        ColumnDef::new(UserTableIdentifiers::CreatedAt)
-                            .timestamp_with_time_zone()
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(UserTableIdentifiers::UpdatedAt)
-                            .timestamp_with_time_zone()
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(UserTableIdentifiers::Role)
+                        ColumnDef::new(RoleTableIdentifiers::Name)
                             .custom("user_type")
+                            .not_null()
+                            .unique_key(),
+                    )
+                    .col(
+                        ColumnDef::new(RoleTableIdentifiers::DisplayName)
+                            .string()
                             .not_null(),
+                    )
+                    .col(ColumnDef::new(RoleTableIdentifiers::Description).text())
+                    .col(
+                        ColumnDef::new(RoleTableIdentifiers::IsSystemRole)
+                            .boolean()
+                            .default(false),
+                    )
+                    .col(
+                        ColumnDef::new(RoleTableIdentifiers::CreatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        ColumnDef::new(RoleTableIdentifiers::UpdatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
                     )
                     .if_not_exists()
                     .to_owned(),
@@ -57,7 +55,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(UserTableIdentifiers::Table).to_owned())
+            .drop_table(Table::drop().table(RoleTableIdentifiers::Table).to_owned())
             .await
     }
 }

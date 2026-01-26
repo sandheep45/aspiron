@@ -5,11 +5,11 @@ use sea_orm_migration::{
 };
 
 use crate::identifiers::{
-    auth_table::UserTableIdentifiers,
     community_table::{
         CommunityBotEventsTableIdentifier, CommunityPostsTableIdentifier,
         CommunityThreadTableIdentifier,
     },
+    user_table::UserTableIdentifiers,
 };
 
 #[derive(DeriveMigrationName)]

@@ -9,6 +9,7 @@ tower = { version = "*", features = ["util", "filter"] }
 tower-http = { version = "*", features = ["cors", "trace", "request-id"] }
 jsonwebtoken = { version = "*", features = ["rust_crypto"] }
 sea-orm = { version = "*", features = [
+  "debug-print",
   "runtime-tokio-native-tls",
   "with-uuid",
   "mock",

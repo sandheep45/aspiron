@@ -5,12 +5,12 @@ use sea_orm_migration::{
 };
 
 use crate::identifiers::{
-    auth_table::UserTableIdentifiers,
     content_table::{ContentTopicTableIdentifier, ContentVideoTableIdentifier},
     learning_table::{
         LearningNotesTableIdentifier, LearningProgressTableIdentifier,
         LearningRecallAnswerTableIdentifier, LearningRecallSessionTableIdentifier,
     },
+    user_table::UserTableIdentifiers,
 };
 
 #[derive(DeriveMigrationName)]
