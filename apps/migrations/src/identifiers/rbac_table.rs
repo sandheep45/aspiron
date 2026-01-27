@@ -30,6 +30,7 @@ pub enum PermissionTableIdentifiers {
 pub enum RolePermissionTableIdentifiers {
     #[iden = "role_permissions"]
     Table,
+    Id,
     RoleId,
     PermissionId,
     CreatedAt,
@@ -39,6 +40,7 @@ pub enum RolePermissionTableIdentifiers {
 pub enum UserRoleTableIdentifiers {
     #[iden = "user_roles"]
     Table,
+    Id,
     UserId,
     RoleId,
     AssignedBy,

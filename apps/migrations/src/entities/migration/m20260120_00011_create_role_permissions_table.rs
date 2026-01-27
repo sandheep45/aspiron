@@ -13,6 +13,12 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(RolePermissionTableIdentifiers::Table)
                     .col(
+                        ColumnDef::new(RolePermissionTableIdentifiers::Id)
+                            .uuid()
+                            .primary_key()
+                            .not_null(),
+                    )
+                    .col(
                         ColumnDef::new(RolePermissionTableIdentifiers::RoleId)
                             .uuid()
                             .not_null(),

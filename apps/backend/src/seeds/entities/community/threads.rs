@@ -1,4 +1,5 @@
 use anyhow::Result;
+use rand::{Rng, thread_rng};
 use sea_orm::{ActiveModelTrait, DatabaseTransaction, Set};
 use uuid::Uuid;
 
@@ -31,7 +32,7 @@ impl<'a> SeedRunner<'a> {
                             "Thread {}: {} Discussion",
                             thread_num,
                             ["Help with", "Question about", "Doubt in", "Tips for"]
-                                [rand::random::<usize>() % 4]
+                                [thread_rng().gen_range(0..4)]
                         );
 
                         let thread_model = community_thread::ActiveModel {

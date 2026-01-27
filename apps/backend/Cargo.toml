@@ -32,8 +32,9 @@ thiserror = "*"
 tracing = "*"
 tokio = { version = "*", features = ["full"] }
 tokio-postgres = "*"
-rand = "*"
+rand = "0.8"
 clap = { version = "*", features = ["derive"] }
+fake = { version = "2.9", features = ["derive", "uuid", "chrono"] }
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"

@@ -14,17 +14,11 @@ impl<'a> SeedRunner<'a> {
             println!("🔐 Seeding RBAC system...");
         }
 
-        // Step 1: Create default roles
         let role_ids = self.seed_default_roles(txn).await?;
-
-        // Step 2: Create default permissions
         let permission_ids = self.seed_default_permissions(txn).await?;
-
-        // Step 3: Assign permissions to roles
         self.seed_role_permissions(txn, &role_ids, &permission_ids)
             .await?;
 
-        // Store role IDs for use in user seeder
         self.relationship_map
             .role_ids
             .insert(UserTypeEnums::STUDENT, role_ids[&UserTypeEnums::STUDENT]);
@@ -63,7 +57,6 @@ impl<'a> SeedRunner<'a> {
         ];
 
         for (user_type, display_name, description) in roles {
-            // Check if role already exists using string comparison
             let existing_role = role::Entity::find()
                 .filter(role::Column::Name.eq(user_type))
                 .one(txn)
@@ -82,7 +75,6 @@ impl<'a> SeedRunner<'a> {
                     created_at: Set(chrono::Utc::now().into()),
                     updated_at: Set(chrono::Utc::now().into()),
                 };
-
                 let inserted = role_model.insert(txn).await?;
                 inserted.id
             };
@@ -183,7 +175,7 @@ impl<'a> SeedRunner<'a> {
             (
                 "assessment.view.any.results",
                 ResourceTypeEnum::ASSESSMENT,
-                ActionTypeEnum::ViewResults,
+                ActionTypeEnum::ViewAnyResults,
                 "View any user assessment results",
             ),
             (
@@ -280,14 +272,27 @@ impl<'a> SeedRunner<'a> {
         ];
 
         for (name, resource_type, action, description) in permissions {
-            // Check if permission already exists
+            // ✅ FIXED: Clone enums before use to prevent move errors
+            let resource_type_lookup = resource_type.clone();
+            let action_lookup = action.clone();
+
             let existing_permission = permission::Entity::find()
-                .filter(permission::Column::Name.eq(name))
+                .filter(permission::Column::ResourceType.eq(resource_type_lookup))
+                .filter(permission::Column::Action.eq(action_lookup))
                 .one(txn)
                 .await?;
 
-            let permission_id = if let Some(existing) = existing_permission {
-                existing.id
+            let permission_id = if let Some(existing) = &existing_permission {
+                // ✅ FIXED: Clone ID before move into ActiveModel
+                let existing_id = existing.id;
+
+                let mut model: permission::ActiveModel = (*existing).clone().into();
+                model.name = Set(name.to_string());
+                model.description = Set(Some(description.to_string()));
+                model.updated_at = Set(chrono::Utc::now().into());
+
+                model.update(txn).await?;
+                existing_id
             } else {
                 let permission_id = Uuid::new_v4();
                 let permission_model = permission::ActiveModel {
@@ -299,7 +304,6 @@ impl<'a> SeedRunner<'a> {
                     created_at: Set(chrono::Utc::now().into()),
                     updated_at: Set(chrono::Utc::now().into()),
                 };
-
                 let inserted = permission_model.insert(txn).await?;
                 inserted.id
             };
@@ -316,7 +320,6 @@ impl<'a> SeedRunner<'a> {
         role_ids: &std::collections::HashMap<UserTypeEnums, Uuid>,
         permission_ids: &std::collections::HashMap<String, Uuid>,
     ) -> Result<()> {
-        // Student permissions (6 permissions)
         let student_permissions = vec![
             "content.create",
             "content.read",
@@ -326,7 +329,6 @@ impl<'a> SeedRunner<'a> {
             "community.post.own",
         ];
 
-        // Teacher permissions (17 total permissions - student + 11 additional)
         let teacher_permissions = vec![
             "content.create",
             "content.read",
@@ -350,30 +352,22 @@ impl<'a> SeedRunner<'a> {
             "community.read.all",
         ];
 
-        // Admin permissions (all permissions)
-        let admin_permission_strings: Vec<String> = permission_ids.keys().cloned().collect();
+        let admin_permissions: Vec<&str> = permission_ids.keys().map(|s| s.as_str()).collect();
 
-        let admin_permissions: Vec<&str> = admin_permission_strings
-            .iter()
-            .map(|s| s.as_str())
-            .collect();
-
-        // Assign permissions to roles
-        let role_assignments = vec![
+        let role_assignments = [
             (UserTypeEnums::STUDENT, student_permissions),
             (UserTypeEnums::TEACHER, teacher_permissions),
             (UserTypeEnums::ADMIN, admin_permissions),
         ];
 
-        for (user_type, permission_names) in role_assignments {
-            let role_id = role_ids[&user_type];
+        for (user_type, permission_names) in role_assignments.iter() {
+            let role_id = role_ids[user_type];
 
-            for permission_name in permission_names {
-                if let Some(permission_id) = permission_ids.get(permission_name) {
-                    // Check if role permission already exists
+            for permission_name in permission_names.iter() {
+                if let Some(&permission_id) = permission_ids.get(*permission_name) {
                     let existing_rp = role_permission::Entity::find()
                         .filter(role_permission::Column::RoleId.eq(role_id))
-                        .filter(role_permission::Column::PermissionId.eq(*permission_id))
+                        .filter(role_permission::Column::PermissionId.eq(permission_id))
                         .one(txn)
                         .await?;
 
@@ -381,10 +375,9 @@ impl<'a> SeedRunner<'a> {
                         let rp_model = role_permission::ActiveModel {
                             id: Set(Uuid::new_v4()),
                             role_id: Set(role_id),
-                            permission_id: Set(*permission_id),
+                            permission_id: Set(permission_id),
                             created_at: Set(chrono::Utc::now().into()),
                         };
-
                         rp_model.insert(txn).await?;
                     }
                 }

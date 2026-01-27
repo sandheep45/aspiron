@@ -1,4 +1,5 @@
 use anyhow::Result;
+use rand::{Rng, thread_rng};
 use sea_orm::{ActiveModelTrait, DatabaseTransaction, Set};
 use uuid::Uuid;
 
@@ -32,7 +33,7 @@ impl<'a> SeedRunner<'a> {
                                 "Advanced",
                                 "Comprehensive",
                                 "Final"
-                            ][rand::random::<usize>() % 5]
+                            ][thread_rng().gen_range(0..5)]
                         );
 
                         let quiz_model = assessment_quiz::ActiveModel {

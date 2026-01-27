@@ -22,12 +22,18 @@ pub enum SeedCommand {
         /// Show progress indicators
         #[arg(long)]
         progress: bool,
+        /// Password generation strategy
+        #[arg(long, default_value = "fixed")]
+        password_strategy: String,
     },
     /// Seed only users
     Users {
         /// Show progress indicators
         #[arg(long)]
         progress: bool,
+        /// Password generation strategy
+        #[arg(long, default_value = "fixed")]
+        password_strategy: String,
     },
     /// Seed only content hierarchy
     Content {
@@ -57,7 +63,8 @@ pub enum SeedCommand {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    telemetry::init_from_env();
+    // Initialize telemetry safely for seed utility
+    telemetry::init(&telemetry::TracingConfig::default());
 
     let cli = SeedCli::parse();
 
@@ -65,7 +72,13 @@ async fn main() -> Result<()> {
         SeedCommand::All {
             batch_size,
             progress,
+            password_strategy,
         } => {
+            // Set password strategy environment variable
+            unsafe {
+                std::env::set_var("SEED_PASSWORD_STRATEGY", password_strategy);
+            }
+
             let config = SeedConfig::development()
                 .with_batch_size(batch_size)
                 .with_progress(progress);
@@ -74,7 +87,13 @@ async fn main() -> Result<()> {
             let mut runner = SeedRunner::new(db_manager.get_connection(), config).await?;
             runner.run_complete_seed().await?;
         }
-        SeedCommand::Users { progress } => {
+        SeedCommand::Users {
+            progress,
+            password_strategy,
+        } => {
+            unsafe {
+                std::env::set_var("SEED_PASSWORD_STRATEGY", password_strategy);
+            }
             let config = SeedConfig::development().with_progress(progress);
             let db_manager = DatabaseManager::new(&config).await?;
             let mut runner = SeedRunner::new(db_manager.get_connection(), config).await?;

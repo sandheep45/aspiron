@@ -1,4 +1,5 @@
 use anyhow::Result;
+use rand::{Rng, thread_rng};
 use sea_orm::{DatabaseConnection, DatabaseTransaction, TransactionTrait};
 use std::collections::HashMap;
 use tracing::info;
@@ -28,7 +29,7 @@ impl RelationshipMap {
             if ids.is_empty() {
                 None
             } else {
-                Some(ids[rand::random::<usize>() % ids.len()])
+                Some(ids[thread_rng().gen_range(0..ids.len())])
             }
         })
     }

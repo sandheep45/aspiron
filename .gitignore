@@ -183,3 +183,6 @@ out/
 
 # Biome
 biome.json
+
+# Password files - never commit
+/apps/backend/src/seeds/generated_passwords.json

@@ -35,6 +35,8 @@ pub enum ActionTypeEnum {
     TAKE,
     #[sea_orm(string_value = "VIEW_RESULTS")]
     ViewResults,
+    #[sea_orm(string_value = "VIEW_ANY_RESULTS")]
+    ViewAnyResults,
     #[sea_orm(string_value = "ASSIGN_ROLES")]
     AssignRoles,
     #[sea_orm(string_value = "VIEW_ANALYTICS")]

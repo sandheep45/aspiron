@@ -1,4 +1,6 @@
 use anyhow::Result;
+use rand::Rng;
+use rand::thread_rng;
 use sea_orm::{ActiveModelTrait, DatabaseTransaction, Set};
 use serde_json::json;
 use uuid::Uuid;
@@ -26,10 +28,9 @@ impl<'a> SeedRunner<'a> {
                         question_num
                     );
                     let options = json!(["Option A", "Option B", "Option C", "Option D"]);
-                    let correct_answer = format!(
-                        "Option {}",
-                        ['A', 'B', 'C', 'D'][rand::random::<usize>() % 4]
-                    );
+                    let correct_option_index = thread_rng().gen_range(0..4);
+                    let correct_answer =
+                        format!("Option {}", ['A', 'B', 'C', 'D'][correct_option_index]);
 
                     let question_model = assessment_question::ActiveModel {
                         id: Set(question_id),

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use rand::{Rng, thread_rng};
 use sea_orm::{ActiveModelTrait, DatabaseTransaction, Set};
 use uuid::Uuid;
 
@@ -17,7 +18,7 @@ impl<'a> SeedRunner<'a> {
         // For each topic, create 4-8 videos
         for topic_ids in self.relationship_map.topic_map.values() {
             for topic_id in topic_ids {
-                let num_videos = 4 + (rand::random::<u32>() % 5); // 4-8 videos
+                let num_videos = 4 + (thread_rng().gen_range(0..5)); // 4-8 videos
                 let mut video_ids = Vec::new();
 
                 for video_num in 1..=num_videos {
@@ -30,7 +31,7 @@ impl<'a> SeedRunner<'a> {
                             "Concept Explanation",
                             "Problem Solving",
                             "Advanced Topics"
-                        ][rand::random::<usize>() % 4]
+                        ][thread_rng().gen_range(0..4)]
                     );
 
                     let video_model = content_video::ActiveModel {
