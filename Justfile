@@ -228,9 +228,19 @@ migrate *ARGS:
 seed type="all" *extra_args:
     cargo run -p {{BACKEND_PACKAGE}} --features seed --bin seed -- {{type}} --progress {{extra_args}}
 
+# Database Management Commands:
+# To setup fresh db:  just migrate && just seed
+# To reset db:       just reset-db
+# Or use workflow:     just fresh-db
+
 # Migration + seeding workflow
 fresh-db:
     migrate -- reset
+    migrate
+    seed
+
+# Setup fresh database (new workflow)
+setup-db:
     migrate
     seed
 
@@ -286,7 +296,7 @@ test-all:         test
 # Full development setup
 setup-dev: install migrate seed
 
-# Reset database (migrate down, up, seed)
+# Reset database (full reset workflow)
 reset-db: fresh-db
 
 

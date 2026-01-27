@@ -288,7 +288,7 @@ cp apps/backend/.env.example apps/backend/.env
 pnpm build
 
 # Set up database
-just migrate-up
+just migrate
 just seed  # Seed development data
 
 # Start development servers
@@ -307,14 +307,39 @@ just dev-js documentation
 # Mobile app (requires Expo Go)
 just dev-mobile
 
-# Database operations
-just migrate-up      # Run pending migrations
-just migrate-down    # Rollback last migration
+# Database Setup & Operations
+
+## Quick Start Commands
+```bash
+# To setup fresh database:
+just migrate
+just seed
+
+# To reset database completely:
+just migrate -- reset
+just migrate
+just seed
+
+# Or use the convenience workflow:
+just fresh-db  # Does all three commands above
+```
+
+## Individual Commands
+```bash
+just migrate         # Run pending migrations (or any migration command)
 just seed            # Seed all development data
-just seed users      # Seed only users
-just seed content    # Seed only content hierarchy
-just seed assessments # Seed only assessments
-just seed community  # Seed only community data
+just seed rbac       # Seed RBAC system (roles, permissions, assignments)
+just seed users       # Seed only users with role assignments
+just seed content     # Seed only content hierarchy (subjects/chapters/topics/videos)
+just seed assessments # Seed only quizzes and questions
+just seed community   # Seed only forum threads and posts
+```
+
+## Setup Workflows
+```bash
+just fresh-db        # Reset database (migrate reset + migrate + seed)
+just setup-dev       # Full development setup (install + migrate + seed)
+```
 ```
 
 ### Running Tests
