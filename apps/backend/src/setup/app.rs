@@ -1,6 +1,9 @@
 use std::sync::{Arc, LazyLock, RwLock};
 
-use crate::{routes, setup::config::Config, setup::openapi};
+use crate::{
+    routes::api_v1_router,
+    setup::{config::Config, openapi},
+};
 use sea_orm::DatabaseConnection;
 
 pub static ROUTE_REGISTRY: LazyLock<RwLock<RouteRegistry>> =
@@ -81,18 +84,20 @@ impl AppState {
     }
 }
 
+const API_V1_PREFIX: &str = "/api/v1";
+
 pub fn create_app() -> axum::Router {
     let router = axum::Router::new()
         .route(
             "/api-docs/openapi.json",
             axum::routing::get(openapi::openapi_json),
         )
-        .nest("/api", routes::health::router())
+        .nest(API_V1_PREFIX, api_v1_router())
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(tower_http::cors::CorsLayer::permissive());
 
     let mut registry = ROUTE_REGISTRY.write().unwrap();
-    registry.register("GET", "/api/health");
+    registry.register("GET", "/api/v1/health");
     registry.register("GET", "/api-docs/openapi.json");
     drop(registry);
 
