@@ -268,12 +268,77 @@ The project includes comprehensive documentation at `/docs`:
 
 ### Prerequisites
 
-- Rust 1.75+ (for backend)
-- Node.js 20+ (for frontend & mobile)
-- PostgreSQL 16+ (or Docker)
-- pnpm 9+
-- Expo Go app (for mobile development)
-- Expo CLI (optional, for advanced mobile development)
+#### Required Tools
+
+- **Rust 1.75+** - Backend runtime and compilation
+- **Node.js 20+** - Frontend and mobile development toolchain
+- **PostgreSQL 16+** - Primary database (or use Docker)
+- **pnpm 9+** - Monorepo package manager
+- **Just** - Task runner for common development commands
+
+#### Development Tools
+
+- **Docker & Docker Compose** (Recommended) - For easy database setup
+  ```bash
+  # Alternative to local PostgreSQL installation
+  docker-compose up -d postgres
+  ```
+
+#### Mobile Development
+
+- **Expo Go App** (iOS/Android) - For testing mobile app development
+  - Available on App Store and Google Play Store
+- **Expo CLI** (Optional) - For advanced mobile development features
+  ```bash
+  npm install -g @expo/cli
+  ```
+
+#### Version Verification
+
+Verify your setup with these commands:
+```bash
+# Rust toolchain
+rustc --version    # Should be 1.75+
+cargo --version
+
+# Node.js ecosystem
+node --version      # Should be 20+
+pnpm --version      # Should be 9+
+
+# Database
+psql --version      # Should be 16+  (if using local PostgreSQL)
+docker --version    # If using Docker
+
+# Task runner
+just --version
+
+# Optional mobile tools
+npx expo --version  # If Expo CLI installed
+```
+
+#### Installation Quick Reference
+
+```bash
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Install Node.js (using fnm for version management)
+curl -fsSL https://fnm.vercel.app/install | bash
+fnm install 20
+fnm use 20
+
+# Install pnpm
+npm install -g pnpm@latest
+
+# Install Just (Ubuntu/Debian)
+sudo apt install just
+
+# Install Just (macOS)
+brew install just
+
+# Install Docker & Docker Compose
+# Visit: https://docs.docker.com/get-docker/
+```
 
 ### Setup
 
