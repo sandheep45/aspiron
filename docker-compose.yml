@@ -11,5 +11,52 @@ services:
       - meili_data_aspiron:/data.ms
     restart: unless-stopped
 
+  postgres:
+    image: postgres:trixie
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_data_aspiron:/var/lib/postgresql
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data_aspiron:/var/lib/pgadmin
+
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-aspiron}"
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566" # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559" # external services port range
+    environment:
+      # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
+      - DEBUG=${DEBUG:-0}
+    volumes:
+      - localstack_data_aspiron:/var/lib/localstack
+      # - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   meili_data_aspiron:
+  pgadmin_data_aspiron:
+  localstack_data_aspiron:
+  postgres_data_aspiron:
