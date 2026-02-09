@@ -5,6 +5,6 @@ import type { UserResponse } from './UserResponse'
 
 export type MeResponse = {
   user: UserResponse
-  roles: RoleResponse[]
-  permissions: PermissionResponse[]
+  roles: Array<RoleResponse>
+  permissions: Array<PermissionResponse>
 }

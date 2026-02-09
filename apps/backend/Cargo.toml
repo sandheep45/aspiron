@@ -32,9 +32,16 @@ thiserror = "*"
 tracing = "*"
 tokio = { version = "*", features = ["full"] }
 tokio-postgres = "*"
-rand = "0.8"
+rand = "*"
 clap = { version = "*", features = ["derive"] }
-fake = { version = "2.9", features = ["derive", "uuid", "chrono"] }
+fake = { version = "*", features = ["derive", "uuid", "chrono"] }
+ts-rs = { version = "*", features = [
+  "serde-compat",
+  "chrono-impl",
+  "uuid-impl",
+  "serde-json-impl",
+  "format",
+] }
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"
@@ -47,3 +54,7 @@ seed = []
 name = "seed"
 path = "src/seeds/main.rs"
 required-features = ["seed"]
+
+# [[bin]]
+# name = "export-types"
+# path = "src/export_types.rs"
