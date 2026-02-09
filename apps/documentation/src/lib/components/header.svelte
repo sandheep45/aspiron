@@ -27,8 +27,8 @@ let searchResults = $state<Hit[]>([])
 let isSearching = $state(false)
 
 const client = new MeiliSearch({
-  host: 'http://localhost:7700',
-  apiKey: 'aSampleMasterKey', // In production, use env var
+  host: import.meta.env.VITE_MEILI_HOST || 'http://localhost:7700',
+  apiKey: import.meta.env.VITE_MEILI_API_KEY || 'aSampleMasterKey',
 })
 
 async function performSearch(query: string) {

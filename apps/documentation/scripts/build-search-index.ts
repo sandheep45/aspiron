@@ -54,6 +54,7 @@ console.log(`Generated search index with ${entries.length} documents`)
 // Index into MeiliSearch
 const meiliHost = process.env.MEILI_HOST || 'http://localhost:7700'
 const meiliKey = process.env.MEILI_MASTER_KEY || 'aSampleMasterKey'
+const shouldIndex = process.env.MEILI_INDEX_ENABLED === 'true'
 
 const client = new MeiliSearch({
   host: meiliHost,
@@ -61,6 +62,13 @@ const client = new MeiliSearch({
 })
 
 async function indexDocs() {
+  if (!shouldIndex) {
+    console.log(
+      'Skipping MeiliSearch indexing (set MEILI_INDEX_ENABLED=true to enable)',
+    )
+    return
+  }
+
   try {
     const index = client.index('docs')
     await index.addDocuments(entries)
