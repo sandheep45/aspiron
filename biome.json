@@ -12,7 +12,8 @@
       "!**/storybook-static",
       "!**/target",
       "!**/.svelte-kit",
-      "!**/generated-types"
+      "!**/generated-types",
+      "!**/routeTree.gen.ts"
     ],
     "ignoreUnknown": true
   },
