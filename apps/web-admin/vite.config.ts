@@ -12,6 +12,12 @@ const config = defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query'],
+  },
+  ssr: {
+    noExternal: ['@aspiron/tanstack-client'],
+  },
   plugins: [
     devtools(),
     // this is the plugin that enables path aliases

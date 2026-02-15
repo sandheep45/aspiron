@@ -21,9 +21,19 @@ export default defineConfig({
       fileName: 'tanstack-client',
     },
     rollupOptions: {
-      external: [],
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        '@tanstack/react-query',
+      ],
       output: {
-        globals: {},
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+          'react/jsx-runtime': 'jsxRuntime',
+          '@tanstack/react-query': 'ReactQuery',
+        },
       },
     },
   },

@@ -1,3 +1,4 @@
+import { useTestQuery } from '@aspiron/tanstack-client'
 import { createFileRoute } from '@tanstack/react-router'
 import {
   Route as RouteIcon,
@@ -49,6 +50,10 @@ function App() {
         'Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.',
     },
   ]
+
+  const query = useTestQuery()
+
+  console.log(query.data, query.isLoading)
 
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900'>
