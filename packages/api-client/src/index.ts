@@ -4,7 +4,6 @@
 export * from './client/auth'
 export * from './client/axios-instance'
 // Configuration
-export * from './config/env'
 export * from './generated-types'
 export * from './services/assignments.service'
 // Services

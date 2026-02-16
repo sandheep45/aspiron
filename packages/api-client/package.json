@@ -22,6 +22,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aspiron/config": "workspace:*",
     "axios": "^1.6.0"
   },
   "devDependencies": {

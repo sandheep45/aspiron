@@ -1,3 +1,5 @@
+use axum::http::{HeaderValue, Method};
+use axum::routing::get;
 use std::sync::{Arc, LazyLock, RwLock};
 
 use crate::{
@@ -5,6 +7,7 @@ use crate::{
     setup::{config::Config, openapi},
 };
 use sea_orm::DatabaseConnection;
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 pub static ROUTE_REGISTRY: LazyLock<RwLock<RouteRegistry>> =
     LazyLock::new(|| RwLock::new(RouteRegistry::new()));
@@ -87,15 +90,26 @@ impl AppState {
 const API_V1_PREFIX: &str = "/api/v1";
 
 pub fn create_app() -> axum::Router {
-    let router = axum::Router::new()
-        .route(
-            "/api-docs/openapi.json",
-            axum::routing::get(openapi::openapi_json),
-        )
-        .nest(API_V1_PREFIX, api_v1_router())
-        .layer(tower_http::trace::TraceLayer::new_for_http())
-        .layer(tower_http::cors::CorsLayer::permissive());
+    // CORS configuration
+    let cors = CorsLayer::new()
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS, // required for preflight
+        ])
+        // .allow_headers(Any)
+        .allow_credentials(true); // required if frontend uses cookies/auth
 
+    let router = axum::Router::new()
+        .route("/api-docs/openapi.json", get(openapi::openapi_json))
+        .nest(API_V1_PREFIX, api_v1_router())
+        .layer(TraceLayer::new_for_http())
+        .layer(cors); // only ONE cors layer
+
+    // Optional: route registry
     let mut registry = ROUTE_REGISTRY.write().unwrap();
     registry.register("GET", "/api/v1/health");
     registry.register("GET", "/api-docs/openapi.json");

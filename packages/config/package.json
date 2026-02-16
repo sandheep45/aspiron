@@ -1,0 +1,28 @@
+{
+  "name": "@aspiron/config",
+  "private": false,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/env.ts",
+  "types": "./src/env.ts",
+  "exports": {
+    ".": {
+      "import": "./src/env.ts",
+      "types": "./src/env.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "^0.12.0",
+    "dotenv": "^16.5.0"
+  },
+  "peerDependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "typescript": "~5.9.3"
+  }
+}

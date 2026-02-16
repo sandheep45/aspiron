@@ -2,14 +2,14 @@
  * Axios instance configuration with interceptors
  */
 
+import { env } from '@aspiron/config'
 import axios, { type AxiosInstance } from 'axios'
 import { defaultAuthStrategy } from '@/client/auth'
-import { envConfig } from '@/config/env'
 
 export const createAxiosInstance = (): AxiosInstance => {
   const instance = axios.create({
-    baseURL: envConfig.API_BASE_URL,
-    timeout: envConfig.API_TIMEOUT,
+    baseURL: env.VITE_API_BASE_URL,
+    timeout: 10000,
     headers: {
       'Content-Type': 'application/json',
     },
