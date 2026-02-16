@@ -9,6 +9,10 @@
     ".": {
       "import": "./src/env.ts",
       "types": "./src/env.ts"
+    },
+    "./global-constant": {
+      "import": "./src/global-constant.ts",
+      "types": "./src/global-constant.ts"
     }
   },
   "scripts": {

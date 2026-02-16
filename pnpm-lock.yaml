@@ -205,6 +205,9 @@ importers:
 
   apps/web-admin:
     dependencies:
+      '@aspiron/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@aspiron/tanstack-client':
         specifier: workspace:*
         version: link:../../packages/tanstack-client

@@ -1,8 +1,10 @@
+import { PUBLIC_ENV_PREFIX } from '@aspiron/config/global-constant'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
+  envPrefix: [PUBLIC_ENV_PREFIX],
   plugins: [
     dts({
       insertTypesEntry: true,

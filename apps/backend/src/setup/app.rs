@@ -1,3 +1,4 @@
+use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
 use axum::http::{HeaderValue, Method};
 use axum::routing::get;
 use std::sync::{Arc, LazyLock, RwLock};
@@ -100,7 +101,7 @@ pub fn create_app() -> axum::Router {
             Method::DELETE,
             Method::OPTIONS, // required for preflight
         ])
-        // .allow_headers(Any)
+        .allow_headers([CONTENT_TYPE, AUTHORIZATION])
         .allow_credentials(true); // required if frontend uses cookies/auth
 
     let router = axum::Router::new()

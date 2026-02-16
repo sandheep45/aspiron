@@ -22,7 +22,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aspiron/api-client": "workspace:*"
+    "@aspiron/api-client": "workspace:*",
+    "@aspiron/config": "workspace:*"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.17.15",

@@ -8,7 +8,7 @@ import { defaultAuthStrategy } from '@/client/auth'
 
 export const createAxiosInstance = (): AxiosInstance => {
   const instance = axios.create({
-    baseURL: env.VITE_API_BASE_URL,
+    baseURL: env.PUBLIC_API_BASE_URL,
     timeout: 10000,
     headers: {
       'Content-Type': 'application/json',

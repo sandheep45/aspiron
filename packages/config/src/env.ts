@@ -1,11 +1,12 @@
 import { createEnv } from '@t3-oss/env-core'
 import { z } from 'zod'
+import { PUBLIC_ENV_PREFIX } from './global-constant'
 
 export const env = createEnv({
-  clientPrefix: 'VITE_',
+  clientPrefix: PUBLIC_ENV_PREFIX,
 
   client: {
-    VITE_API_BASE_URL: z.string().url().optional(),
+    PUBLIC_API_BASE_URL: z.string().url(),
   },
 
   server: {

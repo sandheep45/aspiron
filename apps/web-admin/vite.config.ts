@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
+import { PUBLIC_ENV_PREFIX } from '@aspiron/config/global-constant'
 import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
@@ -7,8 +8,7 @@ import { defineConfig } from 'vite'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 
 const config = defineConfig({
-  envDir: '../../',
-  envPrefix: ['VITE_', 'APP_'],
+  envPrefix: [PUBLIC_ENV_PREFIX],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
