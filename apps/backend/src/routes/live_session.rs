@@ -6,8 +6,9 @@ use axum::{
 use crate::services::live_session::{
     fetch_recoreded_live_sessions, fetch_upcomming_live_classes, join_live_class_by_id,
 };
+use crate::setup::app::AppState;
 
-pub fn router() -> Router {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route(
             "/live/classes/{class_id}/recording",

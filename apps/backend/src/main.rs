@@ -12,13 +12,13 @@ async fn main() -> Result<(), anyhow::Error> {
     let config = config::Config::from_env();
     tracing::info!("Configuration loaded successfully");
 
-    let app = app::create_app(&config);
-    app::print_routes();
-
     let db = connect_to_database(&config).await?;
     tracing::info!("Database connected successfully");
 
-    let state = app::AppState::new(Arc::new(config), db);
+    let state = app::AppState::new(Arc::new(config.clone()), db);
+
+    let app = app::create_app(&config).with_state(state.clone());
+    app::print_routes();
 
     let addr = state.config.app.addr();
 

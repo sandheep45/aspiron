@@ -9,7 +9,9 @@ pub mod notification;
 pub mod rbac;
 pub mod users;
 
-pub fn api_v1_router() -> axum::Router {
+use crate::setup::app::AppState;
+
+pub fn api_v1_router() -> axum::Router<AppState> {
     axum::Router::new()
         .merge(health::router())
         .merge(auth::router())

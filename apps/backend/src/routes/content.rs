@@ -12,8 +12,9 @@ use crate::services::{
     },
     learning::notes::get_teachers_notes_from_topic_id,
 };
+use crate::setup::app::AppState;
 
-pub fn router() -> Router {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route("/subjects", get(get_all_subjects()))
         .route(

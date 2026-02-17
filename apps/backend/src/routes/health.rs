@@ -1,3 +1,4 @@
+use crate::setup::app::AppState;
 use axum::{Json, Router, routing::get};
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -25,6 +26,6 @@ pub async fn health() -> Json<HealthResponse> {
     })
 }
 
-pub fn router() -> Router {
+pub fn router() -> Router<AppState> {
     Router::new().route("/health", get(health))
 }

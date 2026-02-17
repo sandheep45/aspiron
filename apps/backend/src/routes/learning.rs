@@ -11,8 +11,9 @@ use crate::services::learning::{
         submit_recall_mcq,
     },
 };
+use crate::setup::app::AppState;
 
-pub fn router() -> Router {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route("/notes", get(get_all_notes()))
         .route("/notes", post(create_note()))

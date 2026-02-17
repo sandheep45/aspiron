@@ -88,7 +88,7 @@ impl AppState {
     }
 }
 
-pub fn create_app(config: &Config) -> axum::Router {
+pub fn create_app(config: &Config) -> axum::Router<AppState> {
     let api_v1_prefix = config.app.api_version.clone();
 
     let cors_origins: Vec<HeaderValue> = config

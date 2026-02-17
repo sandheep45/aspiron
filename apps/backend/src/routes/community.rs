@@ -7,8 +7,9 @@ use crate::services::community::{
     attached_notes_to_thread, create_community_posts, create_community_thread,
     fetch_community_threads_by_id, fetch_community_threads_per_topic,
 };
+use crate::setup::app::AppState;
 
-pub fn router() -> Router {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route("/community/threads", post(create_community_thread()))
         .route(
