@@ -2,8 +2,17 @@
  * QueryProvider component with default TanStack Query configuration
  */
 
+import type { AxiosConfigOptions } from '@aspiron/api-client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { createContext, useContext } from 'react'
+
+// Context for axios config
+const AxiosConfigContext = createContext<AxiosConfigOptions | null>(null)
+
+export const useAxiosConfig = (): AxiosConfigOptions | null => {
+  return useContext(AxiosConfigContext)
+}
 
 // Default query client configuration
 const createDefaultQueryClient = () => {
@@ -37,17 +46,24 @@ const createDefaultQueryClient = () => {
 interface QueryProviderProps {
   children: ReactNode
   client?: QueryClient
+  axiosConfig?: AxiosConfigOptions
 }
 
 /**
  * QueryProvider wraps your app with TanStack Query client
  * Uses default configuration but allows consumers to pass custom client
+ * and axios config options
  */
 export const QueryProvider: React.FC<QueryProviderProps> = ({
   children,
   client = createDefaultQueryClient(),
+  axiosConfig,
 }) => {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  return (
+    <AxiosConfigContext.Provider value={axiosConfig || null}>
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    </AxiosConfigContext.Provider>
+  )
 }
 
 // Export the query client factory for consumers who want to customize

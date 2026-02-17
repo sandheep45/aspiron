@@ -3,18 +3,36 @@
  */
 
 import { env } from '@aspiron/config'
-import axios, { type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { defaultAuthStrategy } from '@/client/auth'
 
-export const createAxiosInstance = (): AxiosInstance => {
-  const instance = axios.create({
-    baseURL: env.PUBLIC_API_BASE_URL,
-    timeout: 10000,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    withCredentials: true, // Enable cookies for cookie-based auth
-  })
+export interface AxiosConfigOptions extends AxiosRequestConfig {
+  // Custom options if needed
+}
+
+export interface ServiceOptions {
+  axiosConfig?: AxiosConfigOptions
+}
+
+const defaultConfig: AxiosRequestConfig = {
+  baseURL: env.PUBLIC_API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true,
+}
+
+const createAxiosInstanceWithConfig = (
+  config?: AxiosRequestConfig,
+): AxiosInstance => {
+  const mergedConfig = { ...defaultConfig, ...config }
+  // Deep merge headers
+  if (config?.headers) {
+    mergedConfig.headers = { ...defaultConfig.headers, ...config.headers }
+  }
+
+  const instance = axios.create(mergedConfig)
 
   // Request interceptor
   instance.interceptors.request.use(
@@ -49,7 +67,12 @@ export const createAxiosInstance = (): AxiosInstance => {
 }
 
 // Default axios instance
-export const apiClient = createAxiosInstance()
+export const apiClient = createAxiosInstanceWithConfig()
+
+// Factory function for creating custom instances
+export const createApiClient = (config?: AxiosConfigOptions): AxiosInstance => {
+  return createAxiosInstanceWithConfig(config)
+}
 
 // Export the instance for consumers who want to customize it
 export { axios }

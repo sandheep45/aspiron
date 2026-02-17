@@ -5,10 +5,12 @@ export * from './client/auth'
 export * from './client/axios-instance'
 // Configuration
 export * from './generated-types'
-export * from './services/assignments.service'
 // Services
-export { authService, type User } from './services/auth.service'
-export * from './services/courses.service'
-export * from './services/users.service'
+export {
+  authService,
+  type LoginRequest,
+  type LoginResponse,
+  type User,
+} from './services/auth.service'
 // Utilities
 export * from './utils/error-handler'

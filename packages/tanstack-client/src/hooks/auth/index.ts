@@ -2,96 +2,34 @@
  * Authentication hooks using TanStack Query
  */
 
-import { authService, type LoginRequest, type User } from '@aspiron/api-client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/types/query-keys'
+import {
+  type AxiosConfigOptions,
+  authService,
+  type LoginRequest,
+  type LoginResponse,
+} from '@aspiron/api-client'
+import { type UseMutationOptions, useMutation } from '@tanstack/react-query'
+import { useAxiosConfig } from '@/providers/QueryProvider'
 
-// Types
-export interface UseAuthReturn {
-  user: User | undefined
-  isLoading: boolean
-  isError: boolean
-  error: Error | null
-  refetch: () => void
-}
-
-export interface UseLoginReturn {
-  login: (credentials: LoginRequest) => Promise<unknown>
-  isPending: boolean
-  isError: boolean
-  error: Error | null
-}
-
-export interface UseLogoutReturn {
-  logout: () => Promise<unknown>
-  isPending: boolean
-}
-
-/**
- * Hook to get current authenticated user
- */
-export const useAuth = (): UseAuthReturn => {
-  const {
-    data: user,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: queryKeys.auth.currentUser(),
-    queryFn: authService.getCurrentUser,
-    retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
-
-  return {
-    user,
-    isLoading,
-    isError,
-    error: error as Error | null,
-    refetch,
-  }
+export interface UseLoginOptions
+  extends Omit<
+    UseMutationOptions<LoginResponse, Error, LoginRequest, unknown>,
+    'mutationFn'
+  > {
+  axiosConfig?: AxiosConfigOptions
 }
 
 /**
  * Hook for user login
  */
-export const useLogin = (): UseLoginReturn => {
-  const queryClient = useQueryClient()
+export const useLogin = (options?: UseLoginOptions) => {
+  const providerAxiosConfig = useAxiosConfig()
 
-  const mutation = useMutation({
-    mutationFn: authService.login,
-    onSuccess: (_data) => {
-      // Invalidate and refetch current user
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.currentUser() })
-      // Could also prefetch user data here
+  return useMutation<LoginResponse, Error, LoginRequest, unknown>({
+    ...options,
+    mutationFn: (data: LoginRequest) => {
+      const config = options?.axiosConfig || providerAxiosConfig || undefined
+      return authService.login(data, { axiosConfig: config })
     },
   })
-
-  return {
-    login: mutation.mutateAsync,
-    isPending: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error as Error | null,
-  }
-}
-
-/**
- * Hook for user logout
- */
-export const useLogout = (): UseLogoutReturn => {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    mutationFn: authService.logout,
-    onSuccess: () => {
-      // Clear all cached data on logout
-      queryClient.clear()
-    },
-  })
-
-  return {
-    logout: mutation.mutateAsync,
-    isPending: mutation.isPending,
-  }
 }
