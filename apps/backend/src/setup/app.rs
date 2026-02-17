@@ -88,33 +88,44 @@ impl AppState {
     }
 }
 
-const API_V1_PREFIX: &str = "/api/v1";
+pub fn create_app(config: &Config) -> axum::Router {
+    let api_v1_prefix = config.app.api_version.clone();
 
-pub fn create_app() -> axum::Router {
-    // CORS configuration
+    let cors_origins: Vec<HeaderValue> = config
+        .cors
+        .origins
+        .iter()
+        .map(|origin| {
+            origin
+                .parse::<HeaderValue>()
+                .expect("Invalid CORS origin in CORS_ORIGINS")
+        })
+        .collect();
+
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_origin(cors_origins)
         .allow_methods([
             Method::GET,
             Method::POST,
             Method::PUT,
             Method::DELETE,
-            Method::OPTIONS, // required for preflight
+            Method::OPTIONS,
         ])
         .allow_headers([CONTENT_TYPE, AUTHORIZATION])
-        .allow_credentials(true); // required if frontend uses cookies/auth
+        .allow_credentials(true);
 
     let router = axum::Router::new()
         .route("/api-docs/openapi.json", get(openapi::openapi_json))
-        .nest(API_V1_PREFIX, api_v1_router())
+        .nest(&api_v1_prefix, api_v1_router())
         .layer(TraceLayer::new_for_http())
-        .layer(cors); // only ONE cors layer
+        .layer(cors);
 
     // Optional: route registry
-    let mut registry = ROUTE_REGISTRY.write().unwrap();
-    registry.register("GET", "/api/v1/health");
-    registry.register("GET", "/api-docs/openapi.json");
-    drop(registry);
+    {
+        let mut registry = ROUTE_REGISTRY.write().unwrap();
+        registry.register("GET", "/api/v1/health");
+        registry.register("GET", "/api-docs/openapi.json");
+    }
 
     router
 }

@@ -12,7 +12,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let config = config::Config::from_env();
     tracing::info!("Configuration loaded successfully");
 
-    let app = app::create_app();
+    let app = app::create_app(&config);
     app::print_routes();
 
     let db = connect_to_database(&config).await?;

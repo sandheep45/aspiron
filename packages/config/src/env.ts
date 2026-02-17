@@ -6,7 +6,8 @@ export const env = createEnv({
   clientPrefix: PUBLIC_ENV_PREFIX,
 
   client: {
-    PUBLIC_API_BASE_URL: z.string().url(),
+    PUBLIC_API_BASE_URL: z.string(),
+    PUBLIC_BACKEND_URL: z.string().url(),
   },
 
   server: {
@@ -15,6 +16,8 @@ export const env = createEnv({
     APP_ENV: z
       .enum(['development', 'staging', 'production'])
       .default('development'),
+
+    CORS_ORIGINS: z.string(),
 
     DATABASE_URL: z.string().url(),
     DATABASE_POOL_SIZE: z.coerce.number(),

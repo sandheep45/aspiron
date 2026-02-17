@@ -6,6 +6,7 @@ pub struct Config {
     pub database: DatabaseConfig,
     pub jwt: JwtConfig,
     pub logging: LoggingConfig,
+    pub cors: CorsConfig,
 }
 
 #[derive(Debug, Clone)]
@@ -13,6 +14,7 @@ pub struct AppConfig {
     pub host: String,
     pub port: u16,
     pub env: String,
+    pub api_version: String,
 }
 
 impl AppConfig {
@@ -49,6 +51,11 @@ pub struct LoggingConfig {
     pub format: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct CorsConfig {
+    pub origins: Vec<String>,
+}
+
 impl Config {
     pub fn from_env() -> Self {
         Config {
@@ -65,6 +72,8 @@ impl Config {
                     eprintln!("APP_ENV not set, using 'development'");
                     "development".to_string()
                 }),
+                api_version: std::env::var("PUBLIC_ACTIVE_API_VERSION")
+                    .expect("PUBLIC_ACTIVE_API_VERSION environment variable is not set"),
             },
             database: DatabaseConfig {
                 host: std::env::var("DATABASE_HOST").unwrap_or_else(|_| {
@@ -115,6 +124,13 @@ impl Config {
                     eprintln!("LOG_FORMAT not set, using 'json'");
                     "json".to_string()
                 }),
+            },
+            cors: CorsConfig {
+                origins: std::env::var("CORS_ORIGINS")
+                    .expect("CORS_ORIGINS environment variable is not set")
+                    .split(',')
+                    .map(|s| s.to_string())
+                    .collect(),
             },
         }
     }
