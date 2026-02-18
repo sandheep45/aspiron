@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button'
 export const Route = createFileRoute('/')({ component: App })
 
 function App() {
-  const { login } = useLogin()
+  const { mutate } = useLogin()
   return (
     <div>
       Hello
       <Button
         onClick={() => {
-          login({
+          mutate({
             email: 'barbara_turner.1@admin.aspiron',
             password: 'admin123',
           })

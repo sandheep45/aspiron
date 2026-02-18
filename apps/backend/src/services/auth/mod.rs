@@ -1,17 +1,28 @@
 use axum::Json as ResponseJson;
 use axum::extract::Json;
 use axum::extract::State;
+use axum::http::HeaderMap;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use tracing::info;
 
+use crate::constants::AllowedClientType;
 use crate::entries::entities::user::Entity as UserEntity;
 use crate::entries::payload::LoginRequest;
 use crate::setup::app::AppState;
 
+#[axum::debug_handler]
 pub async fn authenticate_user(
     State(state): State<AppState>,
+    headers: HeaderMap,
     Json(login_payload): Json<LoginRequest>,
 ) -> ResponseJson<bool> {
+    let client_type = headers
+        .get("x-client-type")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.parse::<AllowedClientType>().ok());
+
+    info!("Client type: {:?}", client_type);
+
     let db = state.db.as_ref();
 
     match UserEntity::find()

@@ -108,9 +108,6 @@ importers:
       '@aspiron/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
-      '@aspiron/config':
-        specifier: workspace:*
-        version: link:../../packages/config
       '@aspiron/tanstack-client':
         specifier: workspace:*
         version: link:../../packages/tanstack-client

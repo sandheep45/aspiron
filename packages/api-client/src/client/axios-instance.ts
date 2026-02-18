@@ -5,20 +5,25 @@
 import { env } from '@aspiron/config'
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { defaultAuthStrategy } from '@/client/auth'
+import type { AllowedClientType } from '@/generated-types'
 
-export interface AxiosConfigOptions extends AxiosRequestConfig {
-  // Custom options if needed
+export interface AxiosConfigOptions
+  extends Omit<AxiosRequestConfig, 'headers'> {
+  headers: AxiosRequestConfig['headers'] & {
+    'X-client-type': AllowedClientType
+  }
 }
 
 export interface ServiceOptions {
   axiosConfig?: AxiosConfigOptions
 }
 
-const defaultConfig: AxiosRequestConfig = {
+const defaultConfig: AxiosConfigOptions = {
   baseURL: env.PUBLIC_API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'X-client-type': 'BROWSER',
   },
   withCredentials: true,
 }

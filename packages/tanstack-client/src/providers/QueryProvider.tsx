@@ -5,13 +5,13 @@
 import type { AxiosConfigOptions } from '@aspiron/api-client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { createContext, useContext } from 'react'
+import { createContext, use } from 'react'
 
 // Context for axios config
 const AxiosConfigContext = createContext<AxiosConfigOptions | null>(null)
 
 export const useAxiosConfig = (): AxiosConfigOptions | null => {
-  return useContext(AxiosConfigContext)
+  return use(AxiosConfigContext)
 }
 
 // Default query client configuration

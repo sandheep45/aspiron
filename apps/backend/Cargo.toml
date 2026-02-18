@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+async-trait = "*"
 axum = { version = "*", features = ["macros"] }
 tower = { version = "*", features = ["util", "filter"] }
 tower-http = { version = "*", features = ["cors", "trace", "request-id"] }

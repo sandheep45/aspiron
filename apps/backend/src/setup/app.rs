@@ -1,8 +1,10 @@
 use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
-use axum::http::{HeaderValue, Method};
+use axum::http::{HeaderName, HeaderValue, Method};
+use axum::middleware;
 use axum::routing::get;
 use std::sync::{Arc, LazyLock, RwLock};
 
+use crate::middleware::auth::authenticate;
 use crate::{
     routes::api_v1_router,
     setup::{config::Config, openapi},
@@ -111,13 +113,18 @@ pub fn create_app(config: &Config) -> axum::Router<AppState> {
             Method::DELETE,
             Method::OPTIONS,
         ])
-        .allow_headers([CONTENT_TYPE, AUTHORIZATION])
+        .allow_headers([
+            CONTENT_TYPE,
+            AUTHORIZATION,
+            HeaderName::from_static("x-client-type"),
+        ])
         .allow_credentials(true);
 
     let router = axum::Router::new()
         .route("/api-docs/openapi.json", get(openapi::openapi_json))
         .nest(&api_v1_prefix, api_v1_router())
         .layer(TraceLayer::new_for_http())
+        .layer(middleware::from_fn(authenticate))
         .layer(cors);
 
     // Optional: route registry
