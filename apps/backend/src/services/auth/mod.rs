@@ -1,53 +1,67 @@
+pub mod helpers;
+
 use axum::Json as ResponseJson;
 use axum::extract::Json;
 use axum::extract::State;
 use axum::http::HeaderMap;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
-use tracing::info;
+use axum::http::header::SET_COOKIE;
+use axum::response::IntoResponse;
+use cookie::time::Duration;
 
 use crate::constants::AllowedClientType;
-use crate::entries::entities::user::Entity as UserEntity;
 use crate::entries::payload::LoginRequest;
+use crate::services::auth::helpers::{
+    build_auth_response, build_token_cookie, generate_tokens, validate_credentials,
+};
 use crate::setup::app::AppState;
+use crate::setup::error::AppError;
 
 #[axum::debug_handler]
 pub async fn authenticate_user(
     State(state): State<AppState>,
     headers: HeaderMap,
     Json(login_payload): Json<LoginRequest>,
-) -> ResponseJson<bool> {
+) -> Result<impl IntoResponse, AppError> {
     let client_type = headers
         .get("x-client-type")
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.parse::<AllowedClientType>().ok());
 
-    info!("Client type: {:?}", client_type);
-
     let db = state.db.as_ref();
 
-    match UserEntity::find()
-        .filter(crate::entries::entities::user::Column::Email.eq(&login_payload.email))
-        .one(db)
-        .await
-    {
-        Ok(Some(user)) => {
-            info!(
-                "Authenticated user: id={}, email={}, is_active={}",
-                user.id, user.email, user.is_active
-            );
-        }
-        Ok(None) => {
-            info!(
-                "Login attempt for non-existent email: {}",
-                login_payload.email
-            );
-        }
-        Err(e) => {
-            info!("Database error during login: {}", e);
-        }
-    }
+    let user = validate_credentials(db, &login_payload.email, &login_payload.password).await?;
 
-    ResponseJson(true)
+    let jwt_secret = &state.config.jwt.secret;
+    let (access_token, refresh_token) = generate_tokens(&user.id.to_string(), jwt_secret)?;
+
+    let auth_response = build_auth_response(access_token.clone(), refresh_token.clone(), user);
+
+    match client_type {
+        Some(AllowedClientType::BROWSER) => {
+            let cookie_name = state.config.jwt.cookie_name.clone();
+            let is_development = state.config.app.env == "development";
+
+            let access_cookie =
+                build_token_cookie(cookie_name.clone(), access_token, Duration::hours(1), is_development);
+            let refresh_cookie = build_token_cookie(
+                format!("{}_refresh", cookie_name),
+                refresh_token,
+                Duration::days(7),
+                is_development,
+            );
+
+            let mut response = ResponseJson(auth_response).into_response();
+            response
+                .headers_mut()
+                .append(SET_COOKIE, access_cookie.to_string().parse().unwrap());
+            response
+                .headers_mut()
+                .append(SET_COOKIE, refresh_cookie.to_string().parse().unwrap());
+
+            Ok(response)
+        }
+        Some(AllowedClientType::MOBILE) | None => Ok(ResponseJson(auth_response).into_response()),
+    }
 }
 
 pub async fn get_me() -> ResponseJson<bool> {
