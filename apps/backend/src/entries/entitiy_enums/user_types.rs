@@ -1,6 +1,7 @@
 use sea_orm::{DeriveActiveEnum, DeriveIden, EnumIter};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+use utoipa::ToSchema;
 
 #[derive(
     Debug,
@@ -15,6 +16,7 @@ use ts_rs::TS;
     Hash,
     Deserialize,
     TS,
+    ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "user_type")]
 #[ts(export, rename = "UserTypeEnums")]

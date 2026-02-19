@@ -15,8 +15,27 @@ use crate::services::auth::helpers::{
 };
 use crate::setup::app::AppState;
 use crate::setup::error::AppError;
+use utoipa::ToSchema;
+
+#[derive(serde::Serialize, ToSchema)]
+pub struct AuthResponse {
+    #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
+    pub access_token: String,
+    #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
+    pub refresh_token: String,
+    pub user: serde_json::Value,
+}
 
 #[axum::debug_handler]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/login",
+    tag = "Auth",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "User authenticated successfully", body = AuthResponse)
+    )
+)]
 pub async fn authenticate_user(
     State(state): State<AppState>,
     headers: HeaderMap,
@@ -64,14 +83,38 @@ pub async fn authenticate_user(
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/auth/me",
+    tag = "Auth",
+    responses(
+        (status = 200, description = "Get current user")
+    )
+)]
 pub async fn get_me() -> ResponseJson<bool> {
     ResponseJson(true)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/auth/refresh-token",
+    tag = "Auth",
+    responses(
+        (status = 200, description = "Refresh access token")
+    )
+)]
 pub async fn refresh_token() -> ResponseJson<bool> {
     ResponseJson(true)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/auth/register-user",
+    tag = "Auth",
+    responses(
+        (status = 200, description = "Register a new user")
+    )
+)]
 pub async fn register_user() -> ResponseJson<bool> {
     ResponseJson(true)
 }

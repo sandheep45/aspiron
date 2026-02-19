@@ -130,8 +130,45 @@ pub fn create_app(config: &Config) -> axum::Router<AppState> {
     // Optional: route registry
     {
         let mut registry = ROUTE_REGISTRY.write().unwrap();
-        registry.register("GET", "/api/v1/health");
         registry.register("GET", "/api-docs/openapi.json");
+        registry.register("GET", "/api/v1/health");
+        registry.register("POST", "/api/v1/auth/login");
+        registry.register("GET", "/api/v1/auth/refresh-token");
+        registry.register("GET", "/api/v1/auth/register-user");
+        registry.register("GET", "/api/v1/auth/me");
+        registry.register("GET", "/api/v1/topics/{topic_id}/quizzes");
+        registry.register("GET", "/api/v1/quizzes/{quiz_id}");
+        registry.register("POST", "/api/v1/quizzes/{quiz_id}/attempts");
+        registry.register("POST", "/api/v1/attempts/{attempt_id}/submit");
+        registry.register("GET", "/api/v1/attempts/{attempt_id}/result");
+        registry.register("POST", "/api/v1/community/threads");
+        registry.register("GET", "/api/v1/community/topics/{topic_id}/threads");
+        registry.register("GET", "/api/v1/community/threads/{thread_id}");
+        registry.register("POST", "/api/v1/community/threads/{thread_id}/posts");
+        registry.register("POST", "/api/v1/community/threads/{thread_id}/attach-note");
+        registry.register("GET", "/api/v1/subjects");
+        registry.register("GET", "/api/v1/subjects/{subject_id}/chapters");
+        registry.register("GET", "/api/v1/chapters/{chapter_id}/topics");
+        registry.register("GET", "/api/v1/topics/{topic_id}");
+        registry.register("GET", "/api/v1/topics/{topic_id}/videos");
+        registry.register("GET", "/api/v1/topics/{topic_id}/notes/official");
+        registry.register("GET", "/api/v1/videos/{video_id}/offline-token");
+        registry.register("GET", "/api/v1/videos/{video_id}/playback-token");
+        registry.register("GET", "/api/v1/notes");
+        registry.register("POST", "/api/v1/notes");
+        registry.register("PATCH", "/api/v1/notes/{note_id}");
+        registry.register("DELETE", "/api/v1/notes/{note_id}");
+        registry.register("POST", "/api/v1/progress/update");
+        registry.register("DELETE", "/api/v1/progress/summary");
+        registry.register("POST", "/api/v1/recall/start");
+        registry.register("GET", "/api/v1/recall/{session_id}/mcqs");
+        registry.register("POST", "/api/v1/recall/{session_id}/mcqs/submit");
+        registry.register("GET", "/api/v1/recall/{session_id}/result");
+        registry.register("GET", "/api/v1/live/classes/{class_id}/recording");
+        registry.register("POST", "/api/v1/live/classes/{class_id}/join");
+        registry.register("GET", "/api/v1/live/classes/upcoming");
+        registry.register("GET", "/api/v1/notifications");
+        registry.register("POST", "/api/v1/notifications/status");
     }
 
     router
