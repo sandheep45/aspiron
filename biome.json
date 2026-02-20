@@ -83,6 +83,16 @@
   },
   "overrides": [
     {
+      "includes": ["apps/web-admin/src/routes/api/auth/$.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/global.css"],
       "linter": {
         "rules": {

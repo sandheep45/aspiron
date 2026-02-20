@@ -1,18 +1,28 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router'
+import type { QueryClient } from '@tanstack/react-query'
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  Scripts,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import Header from '../components/Header'
+import type { AuthSession } from 'start-authjs'
+import { ThemeProvider } from '@/components/theme-provider'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { fetchSession } from '@/lib/auth'
 import appCss from '../styles.css?url'
 
 interface RouterContext {
-  session: AuthSession | null;
-  queryClient: QueryClient;
+  session: AuthSession | null
+  queryClient: QueryClient
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
-    const session = await fetchSession();
-    return session;
+    const session = await fetchSession()
+    return session
   },
   head: () => ({
     meta: [
@@ -44,8 +54,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <Header />
-        {children}
+        <ThemeProvider defaultTheme='dark'>
+          <TooltipProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </TooltipProvider>
+        </ThemeProvider>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
@@ -54,6 +67,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             {
               name: 'Tanstack Router',
               render: <TanStackRouterDevtoolsPanel />,
+            },
+            {
+              name: 'TanStack Query',
+              render: <ReactQueryDevtoolsPanel />,
             },
           ]}
         />
