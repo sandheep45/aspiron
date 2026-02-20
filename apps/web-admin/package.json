@@ -9,8 +9,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@aspiron/tanstack-client": "workspace:*",
     "@aspiron/config": "workspace:*",
+    "@aspiron/tanstack-client": "workspace:*",
+    "@auth/core": "^0.41.1",
     "@base-ui/react": "^1.2.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "^0.7.0",
@@ -25,12 +26,14 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "start-authjs": "^1.0.2",
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^4.1.18",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "^0.3.11",
+    "@tanstack/react-query-devtools": "^5.91.3",
     "@tanstack/react-router-ssr-query": "^1.131.7",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
