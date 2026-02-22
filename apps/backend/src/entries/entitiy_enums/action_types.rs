@@ -1,3 +1,5 @@
+use std::fmt;
+
 use sea_orm::{DeriveActiveEnum, DeriveIden, EnumIter};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -63,4 +65,26 @@ pub enum ActionTypeEnum {
     #[sea_orm(string_value = "AUDIT")]
     #[ts(rename = "AUDIT")]
     AUDIT,
+}
+
+impl fmt::Display for ActionTypeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ActionTypeEnum::CREATE => write!(f, "CREATE"),
+            ActionTypeEnum::READ => write!(f, "READ"),
+            ActionTypeEnum::UPDATE => write!(f, "UPDATE"),
+            ActionTypeEnum::DELETE => write!(f, "DELETE"),
+            ActionTypeEnum::MANAGE => write!(f, "MANAGE"),
+            ActionTypeEnum::PUBLISH => write!(f, "PUBLISH"),
+            ActionTypeEnum::MODERATE => write!(f, "MODERATE"),
+            ActionTypeEnum::GRADE => write!(f, "GRADE"),
+            ActionTypeEnum::TAKE => write!(f, "TAKE"),
+            ActionTypeEnum::ViewResults => write!(f, "VIEW_RESULTS"),
+            ActionTypeEnum::ViewAnyResults => write!(f, "VIEW_ANY_RESULTS"),
+            ActionTypeEnum::AssignRoles => write!(f, "ASSIGN_ROLES"),
+            ActionTypeEnum::ViewAnalytics => write!(f, "VIEW_ANALYTICS"),
+            ActionTypeEnum::ManageSettings => write!(f, "MANAGE_SETTINGS"),
+            ActionTypeEnum::AUDIT => write!(f, "AUDIT"),
+        }
+    }
 }

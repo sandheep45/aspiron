@@ -1,3 +1,5 @@
+use std::fmt;
+
 use sea_orm::{DeriveActiveEnum, DeriveIden, EnumIter};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -60,4 +62,25 @@ pub enum ResourceTypeEnum {
     #[sea_orm(string_value = "NOTE")]
     #[ts(rename = "NOTE")]
     NOTE,
+}
+
+impl fmt::Display for ResourceTypeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ResourceTypeEnum::USER => write!(f, "USER"),
+            ResourceTypeEnum::CONTENT => write!(f, "CONTENT"),
+            ResourceTypeEnum::ASSESSMENT => write!(f, "ASSESSMENT"),
+            ResourceTypeEnum::COMMUNITY => write!(f, "COMMUNITY"),
+            ResourceTypeEnum::SYSTEM => write!(f, "SYSTEM"),
+            ResourceTypeEnum::SUBJECT => write!(f, "SUBJECT"),
+            ResourceTypeEnum::CHAPTER => write!(f, "CHAPTER"),
+            ResourceTypeEnum::TOPIC => write!(f, "TOPIC"),
+            ResourceTypeEnum::VIDEO => write!(f, "VIDEO"),
+            ResourceTypeEnum::QUIZ => write!(f, "QUIZ"),
+            ResourceTypeEnum::QUESTION => write!(f, "QUESTION"),
+            ResourceTypeEnum::THREAD => write!(f, "THREAD"),
+            ResourceTypeEnum::POST => write!(f, "POST"),
+            ResourceTypeEnum::NOTE => write!(f, "NOTE"),
+        }
+    }
 }
