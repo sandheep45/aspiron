@@ -138,3 +138,23 @@ code {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .bg-app-gradient {
+    @apply bg-linear-to-br from-slate-100 via-white to-slate-100;
+  }
+
+  .dark .bg-app-gradient {
+    @apply from-slate-950 via-slate-900 to-slate-950;
+  }
+}
+
+@layer components {
+  .bg-sidebar-gradient {
+    @apply bg-slate-900/40 backdrop-blur-xl border-r border-slate-800/50 flex flex-col;
+  }
+
+  .dark .bg-sidebar-gradient {
+    @apply bg-slate-900/40 backdrop-blur-xl border-r border-slate-800/50 flex flex-col;
+  }
+}

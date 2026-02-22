@@ -60,8 +60,12 @@ pub async fn authenticate_user(
             let cookie_name = state.config.jwt.cookie_name.clone();
             let is_development = state.config.app.env == "development";
 
-            let access_cookie =
-                build_token_cookie(cookie_name.clone(), access_token, Duration::hours(1), is_development);
+            let access_cookie = build_token_cookie(
+                cookie_name.clone(),
+                access_token,
+                Duration::hours(1),
+                is_development,
+            );
             let refresh_cookie = build_token_cookie(
                 format!("{}_refresh", cookie_name),
                 refresh_token,
