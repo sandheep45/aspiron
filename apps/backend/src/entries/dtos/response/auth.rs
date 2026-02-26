@@ -13,7 +13,39 @@ pub struct AuthResponse {
     pub refresh_token: String,
     pub token_type: String,
     pub expires_in: i64,
-    pub user: UserResponse,
+    pub user: AuthUserResponse,
+    pub roles: Vec<AuthRoleResponse>,
+    pub permissions: Vec<AuthPermissionResponse>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, rename = "AuthUserResponse")]
+pub struct AuthUserResponse {
+    pub id: Uuid,
+    pub email: String,
+    pub is_active: bool,
+    #[ts(type = "Date")]
+    pub created_at: DateTimeWithTimeZone,
+    #[ts(type = "Date")]
+    pub updated_at: DateTimeWithTimeZone,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, rename = "AuthRoleResponse")]
+pub struct AuthRoleResponse {
+    pub name: UserTypeEnums,
+    pub display_name: String,
+    pub description: Option<String>,
+    pub is_system_role: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, rename = "AuthPermissionResponse")]
+pub struct AuthPermissionResponse {
+    pub name: String,
+    pub resource_type: ResourceTypeEnum,
+    pub action: ActionTypeEnum,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

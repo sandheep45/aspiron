@@ -18,7 +18,7 @@ use crate::setup::error::AppError;
 use utoipa::ToSchema;
 
 #[derive(serde::Serialize, ToSchema)]
-pub struct AuthResponse {
+pub struct AuthResponseSchema {
     #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
     pub access_token: String,
     #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
@@ -33,7 +33,7 @@ pub struct AuthResponse {
     tag = "Auth",
     request_body = LoginRequest,
     responses(
-        (status = 200, description = "User authenticated successfully", body = AuthResponse)
+        (status = 200, description = "User authenticated successfully", body = AuthResponseSchema)
     )
 )]
 pub async fn authenticate_user(
@@ -53,7 +53,8 @@ pub async fn authenticate_user(
     let jwt_secret = &state.config.jwt.secret;
     let (access_token, refresh_token) = generate_tokens(&user.id.to_string(), jwt_secret)?;
 
-    let auth_response = build_auth_response(access_token.clone(), refresh_token.clone(), user);
+    let auth_response =
+        build_auth_response(db, access_token.clone(), refresh_token.clone(), user).await?;
 
     match client_type {
         Some(AllowedClientType::BROWSER) => {
