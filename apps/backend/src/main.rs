@@ -17,7 +17,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let state = app::AppState::new(Arc::new(config.clone()), db);
 
-    let app = app::create_app(&config).with_state(state.clone());
+    let app = app::create_app(&config, state.clone()).with_state(state.clone());
     app::print_routes();
 
     let addr = state.config.app.addr();

@@ -13,7 +13,7 @@ use crate::services::learning::{
 };
 use crate::setup::app::AppState;
 
-pub fn router() -> Router<AppState> {
+pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
         .route("/notes", get(get_all_notes()))
         .route("/notes", post(create_note()))

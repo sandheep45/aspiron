@@ -14,7 +14,7 @@ use crate::services::{
 };
 use crate::setup::app::AppState;
 
-pub fn router() -> Router<AppState> {
+pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
         .route("/subjects", get(get_all_subjects()))
         .route(

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::Json;
 use sea_orm::DatabaseConnection;
 use uuid::Uuid;
@@ -7,12 +9,13 @@ use crate::entries::dtos::response::users::*;
 use crate::entries::resource_types::ResourceTypeEnum;
 use crate::setup::error::AppError;
 
+#[derive(Clone)]
 pub struct UserService {
     repository: super::repository::UserRepository,
 }
 
 impl UserService {
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self {
             repository: super::repository::UserRepository::new(db),
         }

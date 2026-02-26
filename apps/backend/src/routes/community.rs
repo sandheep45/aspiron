@@ -9,7 +9,7 @@ use crate::services::community::{
 };
 use crate::setup::app::AppState;
 
-pub fn router() -> Router<AppState> {
+pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
         .route("/community/threads", post(create_community_thread()))
         .route(

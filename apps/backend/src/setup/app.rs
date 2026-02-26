@@ -90,7 +90,7 @@ impl AppState {
     }
 }
 
-pub fn create_app(config: &Config) -> axum::Router<AppState> {
+pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState> {
     let api_v1_prefix = config.app.api_version.clone();
 
     let cors_origins: Vec<HeaderValue> = config
@@ -122,7 +122,7 @@ pub fn create_app(config: &Config) -> axum::Router<AppState> {
 
     let router = axum::Router::new()
         .route("/api-docs/openapi.json", get(openapi::openapi_json))
-        .nest(&api_v1_prefix, api_v1_router())
+        .nest(&api_v1_prefix, api_v1_router(&app_state))
         .layer(TraceLayer::new_for_http())
         .layer(middleware::from_fn(authenticate))
         .layer(cors);
@@ -136,6 +136,7 @@ pub fn create_app(config: &Config) -> axum::Router<AppState> {
         registry.register("GET", "/api/v1/auth/refresh-token");
         registry.register("GET", "/api/v1/auth/register-user");
         registry.register("GET", "/api/v1/auth/me");
+        registry.register("GET", "/api/v1/users");
         registry.register("GET", "/api/v1/topics/{topic_id}/quizzes");
         registry.register("GET", "/api/v1/quizzes/{quiz_id}");
         registry.register("POST", "/api/v1/quizzes/{quiz_id}/attempts");

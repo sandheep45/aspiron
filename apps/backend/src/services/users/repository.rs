@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use uuid::Uuid;
 
@@ -11,19 +13,20 @@ use crate::entries::entitiy_enums::action_types::ActionTypeEnum;
 use crate::entries::entitiy_enums::resource_types::ResourceTypeEnum;
 use crate::setup::error::AppError;
 
+#[derive(Clone)]
 pub struct UserRepository {
-    db: DatabaseConnection,
+    db: Arc<DatabaseConnection>,
 }
 
 impl UserRepository {
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 
     pub async fn get_user_by_email(&self, email: &str) -> Result<UserResponse, AppError> {
         let user = UserEntity::find()
             .filter(crate::entries::entities::user::Column::Email.eq(email))
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(AppError::Database)?
             .ok_or_else(|| AppError::not_found("User not found"))?;
@@ -43,7 +46,7 @@ impl UserRepository {
     ) -> Result<UserProfileResponse, AppError> {
         // Get user information
         let user = UserEntity::find_by_id(user_id)
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(AppError::Database)?
             .ok_or_else(|| AppError::not_found("User not found"))?;
@@ -52,7 +55,7 @@ impl UserRepository {
         let user_roles = UserRoleEntity::find()
             .filter(crate::entries::entities::user_role::Column::UserId.eq(user_id))
             .filter(crate::entries::entities::user_role::Column::IsActive.eq(true))
-            .all(&self.db)
+            .all(&*self.db)
             .await
             .map_err(AppError::Database)?;
 
@@ -64,14 +67,14 @@ impl UserRepository {
         // Get roles information
         let roles = RoleEntity::find()
             .filter(crate::entries::entities::role::Column::Id.is_in(role_ids.clone()))
-            .all(&self.db)
+            .all(&*self.db)
             .await
             .map_err(AppError::Database)?;
 
         // Get role permissions
         let role_permission_entities = RolePermissionEntity::find()
             .filter(crate::entries::entities::role_permission::Column::RoleId.is_in(role_ids))
-            .all(&self.db)
+            .all(&*self.db)
             .await
             .map_err(AppError::Database)?;
 
@@ -83,7 +86,7 @@ impl UserRepository {
         // Get permissions
         let permissions = PermissionEntity::find()
             .filter(crate::entries::entities::permission::Column::Id.is_in(permission_ids))
-            .all(&self.db)
+            .all(&*self.db)
             .await
             .map_err(AppError::Database)?;
 

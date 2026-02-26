@@ -26,6 +26,6 @@ pub async fn health() -> Json<HealthResponse> {
     })
 }
 
-pub fn router() -> Router<AppState> {
+pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new().route("/health", get(health))
 }

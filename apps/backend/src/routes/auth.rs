@@ -6,7 +6,7 @@ use axum::{
 use crate::services::auth::{authenticate_user, get_me, refresh_token, register_user};
 use crate::setup::app::AppState;
 
-pub fn router() -> Router<AppState> {
+pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
         .route("/auth/login", post(authenticate_user))
         .route("/auth/refresh-token", get(refresh_token))

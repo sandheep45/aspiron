@@ -9,7 +9,7 @@ use crate::services::assessment::{
 };
 use crate::setup::app::AppState;
 
-pub fn router() -> Router<AppState> {
+pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
         .route("/topics/{topic_id}/quizzes", get(get_quizzes_by_topic_id()))
         .route("/quizzes/{quiz_id}", get(fetch_quiz_by_id()))

@@ -11,16 +11,16 @@ pub mod users;
 
 use crate::setup::app::AppState;
 
-pub fn api_v1_router() -> axum::Router<AppState> {
+pub fn api_v1_router(app_state: &AppState) -> axum::Router<AppState> {
     axum::Router::new()
-        .merge(health::router())
-        .merge(auth::router())
-        .merge(users::router())
-        .merge(rbac::router())
-        .merge(assessment::router())
-        .merge(community::router())
-        .merge(content::router())
-        .merge(learning::router())
-        .merge(live_session::router())
-        .merge(notification::router())
+        .merge(health::router(app_state))
+        .merge(auth::router(app_state))
+        .merge(users::router(app_state))
+        .merge(rbac::router(app_state))
+        .merge(assessment::router(app_state))
+        .merge(community::router(app_state))
+        .merge(content::router(app_state))
+        .merge(learning::router(app_state))
+        .merge(live_session::router(app_state))
+        .merge(notification::router(app_state))
 }
