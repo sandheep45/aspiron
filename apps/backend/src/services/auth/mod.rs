@@ -1,5 +1,8 @@
-pub mod helpers;
+pub mod service;
 
+use std::sync::Arc;
+
+use axum::Extension;
 use axum::Json as ResponseJson;
 use axum::extract::Json;
 use axum::extract::State;
@@ -7,15 +10,27 @@ use axum::http::HeaderMap;
 use axum::http::header::SET_COOKIE;
 use axum::response::IntoResponse;
 use cookie::time::Duration;
+use cookie::{Cookie, SameSite};
 
 use crate::constants::AllowedClientType;
 use crate::entries::payload::LoginRequest;
-use crate::services::auth::helpers::{
-    build_auth_response, build_token_cookie, generate_tokens, validate_credentials,
-};
+use crate::services::auth::service::AuthService;
 use crate::setup::app::AppState;
 use crate::setup::error::AppError;
 use utoipa::ToSchema;
+
+#[derive(Clone)]
+pub struct AuthState {
+    pub auth_service: AuthService,
+}
+
+impl AuthState {
+    pub fn new(db: Arc<sea_orm::DatabaseConnection>) -> Self {
+        Self {
+            auth_service: AuthService::new(db),
+        }
+    }
+}
 
 #[derive(serde::Serialize, ToSchema)]
 pub struct AuthResponseSchema {
@@ -24,6 +39,26 @@ pub struct AuthResponseSchema {
     #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
     pub refresh_token: String,
     pub user: serde_json::Value,
+}
+
+fn build_token_cookie(
+    name: String,
+    value: String,
+    max_age: Duration,
+    is_development: bool,
+) -> Cookie<'static> {
+    let mut builder = Cookie::build((name, value))
+        .http_only(true)
+        .path("/")
+        .max_age(max_age);
+
+    if is_development {
+        builder = builder.secure(true).same_site(SameSite::None);
+    } else {
+        builder = builder.secure(true).same_site(SameSite::Strict);
+    }
+
+    builder.build()
 }
 
 #[axum::debug_handler]
@@ -37,6 +72,7 @@ pub struct AuthResponseSchema {
     )
 )]
 pub async fn authenticate_user(
+    Extension(auth_state): Extension<AuthState>,
     State(state): State<AppState>,
     headers: HeaderMap,
     Json(login_payload): Json<LoginRequest>,
@@ -46,15 +82,23 @@ pub async fn authenticate_user(
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.parse::<AllowedClientType>().ok());
 
-    let db = state.db.as_ref();
-
-    let user = validate_credentials(db, &login_payload.email, &login_payload.password).await?;
+    let user = auth_state
+        .auth_service
+        .authenticate(&login_payload.email, &login_payload.password)
+        .await?;
 
     let jwt_secret = &state.config.jwt.secret;
-    let (access_token, refresh_token) = generate_tokens(&user.id.to_string(), jwt_secret)?;
+    let (access_token, refresh_token) = auth_state
+        .auth_service
+        .generate_tokens(&user.id.to_string(), jwt_secret)?;
 
-    let auth_response =
-        build_auth_response(db, access_token.clone(), refresh_token.clone(), user).await?;
+    let mut auth_response = auth_state
+        .auth_service
+        .build_auth_response(&user.id.to_string())
+        .await?;
+
+    auth_response.access_token = access_token.clone();
+    auth_response.refresh_token = refresh_token.clone();
 
     match client_type {
         Some(AllowedClientType::BROWSER) => {

@@ -23,6 +23,20 @@ impl UserRepository {
         Self { db }
     }
 
+    pub async fn get_user_entity_by_email(
+        &self,
+        email: &str,
+    ) -> Result<<UserEntity as sea_orm::EntityTrait>::Model, AppError> {
+        let user = UserEntity::find()
+            .filter(crate::entries::entities::user::Column::Email.eq(email))
+            .one(&*self.db)
+            .await
+            .map_err(AppError::Database)?
+            .ok_or_else(|| AppError::auth("Invalid credentials"))?;
+
+        Ok(user)
+    }
+
     pub async fn get_user_by_email(&self, email: &str) -> Result<UserResponse, AppError> {
         let user = UserEntity::find()
             .filter(crate::entries::entities::user::Column::Email.eq(email))
