@@ -8,7 +8,7 @@ use axum::Json;
         (status = 200, description = "Get all notes")
     )
 )]
-pub fn get_all_notes() -> Json<bool> {
+pub async fn get_all_notes() -> Json<bool> {
     Json(true)
 }
 
@@ -20,7 +20,7 @@ pub fn get_all_notes() -> Json<bool> {
         (status = 200, description = "Create a note")
     )
 )]
-pub fn create_note() -> Json<bool> {
+pub async fn create_note() -> Json<bool> {
     Json(true)
 }
 
@@ -35,7 +35,7 @@ pub fn create_note() -> Json<bool> {
         ("note_id" = i64, Path, description = "Note ID")
     )
 )]
-pub fn update_note() -> Json<bool> {
+pub async fn update_note() -> Json<bool> {
     Json(true)
 }
 
@@ -50,7 +50,7 @@ pub fn update_note() -> Json<bool> {
         ("note_id" = i64, Path, description = "Note ID")
     )
 )]
-pub fn delete_note() -> Json<bool> {
+pub async fn delete_note() -> Json<bool> {
     Json(true)
 }
 
@@ -65,6 +65,6 @@ pub fn delete_note() -> Json<bool> {
         ("topic_id" = i64, Path, description = "Topic ID")
     )
 )]
-pub fn get_teachers_notes_from_topic_id() -> Json<bool> {
+pub async fn get_teachers_notes_from_topic_id() -> Json<bool> {
     Json(true)
 }

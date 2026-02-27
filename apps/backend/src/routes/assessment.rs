@@ -11,18 +11,18 @@ use crate::setup::app::AppState;
 
 pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
-        .route("/topics/{topic_id}/quizzes", get(get_quizzes_by_topic_id()))
-        .route("/quizzes/{quiz_id}", get(fetch_quiz_by_id()))
+        .route("/topics/{topic_id}/quizzes", get(get_quizzes_by_topic_id))
+        .route("/quizzes/{quiz_id}", get(fetch_quiz_by_id))
         .route(
             "/quizzes/{quiz_id}/attempts",
-            post(start_attempt_for_a_quiz()),
+            post(start_attempt_for_a_quiz),
         )
         .route(
             "/attempts/{attempt_id}/submit",
-            post(submit_attempt_for_a_quiz()),
+            post(submit_attempt_for_a_quiz),
         )
         .route(
             "/attempts/{attempt_id}/result",
-            get(get_results_by_attempt_id()),
+            get(get_results_by_attempt_id),
         )
 }

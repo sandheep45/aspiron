@@ -8,7 +8,7 @@ use axum::Json;
         (status = 200, description = "Fetch upcoming live classes")
     )
 )]
-pub fn fetch_upcomming_live_classes() -> Json<bool> {
+pub async fn fetch_upcomming_live_classes() -> Json<bool> {
     Json(true)
 }
 
@@ -23,7 +23,7 @@ pub fn fetch_upcomming_live_classes() -> Json<bool> {
         ("class_id" = i64, Path, description = "Class ID")
     )
 )]
-pub fn join_live_class_by_id() -> Json<bool> {
+pub async fn join_live_class_by_id() -> Json<bool> {
     Json(true)
 }
 
@@ -38,6 +38,6 @@ pub fn join_live_class_by_id() -> Json<bool> {
         ("class_id" = i64, Path, description = "Class ID")
     )
 )]
-pub fn fetch_recoreded_live_sessions() -> Json<bool> {
+pub async fn fetch_recoreded_live_sessions() -> Json<bool> {
     Json(true)
 }

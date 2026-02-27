@@ -8,7 +8,7 @@ use axum::Json;
         (status = 200, description = "Create a community thread")
     )
 )]
-pub fn create_community_thread() -> Json<bool> {
+pub async fn create_community_thread() -> Json<bool> {
     Json(true)
 }
 
@@ -23,7 +23,7 @@ pub fn create_community_thread() -> Json<bool> {
         ("topic_id" = i64, Path, description = "Topic ID")
     )
 )]
-pub fn fetch_community_threads_per_topic() -> Json<bool> {
+pub async fn fetch_community_threads_per_topic() -> Json<bool> {
     Json(true)
 }
 
@@ -38,7 +38,7 @@ pub fn fetch_community_threads_per_topic() -> Json<bool> {
         ("thread_id" = i64, Path, description = "Thread ID")
     )
 )]
-pub fn fetch_community_threads_by_id() -> Json<bool> {
+pub async fn fetch_community_threads_by_id() -> Json<bool> {
     Json(true)
 }
 
@@ -53,7 +53,7 @@ pub fn fetch_community_threads_by_id() -> Json<bool> {
         ("thread_id" = i64, Path, description = "Thread ID")
     )
 )]
-pub fn create_community_posts() -> Json<bool> {
+pub async fn create_community_posts() -> Json<bool> {
     Json(true)
 }
 
@@ -68,6 +68,6 @@ pub fn create_community_posts() -> Json<bool> {
         ("thread_id" = i64, Path, description = "Thread ID")
     )
 )]
-pub fn attached_notes_to_thread() -> Json<bool> {
+pub async fn attached_notes_to_thread() -> Json<bool> {
     Json(true)
 }

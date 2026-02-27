@@ -11,7 +11,7 @@ use axum::Json;
         ("topic_id" = i64, Path, description = "Topic ID")
     )
 )]
-pub fn get_videos_by_topic_id() -> Json<bool> {
+pub async fn get_videos_by_topic_id() -> Json<bool> {
     Json(true)
 }
 
@@ -26,7 +26,7 @@ pub fn get_videos_by_topic_id() -> Json<bool> {
         ("video_id" = i64, Path, description = "Video ID")
     )
 )]
-pub fn generate_playback_token_by_video_id() -> Json<bool> {
+pub async fn generate_playback_token_by_video_id() -> Json<bool> {
     Json(true)
 }
 
@@ -41,6 +41,6 @@ pub fn generate_playback_token_by_video_id() -> Json<bool> {
         ("video_id" = i64, Path, description = "Video ID")
     )
 )]
-pub fn get_offline_token_by_video_id() -> Json<bool> {
+pub async fn get_offline_token_by_video_id() -> Json<bool> {
     Json(false)
 }

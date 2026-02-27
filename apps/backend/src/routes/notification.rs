@@ -8,6 +8,6 @@ use crate::setup::app::AppState;
 
 pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
-        .route("/notifications", get(get_all_notifications()))
-        .route("/notifications/status", post(update_notification_status()))
+        .route("/notifications", get(get_all_notifications))
+        .route("/notifications/status", post(update_notification_status))
 }

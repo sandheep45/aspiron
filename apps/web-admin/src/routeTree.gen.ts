@@ -9,13 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrivateRoutesRouteImport } from './routes/_private-routes'
+import { Route as PrivateRoutesIndexRouteImport } from './routes/_private-routes/index'
+import { Route as AuthAuthLayoutRouteImport } from './routes/auth/_auth-layout'
+import { Route as AuthAuthLayoutIndexRouteImport } from './routes/auth/_auth-layout/index'
+import { Route as AuthAuthLayoutLoginRouteImport } from './routes/auth/_auth-layout/login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
-const IndexRoute = IndexRouteImport.update({
+const PrivateRoutesRoute = PrivateRoutesRouteImport.update({
+  id: '/_private-routes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivateRoutesIndexRoute = PrivateRoutesIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PrivateRoutesRoute,
+} as any)
+const AuthAuthLayoutRoute = AuthAuthLayoutRouteImport.update({
+  id: '/auth/_auth-layout',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthAuthLayoutIndexRoute = AuthAuthLayoutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthAuthLayoutRoute,
+} as any)
+const AuthAuthLayoutLoginRoute = AuthAuthLayoutLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthAuthLayoutRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -24,39 +47,84 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof PrivateRoutesIndexRoute
+  '/auth': typeof AuthAuthLayoutRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/login': typeof AuthAuthLayoutLoginRoute
+  '/auth/': typeof AuthAuthLayoutIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof PrivateRoutesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/login': typeof AuthAuthLayoutLoginRoute
+  '/auth': typeof AuthAuthLayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_private-routes': typeof PrivateRoutesRouteWithChildren
+  '/auth/_auth-layout': typeof AuthAuthLayoutRouteWithChildren
+  '/_private-routes/': typeof PrivateRoutesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/_auth-layout/login': typeof AuthAuthLayoutLoginRoute
+  '/auth/_auth-layout/': typeof AuthAuthLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/auth/$'
+  fullPaths: '/' | '/auth' | '/api/auth/$' | '/auth/login' | '/auth/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/auth/$'
-  id: '__root__' | '/' | '/api/auth/$'
+  to: '/' | '/api/auth/$' | '/auth/login' | '/auth'
+  id:
+    | '__root__'
+    | '/_private-routes'
+    | '/auth/_auth-layout'
+    | '/_private-routes/'
+    | '/api/auth/$'
+    | '/auth/_auth-layout/login'
+    | '/auth/_auth-layout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  PrivateRoutesRoute: typeof PrivateRoutesRouteWithChildren
+  AuthAuthLayoutRoute: typeof AuthAuthLayoutRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_private-routes': {
+      id: '/_private-routes'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PrivateRoutesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_private-routes/': {
+      id: '/_private-routes/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof PrivateRoutesIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/auth/_auth-layout': {
+      id: '/auth/_auth-layout'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthAuthLayoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/_auth-layout/': {
+      id: '/auth/_auth-layout/'
+      path: '/'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthAuthLayoutIndexRouteImport
+      parentRoute: typeof AuthAuthLayoutRoute
+    }
+    '/auth/_auth-layout/login': {
+      id: '/auth/_auth-layout/login'
+      path: '/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthAuthLayoutLoginRouteImport
+      parentRoute: typeof AuthAuthLayoutRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -68,8 +136,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface PrivateRoutesRouteChildren {
+  PrivateRoutesIndexRoute: typeof PrivateRoutesIndexRoute
+}
+
+const PrivateRoutesRouteChildren: PrivateRoutesRouteChildren = {
+  PrivateRoutesIndexRoute: PrivateRoutesIndexRoute,
+}
+
+const PrivateRoutesRouteWithChildren = PrivateRoutesRoute._addFileChildren(
+  PrivateRoutesRouteChildren,
+)
+
+interface AuthAuthLayoutRouteChildren {
+  AuthAuthLayoutLoginRoute: typeof AuthAuthLayoutLoginRoute
+  AuthAuthLayoutIndexRoute: typeof AuthAuthLayoutIndexRoute
+}
+
+const AuthAuthLayoutRouteChildren: AuthAuthLayoutRouteChildren = {
+  AuthAuthLayoutLoginRoute: AuthAuthLayoutLoginRoute,
+  AuthAuthLayoutIndexRoute: AuthAuthLayoutIndexRoute,
+}
+
+const AuthAuthLayoutRouteWithChildren = AuthAuthLayoutRoute._addFileChildren(
+  AuthAuthLayoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  PrivateRoutesRoute: PrivateRoutesRouteWithChildren,
+  AuthAuthLayoutRoute: AuthAuthLayoutRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

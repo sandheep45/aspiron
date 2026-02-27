@@ -8,7 +8,7 @@ use axum::Json;
         (status = 200, description = "Start recall session")
     )
 )]
-pub fn start_recall() -> Json<bool> {
+pub async fn start_recall() -> Json<bool> {
     Json(true)
 }
 
@@ -23,7 +23,7 @@ pub fn start_recall() -> Json<bool> {
         ("session_id" = i64, Path, description = "Session ID")
     )
 )]
-pub fn get_recall_mcq_by_session_id() -> Json<bool> {
+pub async fn get_recall_mcq_by_session_id() -> Json<bool> {
     Json(true)
 }
 
@@ -38,7 +38,7 @@ pub fn get_recall_mcq_by_session_id() -> Json<bool> {
         ("session_id" = i64, Path, description = "Session ID")
     )
 )]
-pub fn submit_recall_mcq() -> Json<bool> {
+pub async fn submit_recall_mcq() -> Json<bool> {
     Json(true)
 }
 
@@ -53,6 +53,6 @@ pub fn submit_recall_mcq() -> Json<bool> {
         ("session_id" = i64, Path, description = "Session ID")
     )
 )]
-pub fn get_recall_result_by_session_id() -> Json<bool> {
+pub async fn get_recall_result_by_session_id() -> Json<bool> {
     Json(true)
 }

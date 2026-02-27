@@ -8,6 +8,6 @@ use axum::Json;
         (status = 200, description = "Get all subjects")
     )
 )]
-pub fn get_all_subjects() -> Json<bool> {
+pub async fn get_all_subjects() -> Json<bool> {
     Json(true)
 }

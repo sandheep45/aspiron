@@ -11,7 +11,7 @@ use axum::Json;
         ("topic_id" = i64, Path, description = "Topic ID")
     )
 )]
-pub fn get_quizzes_by_topic_id() -> Json<bool> {
+pub async fn get_quizzes_by_topic_id() -> Json<bool> {
     Json(true)
 }
 
@@ -26,6 +26,6 @@ pub fn get_quizzes_by_topic_id() -> Json<bool> {
         ("quiz_id" = i64, Path, description = "Quiz ID")
     )
 )]
-pub fn fetch_quiz_by_id() -> Json<bool> {
+pub async fn fetch_quiz_by_id() -> Json<bool> {
     Json(true)
 }

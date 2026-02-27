@@ -11,7 +11,7 @@ use axum::Json;
         ("quiz_id" = i64, Path, description = "Quiz ID")
     )
 )]
-pub fn start_attempt_for_a_quiz() -> Json<bool> {
+pub async fn start_attempt_for_a_quiz() -> Json<bool> {
     Json(true)
 }
 
@@ -26,7 +26,7 @@ pub fn start_attempt_for_a_quiz() -> Json<bool> {
         ("attempt_id" = i64, Path, description = "Attempt ID")
     )
 )]
-pub fn submit_attempt_for_a_quiz() -> Json<bool> {
+pub async fn submit_attempt_for_a_quiz() -> Json<bool> {
     Json(true)
 }
 
@@ -41,6 +41,6 @@ pub fn submit_attempt_for_a_quiz() -> Json<bool> {
         ("attempt_id" = i64, Path, description = "Attempt ID")
     )
 )]
-pub fn get_results_by_attempt_id() -> Json<bool> {
+pub async fn get_results_by_attempt_id() -> Json<bool> {
     Json(true)
 }

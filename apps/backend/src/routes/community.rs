@@ -11,21 +11,21 @@ use crate::setup::app::AppState;
 
 pub fn router(_app_state: &AppState) -> Router<AppState> {
     Router::new()
-        .route("/community/threads", post(create_community_thread()))
+        .route("/community/threads", post(create_community_thread))
         .route(
             "/community/topics/{topic_id}/threads",
-            get(fetch_community_threads_per_topic()),
+            get(fetch_community_threads_per_topic),
         )
         .route(
             "/community/threads/{thread_id}",
-            get(fetch_community_threads_by_id()),
+            get(fetch_community_threads_by_id),
         )
         .route(
             "/community/threads/{thread_id}/posts",
-            post(create_community_posts()),
+            post(create_community_posts),
         )
         .route(
             "/community/threads/{thread_id}/attach-note",
-            post(attached_notes_to_thread()),
+            post(attached_notes_to_thread),
         )
 }

@@ -1,4 +1,4 @@
-import { apiClient } from '@aspiron/api-client'
+import { type AuthResponse, apiClient } from '@aspiron/api-client'
 import Credentials from '@auth/core/providers/credentials'
 import { createServerFn } from '@tanstack/react-start'
 import { getCookies, getRequest, setCookie } from '@tanstack/react-start/server'
@@ -17,12 +17,9 @@ export const authConfig: StartAuthJSConfig = {
     Credentials({
       authorize: async (credentials) => {
         const data = await apiClient.post('/auth/login', credentials)
-        const user = data.data.user
+        const loggedInUserData = data.data
         return {
-          email: user.email,
-          id: user.id,
-          access_token: data.data.access_token,
-          refresh_token: data.data.refresh_token,
+          ...loggedInUserData,
         }
       },
     }),
@@ -44,6 +41,12 @@ export const authConfig: StartAuthJSConfig = {
       }
     },
   },
+}
+
+declare module 'start-authjs' {
+  interface AuthSession {
+    session: AuthResponse
+  }
 }
 
 export const fetchSession = createServerFn({ method: 'GET' }).handler(

@@ -8,7 +8,7 @@ use axum::Json;
         (status = 200, description = "Get all notifications")
     )
 )]
-pub fn get_all_notifications() -> Json<bool> {
+pub async fn get_all_notifications() -> Json<bool> {
     Json(true)
 }
 
@@ -20,6 +20,6 @@ pub fn get_all_notifications() -> Json<bool> {
         (status = 200, description = "Update notification status")
     )
 )]
-pub fn update_notification_status() -> Json<bool> {
+pub async fn update_notification_status() -> Json<bool> {
     Json(true)
 }

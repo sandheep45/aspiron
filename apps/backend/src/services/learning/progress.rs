@@ -8,7 +8,7 @@ use axum::Json;
         (status = 200, description = "Update progress")
     )
 )]
-pub fn update_progress() -> Json<bool> {
+pub async fn update_progress() -> Json<bool> {
     Json(true)
 }
 
@@ -20,6 +20,6 @@ pub fn update_progress() -> Json<bool> {
         (status = 200, description = "Get progress summary")
     )
 )]
-pub fn get_progress_summary() -> Json<bool> {
+pub async fn get_progress_summary() -> Json<bool> {
     Json(true)
 }

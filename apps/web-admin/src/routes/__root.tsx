@@ -1,3 +1,4 @@
+import type { AuthResponse } from '@aspiron/api-client'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
@@ -7,7 +8,6 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import type { AuthSession } from 'start-authjs'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -15,7 +15,7 @@ import { fetchSession } from '@/lib/auth'
 import appCss from '../styles.css?url'
 
 interface RouterContext {
-  session: AuthSession | null
+  session: AuthResponse | null
   queryClient: QueryClient
 }
 

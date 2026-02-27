@@ -11,6 +11,6 @@ use axum::Json;
         ("subject_id" = i64, Path, description = "Subject ID")
     )
 )]
-pub fn get_chapters_by_subject_id() -> Json<bool> {
+pub async fn get_chapters_by_subject_id() -> Json<bool> {
     Json(true)
 }
