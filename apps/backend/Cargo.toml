@@ -24,6 +24,7 @@ validator = { version = "*", features = ["derive"] }
 bcrypt = "*"
 cookie = "*"
 utoipa = "5.4.0"
+utoipa-swagger-ui = { version = "*", features = ["axum"] }
 reqwest = { version = "*", features = ["json", "native-tls"] }
 once_cell = "*"
 serde = { version = "*", features = ["derive"] }
@@ -33,7 +34,7 @@ thiserror = "*"
 tracing = "*"
 tokio = { version = "*", features = ["full"] }
 tokio-postgres = "*"
-rand = "*"
+rand = { version = "0.8", features = ["small_rng", "std"] }
 clap = { version = "*", features = ["derive"] }
 fake = { version = "*", features = ["derive", "uuid", "chrono"] }
 ts-rs = { version = "*", features = [

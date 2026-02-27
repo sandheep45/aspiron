@@ -6,9 +6,9 @@ use utoipa::ToSchema;
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "LoginRequest")]
 pub struct LoginRequest {
-    #[schema(example = "user@example.com")]
+    #[schema(example = "barbara_turner.1@admin.aspiron")]
     pub email: String,
-    #[schema(example = "password123")]
+    #[schema(example = "admin123")]
     pub password: String,
 }
 

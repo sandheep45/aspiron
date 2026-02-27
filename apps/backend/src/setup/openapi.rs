@@ -1,8 +1,28 @@
 use axum::{Json, response::IntoResponse};
-use utoipa::OpenApi;
+use utoipa::{Modify, OpenApi};
 
 use crate::routes;
 use crate::services;
+use crate::setup::config::Config;
+
+struct AddXClientTypeHeader;
+
+impl Modify for AddXClientTypeHeader {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        let header = utoipa::openapi::path::Parameter::builder()
+            .name("x-client-type")
+            .parameter_in(utoipa::openapi::path::ParameterIn::Header)
+            .description(Some("Client type header".to_string()))
+            .example(Some(serde_json::json!("BROWSER")))
+            .build();
+
+        for path_item in openapi.paths.paths.values_mut() {
+            let mut params = path_item.parameters.clone().unwrap_or_default();
+            params.push(header.clone());
+            path_item.parameters = Some(params);
+        }
+    }
+}
 
 #[derive(OpenApi)]
 #[openapi(
@@ -11,9 +31,7 @@ use crate::services;
         version = "0.1.0",
         description = "Backend API for the Aspiron project"
     ),
-    servers(
-        (url = "http://localhost:8080", description = "Local development server")
-    ),
+    modifiers(&AddXClientTypeHeader),
     paths(
         routes::health::health,
         services::auth::authenticate_user,
@@ -58,5 +76,14 @@ use crate::services;
 pub struct ApiDoc;
 
 pub async fn openapi_json() -> impl IntoResponse {
-    Json(ApiDoc::openapi())
+    let config = Config::from_env();
+    let server_url = format!("http://{}:{}", config.app.host, config.app.port);
+
+    let mut openapi = ApiDoc::openapi();
+
+    let server = utoipa::openapi::Server::new(server_url);
+
+    openapi.servers = Some(vec![server]);
+
+    Json(openapi)
 }

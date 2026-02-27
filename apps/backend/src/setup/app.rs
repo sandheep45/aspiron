@@ -7,10 +7,12 @@ use std::sync::{Arc, LazyLock, RwLock};
 use crate::middleware::auth::authenticate;
 use crate::{
     routes::api_v1_router,
-    setup::{config::Config, openapi},
+    setup::{config::Config, openapi, openapi::ApiDoc},
 };
 use sea_orm::DatabaseConnection;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 pub static ROUTE_REGISTRY: LazyLock<RwLock<RouteRegistry>> =
     LazyLock::new(|| RwLock::new(RouteRegistry::new()));
@@ -122,6 +124,7 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
 
     let router = axum::Router::new()
         .route("/api-docs/openapi.json", get(openapi::openapi_json))
+        .merge(SwaggerUi::new("/swagger").url("/api-docs/openapi-swagger.json", ApiDoc::openapi()))
         .nest(&api_v1_prefix, api_v1_router(&app_state))
         .layer(TraceLayer::new_for_http())
         .layer(middleware::from_fn(authenticate))
@@ -131,6 +134,7 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
     {
         let mut registry = ROUTE_REGISTRY.write().unwrap();
         registry.register("GET", "/api-docs/openapi.json");
+        registry.register("GET", "/swagger/index.html");
         registry.register("GET", "/api/v1/health");
         registry.register("POST", "/api/v1/auth/login");
         registry.register("GET", "/api/v1/auth/refresh-token");
