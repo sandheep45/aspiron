@@ -5,5 +5,5 @@ export const Route = createFileRoute('/_private-routes/')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/_private-routes/"!</div>
+  return <div>Hello "/_private-routes/"! vnvkub</div>
 }

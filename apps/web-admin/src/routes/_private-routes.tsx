@@ -1,4 +1,7 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { AppNavbar } from '@/components/app-navbar'
+import { AppSidebar } from '@/components/app-sidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
 export const Route = createFileRoute('/_private-routes')({
   component: RouteComponent,
@@ -12,5 +15,19 @@ export const Route = createFileRoute('/_private-routes')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/_private-routes"!</div>
+  return (
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': '17rem',
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar />
+      <SidebarInset className='overflow-auto py-2.5 pr-2'>
+        <AppNavbar />
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
+  )
 }
