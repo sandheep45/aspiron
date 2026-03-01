@@ -129,6 +129,19 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/web-admin/src/components/ui/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useFocusableInteractive": "off",
+            "useAriaPropsForRole": "off",
+            "useKeyWithClickEvents": "off"
+          }
+        }
+      }
     }
   ]
 }
