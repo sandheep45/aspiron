@@ -1,47 +1,17 @@
-import type * as React from 'react'
-import { ProductLogo } from '@/assets/svgs/logo'
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from '@/components/ui/sidebar'
+import { SidebarBrand } from '@/components/sidebar/sidebar-brand'
+import { sidebarItems } from '@/components/sidebar/sidebar-config'
+import { SidebarMenuList } from '@/components/sidebar/sidebar-menu'
+import { Separator } from '@/components/ui/separator'
+import { Sidebar as UISidebar } from '@/components/ui/sidebar'
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof UISidebar>) {
   return (
-    <Sidebar variant='floating' {...props}>
-      <SidebarHeader className='rounded-lg bg-sidebar-gradient'>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size='lg'>
-              <ProductLogo />
-              <span className='font-medium'>Aspiron</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent className='rounded-lg bg-sidebar-gradient'>
-        <SidebarGroup>
-          <SidebarMenu className='gap-2'>
-            <SidebarMenuItem>
-              <SidebarMenuButton>Menu Button</SidebarMenuButton>
-              <SidebarMenuSub className='ml-0 border-l-0 px-1.5'>
-                <SidebarMenuSubItem>
-                  <SidebarMenuSubButton isActive={false}>
-                    SidebarMenuSub button
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              </SidebarMenuSub>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+    <UISidebar variant='floating' {...props}>
+      <SidebarBrand />
+      <Separator />
+      <SidebarMenuList items={sidebarItems} />
+    </UISidebar>
   )
 }

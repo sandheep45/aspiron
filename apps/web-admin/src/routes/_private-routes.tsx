@@ -19,7 +19,7 @@ function RouteComponent() {
     <SidebarProvider
       style={
         {
-          '--sidebar-width': '17rem',
+          '--sidebar-width': '14rem',
         } as React.CSSProperties
       }
     >

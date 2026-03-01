@@ -13,6 +13,13 @@ import { Route as PrivateRoutesRouteImport } from './routes/_private-routes'
 import { Route as PrivateRoutesIndexRouteImport } from './routes/_private-routes/index'
 import { Route as AuthAuthLayoutRouteImport } from './routes/auth/_auth-layout'
 import { Route as AuthAuthLayoutIndexRouteImport } from './routes/auth/_auth-layout/index'
+import { Route as PrivateRoutesSettingsIndexRouteImport } from './routes/_private-routes/settings/index'
+import { Route as PrivateRoutesQuizzesIndexRouteImport } from './routes/_private-routes/quizzes/index'
+import { Route as PrivateRoutesLiveClassesIndexRouteImport } from './routes/_private-routes/live-classes/index'
+import { Route as PrivateRoutesDashboardIndexRouteImport } from './routes/_private-routes/dashboard/index'
+import { Route as PrivateRoutesContentIndexRouteImport } from './routes/_private-routes/content/index'
+import { Route as PrivateRoutesCommunityIndexRouteImport } from './routes/_private-routes/community/index'
+import { Route as PrivateRoutesAnalyticsIndexRouteImport } from './routes/_private-routes/analytics/index'
 import { Route as AuthAuthLayoutLoginRouteImport } from './routes/auth/_auth-layout/login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -35,6 +42,48 @@ const AuthAuthLayoutIndexRoute = AuthAuthLayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthAuthLayoutRoute,
 } as any)
+const PrivateRoutesSettingsIndexRoute =
+  PrivateRoutesSettingsIndexRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesQuizzesIndexRoute =
+  PrivateRoutesQuizzesIndexRouteImport.update({
+    id: '/quizzes/',
+    path: '/quizzes/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesLiveClassesIndexRoute =
+  PrivateRoutesLiveClassesIndexRouteImport.update({
+    id: '/live-classes/',
+    path: '/live-classes/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesDashboardIndexRoute =
+  PrivateRoutesDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesContentIndexRoute =
+  PrivateRoutesContentIndexRouteImport.update({
+    id: '/content/',
+    path: '/content/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesCommunityIndexRoute =
+  PrivateRoutesCommunityIndexRouteImport.update({
+    id: '/community/',
+    path: '/community/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesAnalyticsIndexRoute =
+  PrivateRoutesAnalyticsIndexRouteImport.update({
+    id: '/analytics/',
+    path: '/analytics/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
 const AuthAuthLayoutLoginRoute = AuthAuthLayoutLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -51,12 +100,26 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthAuthLayoutRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth/login': typeof AuthAuthLayoutLoginRoute
+  '/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
+  '/community/': typeof PrivateRoutesCommunityIndexRoute
+  '/content/': typeof PrivateRoutesContentIndexRoute
+  '/dashboard/': typeof PrivateRoutesDashboardIndexRoute
+  '/live-classes/': typeof PrivateRoutesLiveClassesIndexRoute
+  '/quizzes/': typeof PrivateRoutesQuizzesIndexRoute
+  '/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/': typeof AuthAuthLayoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PrivateRoutesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth/login': typeof AuthAuthLayoutLoginRoute
+  '/analytics': typeof PrivateRoutesAnalyticsIndexRoute
+  '/community': typeof PrivateRoutesCommunityIndexRoute
+  '/content': typeof PrivateRoutesContentIndexRoute
+  '/dashboard': typeof PrivateRoutesDashboardIndexRoute
+  '/live-classes': typeof PrivateRoutesLiveClassesIndexRoute
+  '/quizzes': typeof PrivateRoutesQuizzesIndexRoute
+  '/settings': typeof PrivateRoutesSettingsIndexRoute
   '/auth': typeof AuthAuthLayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -66,13 +129,43 @@ export interface FileRoutesById {
   '/_private-routes/': typeof PrivateRoutesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth/_auth-layout/login': typeof AuthAuthLayoutLoginRoute
+  '/_private-routes/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
+  '/_private-routes/community/': typeof PrivateRoutesCommunityIndexRoute
+  '/_private-routes/content/': typeof PrivateRoutesContentIndexRoute
+  '/_private-routes/dashboard/': typeof PrivateRoutesDashboardIndexRoute
+  '/_private-routes/live-classes/': typeof PrivateRoutesLiveClassesIndexRoute
+  '/_private-routes/quizzes/': typeof PrivateRoutesQuizzesIndexRoute
+  '/_private-routes/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/_auth-layout/': typeof AuthAuthLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/api/auth/$' | '/auth/login' | '/auth/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/api/auth/$'
+    | '/auth/login'
+    | '/analytics/'
+    | '/community/'
+    | '/content/'
+    | '/dashboard/'
+    | '/live-classes/'
+    | '/quizzes/'
+    | '/settings/'
+    | '/auth/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/auth/$' | '/auth/login' | '/auth'
+  to:
+    | '/'
+    | '/api/auth/$'
+    | '/auth/login'
+    | '/analytics'
+    | '/community'
+    | '/content'
+    | '/dashboard'
+    | '/live-classes'
+    | '/quizzes'
+    | '/settings'
+    | '/auth'
   id:
     | '__root__'
     | '/_private-routes'
@@ -80,6 +173,13 @@ export interface FileRouteTypes {
     | '/_private-routes/'
     | '/api/auth/$'
     | '/auth/_auth-layout/login'
+    | '/_private-routes/analytics/'
+    | '/_private-routes/community/'
+    | '/_private-routes/content/'
+    | '/_private-routes/dashboard/'
+    | '/_private-routes/live-classes/'
+    | '/_private-routes/quizzes/'
+    | '/_private-routes/settings/'
     | '/auth/_auth-layout/'
   fileRoutesById: FileRoutesById
 }
@@ -119,6 +219,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAuthLayoutIndexRouteImport
       parentRoute: typeof AuthAuthLayoutRoute
     }
+    '/_private-routes/settings/': {
+      id: '/_private-routes/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof PrivateRoutesSettingsIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/quizzes/': {
+      id: '/_private-routes/quizzes/'
+      path: '/quizzes'
+      fullPath: '/quizzes/'
+      preLoaderRoute: typeof PrivateRoutesQuizzesIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/live-classes/': {
+      id: '/_private-routes/live-classes/'
+      path: '/live-classes'
+      fullPath: '/live-classes/'
+      preLoaderRoute: typeof PrivateRoutesLiveClassesIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/dashboard/': {
+      id: '/_private-routes/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof PrivateRoutesDashboardIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/content/': {
+      id: '/_private-routes/content/'
+      path: '/content'
+      fullPath: '/content/'
+      preLoaderRoute: typeof PrivateRoutesContentIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/community/': {
+      id: '/_private-routes/community/'
+      path: '/community'
+      fullPath: '/community/'
+      preLoaderRoute: typeof PrivateRoutesCommunityIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/analytics/': {
+      id: '/_private-routes/analytics/'
+      path: '/analytics'
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof PrivateRoutesAnalyticsIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
     '/auth/_auth-layout/login': {
       id: '/auth/_auth-layout/login'
       path: '/login'
@@ -138,10 +287,24 @@ declare module '@tanstack/react-router' {
 
 interface PrivateRoutesRouteChildren {
   PrivateRoutesIndexRoute: typeof PrivateRoutesIndexRoute
+  PrivateRoutesAnalyticsIndexRoute: typeof PrivateRoutesAnalyticsIndexRoute
+  PrivateRoutesCommunityIndexRoute: typeof PrivateRoutesCommunityIndexRoute
+  PrivateRoutesContentIndexRoute: typeof PrivateRoutesContentIndexRoute
+  PrivateRoutesDashboardIndexRoute: typeof PrivateRoutesDashboardIndexRoute
+  PrivateRoutesLiveClassesIndexRoute: typeof PrivateRoutesLiveClassesIndexRoute
+  PrivateRoutesQuizzesIndexRoute: typeof PrivateRoutesQuizzesIndexRoute
+  PrivateRoutesSettingsIndexRoute: typeof PrivateRoutesSettingsIndexRoute
 }
 
 const PrivateRoutesRouteChildren: PrivateRoutesRouteChildren = {
   PrivateRoutesIndexRoute: PrivateRoutesIndexRoute,
+  PrivateRoutesAnalyticsIndexRoute: PrivateRoutesAnalyticsIndexRoute,
+  PrivateRoutesCommunityIndexRoute: PrivateRoutesCommunityIndexRoute,
+  PrivateRoutesContentIndexRoute: PrivateRoutesContentIndexRoute,
+  PrivateRoutesDashboardIndexRoute: PrivateRoutesDashboardIndexRoute,
+  PrivateRoutesLiveClassesIndexRoute: PrivateRoutesLiveClassesIndexRoute,
+  PrivateRoutesQuizzesIndexRoute: PrivateRoutesQuizzesIndexRoute,
+  PrivateRoutesSettingsIndexRoute: PrivateRoutesSettingsIndexRoute,
 }
 
 const PrivateRoutesRouteWithChildren = PrivateRoutesRoute._addFileChildren(
