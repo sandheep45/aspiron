@@ -2,7 +2,7 @@
 // Relative imports converted to absolute imports by generate-types recipe. DO NOT EDIT.
 
 export type UserResponse = {
-  id: string;
+  id: String;
   email: string;
   is_active: boolean;
   created_at: Date;

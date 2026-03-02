@@ -2,7 +2,7 @@ use anyhow::Result;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseTransaction, EntityTrait, QueryFilter, Set};
 use uuid::Uuid;
 
-use crate::entries::entities::{user, user_role};
+use crate::entries::entities::{user, user_profile, user_role};
 use crate::entries::entitiy_enums::user_types::UserTypeEnums;
 use crate::seeds::runner::SeedRunner;
 use crate::seeds::utils::{FakePasswordGenerator, PasswordGenerationStrategy, PatternSuffix};
@@ -133,6 +133,31 @@ impl<'a> SeedRunner<'a> {
         };
 
         user_model.insert(txn).await?;
+
+        // Insert user profile
+        let avatar_url = format!(
+            "https://api.dicebear.com/7.x/initials/svg?seed={}&backgroundColor=6366f1&textColor=ffffff",
+            fake_user.full_name.replace(' ', "+")
+        );
+
+        let user_profile_model = user_profile::ActiveModel {
+            user_id: Set(fake_user.id),
+            first_name: Set(Some(fake_user.first_name.clone())),
+            last_name: Set(Some(fake_user.last_name.clone())),
+            avatar_url: Set(Some(avatar_url)),
+            phone: Set(fake_user.phone.clone()),
+            timezone: Set(Some("UTC".to_string())),
+            language: Set(Some("en".to_string())),
+            preferences: Set(None),
+            last_login: Set(None),
+            login_count: Set(Some(0)),
+            account_locked_until: Set(None),
+            failed_login_attempts: Set(Some(0)),
+            mfa_enabled: Set(Some(false)),
+            mfa_secret_encrypted: Set(None),
+        };
+
+        user_profile_model.insert(txn).await?;
 
         Ok(())
     }

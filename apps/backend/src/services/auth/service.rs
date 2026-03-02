@@ -49,6 +49,9 @@ impl AuthService {
         let user = AuthUserResponse {
             id: profile.user.id,
             email: profile.user.email,
+            first_name: profile.profile.first_name,
+            last_name: profile.profile.last_name,
+            avatar_url: profile.profile.avatar_url,
             is_active: profile.user.is_active,
             created_at: profile.user.created_at,
             updated_at: profile.user.updated_at,

@@ -12,9 +12,18 @@ use uuid::Uuid;
 #[ts(export, rename = "UserProfileResponse")]
 pub struct UserProfileResponse {
     pub user: UserResponse,
+    pub profile: UserProfileDataResponse,
     pub roles: Vec<RoleResponse>,
     pub permissions: Vec<PermissionResponse>,
     pub resource_permissions: Vec<ResourcePermissionResponse>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, rename = "UserProfileDataResponse")]
+pub struct UserProfileDataResponse {
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

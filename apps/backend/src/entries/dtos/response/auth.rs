@@ -23,6 +23,9 @@ pub struct AuthResponse {
 pub struct AuthUserResponse {
     pub id: Uuid,
     pub email: String,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub avatar_url: Option<String>,
     pub is_active: bool,
     #[ts(type = "Date")]
     pub created_at: DateTimeWithTimeZone,

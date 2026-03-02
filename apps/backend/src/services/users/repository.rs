@@ -8,6 +8,7 @@ use crate::entries::entities::permission::Entity as PermissionEntity;
 use crate::entries::entities::role::Entity as RoleEntity;
 use crate::entries::entities::role_permission::Entity as RolePermissionEntity;
 use crate::entries::entities::user::Entity as UserEntity;
+use crate::entries::entities::user_profile::Entity as UserProfileEntity;
 use crate::entries::entities::user_role::Entity as UserRoleEntity;
 use crate::entries::entitiy_enums::action_types::ActionTypeEnum;
 use crate::entries::entitiy_enums::resource_types::ResourceTypeEnum;
@@ -64,6 +65,12 @@ impl UserRepository {
             .await
             .map_err(AppError::Database)?
             .ok_or_else(|| AppError::not_found("User not found"))?;
+
+        // Get user profile
+        let user_profile = UserProfileEntity::find_by_id(user_id)
+            .one(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
 
         // Get user roles
         let user_roles = UserRoleEntity::find()
@@ -143,8 +150,19 @@ impl UserRepository {
             .extract_resource_permissions(&permissions_response)
             .await?;
 
+        let profile = user_profile.map(|p| UserProfileDataResponse {
+            first_name: p.first_name,
+            last_name: p.last_name,
+            avatar_url: p.avatar_url,
+        });
+
         Ok(UserProfileResponse {
             user: user_response,
+            profile: profile.unwrap_or(UserProfileDataResponse {
+                first_name: None,
+                last_name: None,
+                avatar_url: None,
+            }),
             roles: roles_response,
             permissions: permissions_response,
             resource_permissions,

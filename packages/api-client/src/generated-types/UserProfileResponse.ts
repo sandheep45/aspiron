@@ -3,10 +3,12 @@
 import type { PermissionResponse } from "@/generated-types/PermissionResponse";
 import type { ResourcePermissionResponse } from "@/generated-types/ResourcePermissionResponse";
 import type { RoleResponse } from "@/generated-types/RoleResponse";
+import type { UserProfileDataResponse } from "@/generated-types/UserProfileDataResponse";
 import type { UserResponse } from "@/generated-types/UserResponse";
 
 export type UserProfileResponse = {
   user: UserResponse;
+  profile: UserProfileDataResponse;
   roles: Array<RoleResponse>;
   permissions: Array<PermissionResponse>;
   resource_permissions: Array<ResourcePermissionResponse>;
