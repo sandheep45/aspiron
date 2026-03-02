@@ -6,4 +6,7 @@ export const Route = createFileRoute('/auth/_auth-layout/')({
       to: '/auth/login',
     })
   },
+  staticData: {
+    breadcrumb: undefined,
+  },
 })

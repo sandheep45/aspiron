@@ -12,6 +12,9 @@ export const Route = createFileRoute('/_private-routes')({
       })
     }
   },
+  staticData: {
+    breadcrumb: undefined,
+  },
 })
 
 function RouteComponent() {

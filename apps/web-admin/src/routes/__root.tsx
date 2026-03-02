@@ -46,6 +46,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  staticData: {
+    breadcrumb: undefined,
+  },
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {

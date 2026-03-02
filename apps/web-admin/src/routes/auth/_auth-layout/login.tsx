@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/auth/_auth-layout/login')({
   component: RouteComponent,
+  staticData: {
+    breadcrumb: 'Login',
+  },
 })
 
 function RouteComponent() {

@@ -8,4 +8,7 @@ export const Route = createFileRoute('/auth/_auth-layout')({
       })
     }
   },
+  staticData: {
+    breadcrumb: undefined,
+  },
 })

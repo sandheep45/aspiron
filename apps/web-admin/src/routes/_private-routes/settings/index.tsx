@@ -2,6 +2,9 @@ import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_private-routes/settings/')({
   component: RouteComponent,
+  staticData: {
+    breadcrumb: 'Settings',
+  },
 })
 
 function RouteComponent() {

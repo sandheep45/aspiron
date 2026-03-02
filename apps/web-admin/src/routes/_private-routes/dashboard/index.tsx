@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/_private-routes/dashboard/')({
   component: RouteComponent,
+  staticData: {
+    breadcrumb: 'Dashboard',
+  },
 })
 
 function RouteComponent() {
