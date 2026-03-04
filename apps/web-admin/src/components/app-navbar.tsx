@@ -1,5 +1,7 @@
 import { Link, useRouteContext } from '@tanstack/react-router'
 import { HomeIcon } from 'lucide-react'
+import { Logout } from '@/components/logout'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,17 +10,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { Separator } from '@/components/ui/separator'
-import { SidebarTrigger } from '@/components/ui/sidebar'
-import { useBreadcrumbs } from '@/hooks/use-breadcrumbs'
-import { Button } from './ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { SidebarTrigger } from '@/components/ui/sidebar'
+import { useBreadcrumbs } from '@/hooks/use-breadcrumbs'
 
 export function AppNavbar() {
   const breadcrumbs = useBreadcrumbs()
@@ -68,14 +69,24 @@ export function AppNavbar() {
       </div>
 
       <DropdownMenu>
-        <DropdownMenuTrigger render={<Button />}>
-          {session?.user.email}
+        <DropdownMenuTrigger>
+          {session?.user.avatar_url ? (
+            <Avatar>
+              <AvatarImage
+                src={session?.user.avatar_url}
+                alt={session.user.email}
+              />
+              <AvatarFallback>{`${session.user.first_name?.[0]} ${session.user.last_name?.[0]}`}</AvatarFallback>
+            </Avatar>
+          ) : (
+            `${session?.user.first_name} ${session?.user.last_name}`
+          )}
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className='w-40' align='start'>
           <DropdownMenuGroup>
             {/* <DropdownMenuLabel>My Account</DropdownMenuLabel> */}
-            <DropdownMenuItem variant='destructive'>Logout</DropdownMenuItem>
+            <DropdownMenuItem render={<Logout />} />
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

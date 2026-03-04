@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useAppForm } from '@/components/forms/form-core'
+import { useCsfrToken } from '@/hooks/use-csfr-token'
+import { loginFormOption } from '@/modules/auth/form-option'
 
 export const Route = createFileRoute('/auth/_auth-layout/login')({
   component: RouteComponent,
@@ -9,27 +11,30 @@ export const Route = createFileRoute('/auth/_auth-layout/login')({
 })
 
 function RouteComponent() {
-  const [csrfToken, setCsrfToken] = useState<string>('')
-
-  useEffect(() => {
-    fetch('/api/auth/csrf')
-      .then((res) => res.json())
-      .then((data) => setCsrfToken(data.csrfToken))
-  }, [])
+  const csrfToken = useCsfrToken()
+  const loginAppForm = useAppForm({
+    ...loginFormOption,
+    defaultValues: {
+      ...loginFormOption.defaultValues,
+      csrfToken,
+    },
+  })
   return (
-    <div>
-      <form action='/api/auth/callback/credentials' method='POST'>
-        <input type='hidden' name='csrfToken' value={csrfToken} />
-        <input
-          type='hidden'
-          name='email'
-          value='barbara_turner.1@admin.aspiron'
-        />
-        <input type='hidden' name='password' value='admin123' />
-        <button type='submit' className=''>
+    <loginAppForm.AppForm>
+      <form action={'/api/auth/callback/credentials'} method='POST'>
+        <loginAppForm.AppField name='email'>
+          {(field) => <field.FormInput />}
+        </loginAppForm.AppField>
+        <loginAppForm.AppField name='password'>
+          {(field) => <field.FormInput />}
+        </loginAppForm.AppField>
+        <loginAppForm.AppField name='csrfToken'>
+          {(field) => <field.FormInput hidden />}
+        </loginAppForm.AppField>
+        <loginAppForm.SubmitButton variant={'brand'}>
           Login
-        </button>
+        </loginAppForm.SubmitButton>
       </form>
-    </div>
+    </loginAppForm.AppForm>
   )
 }
