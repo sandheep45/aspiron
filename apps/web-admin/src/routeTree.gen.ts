@@ -21,6 +21,7 @@ import { Route as PrivateRoutesContentIndexRouteImport } from './routes/_private
 import { Route as PrivateRoutesCommunityIndexRouteImport } from './routes/_private-routes/community/index'
 import { Route as PrivateRoutesAnalyticsIndexRouteImport } from './routes/_private-routes/analytics/index'
 import { Route as AuthAuthLayoutLoginRouteImport } from './routes/auth/_auth-layout/login'
+import { Route as AuthAuthLayoutForgotPasswordRouteImport } from './routes/auth/_auth-layout/forgot-password'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const PrivateRoutesRoute = PrivateRoutesRouteImport.update({
@@ -89,6 +90,12 @@ const AuthAuthLayoutLoginRoute = AuthAuthLayoutLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthAuthLayoutRoute,
 } as any)
+const AuthAuthLayoutForgotPasswordRoute =
+  AuthAuthLayoutForgotPasswordRouteImport.update({
+    id: '/forgot-password',
+    path: '/forgot-password',
+    getParentRoute: () => AuthAuthLayoutRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/': typeof PrivateRoutesIndexRoute
   '/auth': typeof AuthAuthLayoutRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/forgot-password': typeof AuthAuthLayoutForgotPasswordRoute
   '/auth/login': typeof AuthAuthLayoutLoginRoute
   '/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
   '/community/': typeof PrivateRoutesCommunityIndexRoute
@@ -112,6 +120,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof PrivateRoutesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/forgot-password': typeof AuthAuthLayoutForgotPasswordRoute
   '/auth/login': typeof AuthAuthLayoutLoginRoute
   '/analytics': typeof PrivateRoutesAnalyticsIndexRoute
   '/community': typeof PrivateRoutesCommunityIndexRoute
@@ -128,6 +137,7 @@ export interface FileRoutesById {
   '/auth/_auth-layout': typeof AuthAuthLayoutRouteWithChildren
   '/_private-routes/': typeof PrivateRoutesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/_auth-layout/forgot-password': typeof AuthAuthLayoutForgotPasswordRoute
   '/auth/_auth-layout/login': typeof AuthAuthLayoutLoginRoute
   '/_private-routes/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
   '/_private-routes/community/': typeof PrivateRoutesCommunityIndexRoute
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/api/auth/$'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/analytics/'
     | '/community/'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/api/auth/$'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/analytics'
     | '/community'
@@ -172,6 +184,7 @@ export interface FileRouteTypes {
     | '/auth/_auth-layout'
     | '/_private-routes/'
     | '/api/auth/$'
+    | '/auth/_auth-layout/forgot-password'
     | '/auth/_auth-layout/login'
     | '/_private-routes/analytics/'
     | '/_private-routes/community/'
@@ -275,6 +288,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAuthLayoutLoginRouteImport
       parentRoute: typeof AuthAuthLayoutRoute
     }
+    '/auth/_auth-layout/forgot-password': {
+      id: '/auth/_auth-layout/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthAuthLayoutForgotPasswordRouteImport
+      parentRoute: typeof AuthAuthLayoutRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -312,11 +332,13 @@ const PrivateRoutesRouteWithChildren = PrivateRoutesRoute._addFileChildren(
 )
 
 interface AuthAuthLayoutRouteChildren {
+  AuthAuthLayoutForgotPasswordRoute: typeof AuthAuthLayoutForgotPasswordRoute
   AuthAuthLayoutLoginRoute: typeof AuthAuthLayoutLoginRoute
   AuthAuthLayoutIndexRoute: typeof AuthAuthLayoutIndexRoute
 }
 
 const AuthAuthLayoutRouteChildren: AuthAuthLayoutRouteChildren = {
+  AuthAuthLayoutForgotPasswordRoute: AuthAuthLayoutForgotPasswordRoute,
   AuthAuthLayoutLoginRoute: AuthAuthLayoutLoginRoute,
   AuthAuthLayoutIndexRoute: AuthAuthLayoutIndexRoute,
 }

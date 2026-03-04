@@ -1,6 +1,6 @@
 import type React from 'react'
-import { AppSidebar } from './app-sidebar'
-import { SidebarInset } from './ui/sidebar'
+import { AppSidebar } from '@/components/app-sidebar'
+import { SidebarInset } from '@/components/ui/sidebar'
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (

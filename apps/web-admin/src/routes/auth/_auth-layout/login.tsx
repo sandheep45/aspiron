@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useAppForm } from '@/components/forms/form-core'
-import { useCsfrToken } from '@/hooks/use-csfr-token'
-import { loginFormOption } from '@/modules/auth/form-option'
-
+import { Shield } from 'lucide-react'
+import { LoginBrandHeader } from '@/modules/auth/components/login-brand-header'
+import { LoginForm } from '@/modules/auth/components/login-form'
 export const Route = createFileRoute('/auth/_auth-layout/login')({
   component: RouteComponent,
   staticData: {
@@ -11,30 +10,14 @@ export const Route = createFileRoute('/auth/_auth-layout/login')({
 })
 
 function RouteComponent() {
-  const csrfToken = useCsfrToken()
-  const loginAppForm = useAppForm({
-    ...loginFormOption,
-    defaultValues: {
-      ...loginFormOption.defaultValues,
-      csrfToken,
-    },
-  })
   return (
-    <loginAppForm.AppForm>
-      <form action={'/api/auth/callback/credentials'} method='POST'>
-        <loginAppForm.AppField name='email'>
-          {(field) => <field.FormInput />}
-        </loginAppForm.AppField>
-        <loginAppForm.AppField name='password'>
-          {(field) => <field.FormInput />}
-        </loginAppForm.AppField>
-        <loginAppForm.AppField name='csrfToken'>
-          {(field) => <field.FormInput hidden />}
-        </loginAppForm.AppField>
-        <loginAppForm.SubmitButton variant={'brand'}>
-          Login
-        </loginAppForm.SubmitButton>
-      </form>
-    </loginAppForm.AppForm>
+    <div className='flex w-full flex-col items-center justify-center gap-6'>
+      <LoginBrandHeader />
+      <LoginForm />
+      <div className='inline-flex items-center gap-2 text-slate-500 text-sm'>
+        <Shield className='h-4 w-4' />
+        <span>Your data is secure. We never share your information.</span>
+      </div>
+    </div>
   )
 }

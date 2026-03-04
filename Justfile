@@ -49,7 +49,7 @@ format-rust:
     cargo fmt --all
 
 format-js:
-    pnpm biome format . --write
+    pnpm biome lint --write --unsafe .
 
 # ==================================================
 # Linting

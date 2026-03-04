@@ -1,5 +1,5 @@
 import { formOptions } from '@tanstack/react-form-start'
-import { loginSchema } from './schema'
+import { loginSchema, logoutSchema } from '@/modules/auth/schema'
 
 export const loginFormOption = formOptions({
   validators: {
@@ -8,5 +8,14 @@ export const loginFormOption = formOptions({
   defaultValues: {
     email: 'barbara_turner.1@admin.aspiron',
     password: 'admin123',
+  },
+})
+
+export const logoutFormOption = formOptions({
+  validators: {
+    onChange: logoutSchema,
+  },
+  defaultValues: {
+    csrfToken: '',
   },
 })
