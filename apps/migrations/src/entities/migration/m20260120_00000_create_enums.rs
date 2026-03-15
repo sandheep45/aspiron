@@ -1,4 +1,4 @@
-use ::backend::entries::entitiy_enums::{
+use ::backend::entries::entity_enums::{
     content_owner_types::ContentOwnerTypeEnum, exam_types::ExamTypeEnums,
     learning_recall_question_type::LearningRecallQuestionTypeEnum,
     learning_recall_session_status::LearningRecallSessionStatusEnum,

@@ -1,4 +1,4 @@
-use ::backend::entries::entitiy_enums::{
+use ::backend::entries::entity_enums::{
     action_types::ActionTypeEnum, permission_types::PermissionTypeEnum,
     resource_types::ResourceTypeEnum,
 };
