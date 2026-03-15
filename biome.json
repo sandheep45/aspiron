@@ -13,7 +13,9 @@
       "!**/target",
       "!**/.svelte-kit",
       "!**/generated-types",
-      "!**/routeTree.gen.ts"
+      "!**/routeTree.gen.ts",
+      "!**/.expo",
+      "!**/expo-env.d.ts"
     ],
     "ignoreUnknown": true
   },
