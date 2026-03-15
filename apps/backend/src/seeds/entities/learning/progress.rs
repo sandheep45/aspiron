@@ -18,14 +18,14 @@ impl<'a> SeedRunner<'a> {
         if let Some(student_ids) = self
             .relationship_map
             .user_ids
-            .get(&crate::entries::entitiy_enums::user_types::UserTypeEnums::STUDENT)
+            .get(&crate::entries::entity_enums::user_types::UserTypeEnums::STUDENT)
         {
             for student_id in student_ids {
                 let topics = self.relationship_map.get_topics_for_subject(
                     *self
                         .relationship_map
                         .subject_ids
-                        .get(&crate::entries::entitiy_enums::exam_types::ExamTypeEnums::JEE)
+                        .get(&crate::entries::entity_enums::exam_types::ExamTypeEnums::JEE)
                         .unwrap_or(&vec![])
                         .first()
                         .unwrap(),

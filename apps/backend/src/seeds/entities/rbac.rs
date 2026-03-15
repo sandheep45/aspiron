@@ -3,7 +3,7 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseTransaction, EntityTrait, Q
 use uuid::Uuid;
 
 use crate::entries::entities::{permission, role, role_permission};
-use crate::entries::entitiy_enums::{
+use crate::entries::entity_enums::{
     action_types::ActionTypeEnum, resource_types::ResourceTypeEnum, user_types::UserTypeEnums,
 };
 use crate::seeds::runner::SeedRunner;
@@ -169,13 +169,13 @@ impl<'a> SeedRunner<'a> {
             (
                 "assessment.view.results",
                 ResourceTypeEnum::ASSESSMENT,
-                ActionTypeEnum::ViewResults,
+                ActionTypeEnum::VIEW_RESULTS,
                 "View assessment results",
             ),
             (
                 "assessment.view.any.results",
                 ResourceTypeEnum::ASSESSMENT,
-                ActionTypeEnum::ViewAnyResults,
+                ActionTypeEnum::VIEW_ANY_RESULTS,
                 "View any user assessment results",
             ),
             (
@@ -236,13 +236,13 @@ impl<'a> SeedRunner<'a> {
             (
                 "user.assign.roles",
                 ResourceTypeEnum::USER,
-                ActionTypeEnum::AssignRoles,
+                ActionTypeEnum::ASSIGN_ROLES,
                 "Assign roles to users",
             ),
             (
                 "user.view.analytics",
                 ResourceTypeEnum::USER,
-                ActionTypeEnum::ViewAnalytics,
+                ActionTypeEnum::VIEW_ANALYTICS,
                 "View user analytics",
             ),
             (
@@ -260,13 +260,13 @@ impl<'a> SeedRunner<'a> {
             (
                 "system.view.analytics",
                 ResourceTypeEnum::SYSTEM,
-                ActionTypeEnum::ViewAnalytics,
+                ActionTypeEnum::VIEW_ANALYTICS,
                 "View system analytics",
             ),
             (
                 "system.manage.settings",
                 ResourceTypeEnum::SYSTEM,
-                ActionTypeEnum::ManageSettings,
+                ActionTypeEnum::MANAGE_SETTINGS,
                 "Manage system settings",
             ),
         ];

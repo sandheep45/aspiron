@@ -174,6 +174,7 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
         registry.register("GET", "/api/v1/live/classes/upcoming");
         registry.register("GET", "/api/v1/notifications");
         registry.register("POST", "/api/v1/notifications/status");
+        registry.register("GET", "/api/v1/admin/insights");
     }
 
     router

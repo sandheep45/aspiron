@@ -5,7 +5,8 @@ use std::collections::HashMap;
 use tracing::info;
 use uuid::Uuid;
 
-use crate::entries::{exam_types::ExamTypeEnums, user_types::UserTypeEnums};
+use crate::entries::entity_enums::exam_types::ExamTypeEnums;
+use crate::entries::entity_enums::user_types::UserTypeEnums;
 
 #[derive(Debug, Clone, Default)]
 pub struct RelationshipMap {

@@ -3,7 +3,7 @@ use sea_orm::{ActiveModelTrait, DatabaseTransaction, Set};
 use uuid::Uuid;
 
 use crate::entries::entities::learning_notes;
-use crate::entries::entitiy_enums::content_owner_types::ContentOwnerTypeEnum;
+use crate::entries::entity_enums::content_owner_types::ContentOwnerTypeEnum;
 use crate::seeds::runner::SeedRunner;
 
 impl<'a> SeedRunner<'a> {
@@ -16,13 +16,13 @@ impl<'a> SeedRunner<'a> {
         if let Some(student_ids) = self
             .relationship_map
             .user_ids
-            .get(&crate::entries::entitiy_enums::user_types::UserTypeEnums::STUDENT)
+            .get(&crate::entries::entity_enums::user_types::UserTypeEnums::STUDENT)
         {
             let topics = self.relationship_map.get_topics_for_subject(
                 *self
                     .relationship_map
                     .subject_ids
-                    .get(&crate::entries::entitiy_enums::exam_types::ExamTypeEnums::JEE)
+                    .get(&crate::entries::entity_enums::exam_types::ExamTypeEnums::JEE)
                     .unwrap_or(&vec![])
                     .first()
                     .unwrap(),
@@ -42,10 +42,10 @@ impl<'a> SeedRunner<'a> {
         owner_id: Set(Some(*student_id)),        // Wrap the Option in Set
         video_id: Set(Some(*video_id)),          // Wrap the Option in Set
         video_timestamp: Set(Some(300)),         // 5 minutes into video
-        content_type: Set(crate::entries::entitiy_enums::notes_content_type::NotesContentTypeEnum::INLINE),
+        content_type: Set(crate::entries::entity_enums::notes_content_type::NotesContentTypeEnum::INLINE),
         content: Set(Some(format!("Student {} note: This concept is clear now.", student_idx + 1))),
         is_public: Set(student_idx % 2 == 0),    // 50% public
-        trust_level: Set(crate::entries::entitiy_enums::trust_level::TrustLevelEnum::USER),
+        trust_level: Set(crate::entries::entity_enums::trust_level::TrustLevelEnum::USER),
         created_at: Set(chrono::Utc::now().into()),
         updated_at: Set(chrono::Utc::now().into()),
         deleted_at: Set(None),                    // Wrap None in Set

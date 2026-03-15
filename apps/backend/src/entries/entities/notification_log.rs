@@ -1,4 +1,4 @@
-use crate::entries::entitiy_enums::notification_logs_types::NotificationLogsTypesEnum;
+use crate::entries::entity_enums::notification_logs_types::NotificationLogsTypesEnum;
 use sea_orm::prelude::DateTimeWithTimeZone;
 use sea_orm::*;
 use uuid::Uuid;

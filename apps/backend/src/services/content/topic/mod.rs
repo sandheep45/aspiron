@@ -1,5 +1,15 @@
 use axum::Json;
 
+use crate::services::content::topic::service::TopicService;
+
+pub mod repository;
+pub mod service;
+
+#[derive(Clone)]
+pub struct ContentState {
+    pub topic_service: TopicService,
+}
+
 #[utoipa::path(
     get,
     path = "/api/v1/chapters/{chapter_id}/topics",
@@ -12,20 +22,5 @@ use axum::Json;
     )
 )]
 pub async fn get_topics_by_chapter_id() -> Json<bool> {
-    Json(true)
-}
-
-#[utoipa::path(
-    get,
-    path = "/api/v1/topics/{topic_id}",
-    tag = "Content",
-    responses(
-        (status = 200, description = "Get topic metadata by topic ID")
-    ),
-    params(
-        ("topic_id" = i64, Path, description = "Topic ID")
-    )
-)]
-pub async fn get_topics_metadata_by_topic_id() -> Json<bool> {
     Json(true)
 }

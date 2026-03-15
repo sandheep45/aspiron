@@ -1,4 +1,4 @@
-use crate::entries::entitiy_enums::learning_recall_question_type::LearningRecallQuestionTypeEnum;
+use crate::entries::entity_enums::learning_recall_question_type::LearningRecallQuestionTypeEnum;
 use sea_orm::*;
 use uuid::Uuid;
 

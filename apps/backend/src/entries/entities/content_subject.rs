@@ -1,4 +1,4 @@
-use crate::entries::entitiy_enums::exam_types::ExamTypeEnums;
+use crate::entries::entity_enums::exam_types::ExamTypeEnums;
 use sea_orm::prelude::DateTimeWithTimeZone;
 use sea_orm::*;
 use uuid::Uuid;

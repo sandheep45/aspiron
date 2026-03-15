@@ -1,8 +1,8 @@
 use std::fmt;
 
-use crate::entries::entitiy_enums::action_types::ActionTypeEnum;
-use crate::entries::entitiy_enums::resource_types::ResourceTypeEnum;
-use crate::entries::entitiy_enums::user_types::UserTypeEnums;
+use crate::entries::entity_enums::action_types::ActionTypeEnum;
+use crate::entries::entity_enums::resource_types::ResourceTypeEnum;
+use crate::entries::entity_enums::user_types::UserTypeEnums;
 use sea_orm::prelude::DateTimeWithTimeZone;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;

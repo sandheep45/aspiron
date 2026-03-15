@@ -13,7 +13,7 @@ pub async fn update_progress() -> Json<bool> {
 }
 
 #[utoipa::path(
-    delete,
+    get,
     path = "/api/v1/progress/summary",
     tag = "Learning",
     responses(

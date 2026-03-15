@@ -1,4 +1,4 @@
-use crate::entries::entitiy_enums::user_types::UserTypeEnums;
+use crate::entries::entity_enums::user_types::UserTypeEnums;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 

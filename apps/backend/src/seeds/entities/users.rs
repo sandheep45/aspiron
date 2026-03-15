@@ -3,9 +3,13 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseTransaction, EntityTrait, Q
 use uuid::Uuid;
 
 use crate::entries::entities::{user, user_profile, user_role};
-use crate::entries::entitiy_enums::user_types::UserTypeEnums;
+use crate::entries::entity_enums::user_types::UserTypeEnums;
 use crate::seeds::runner::SeedRunner;
-use crate::seeds::utils::{FakePasswordGenerator, PasswordGenerationStrategy, PatternSuffix};
+use crate::seeds::utils::fake_password_generator;
+use crate::seeds::utils::fake_password_generator::{
+    FakePasswordGenerator, PasswordGenerationStrategy, PatternSuffix,
+};
+use crate::seeds::utils::passwords::hash_password;
 
 impl<'a> SeedRunner<'a> {
     pub async fn seed_users(&mut self, txn: &DatabaseTransaction) -> Result<()> {
@@ -118,10 +122,10 @@ impl<'a> SeedRunner<'a> {
     async fn insert_user(
         &mut self,
         txn: &DatabaseTransaction,
-        fake_user: &crate::seeds::utils::FakeUserCredentials,
+        fake_user: &fake_password_generator::FakeUserCredentials,
         _user_type: UserTypeEnums,
     ) -> Result<()> {
-        let password_hash = crate::seeds::utils::hash_password(&fake_user.password)?;
+        let password_hash = hash_password(&fake_user.password)?;
 
         let user_model = user::ActiveModel {
             id: Set(fake_user.id),

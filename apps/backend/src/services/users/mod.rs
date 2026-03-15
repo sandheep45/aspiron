@@ -4,13 +4,12 @@ use axum::{Extension, Json, extract::Query};
 use serde::Deserialize;
 
 use crate::entries::dtos::response::users::UserResponse;
+use crate::services::users::service::UserService;
 use crate::setup::error::AppError;
 
 pub mod repository;
 pub mod service;
-
-pub use repository::*;
-pub use service::*;
+pub mod utils;
 
 #[derive(Deserialize)]
 pub struct GetUserEmailParams {

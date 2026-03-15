@@ -1,5 +1,5 @@
-use crate::entries::entitiy_enums::action_types::ActionTypeEnum;
-use crate::entries::entitiy_enums::resource_types::ResourceTypeEnum;
+use crate::entries::entity_enums::action_types::ActionTypeEnum;
+use crate::entries::entity_enums::resource_types::ResourceTypeEnum;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 

@@ -1,4 +1,4 @@
-use crate::entries::entitiy_enums::user_types::UserTypeEnums;
+use crate::entries::entity_enums::user_types::UserTypeEnums;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use utoipa::ToSchema;

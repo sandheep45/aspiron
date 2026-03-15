@@ -13,7 +13,7 @@ use cookie::time::Duration;
 use cookie::{Cookie, SameSite};
 
 use crate::constants::AllowedClientType;
-use crate::entries::payload::LoginRequest;
+use crate::entries::dtos::payload::auth::LoginRequest;
 use crate::services::auth::service::AuthService;
 use crate::setup::app::AppState;
 use crate::setup::error::AppError;
@@ -157,7 +157,7 @@ pub async fn refresh_token() -> ResponseJson<bool> {
 }
 
 #[utoipa::path(
-    get,
+    post,
     path = "/api/v1/auth/register-user",
     tag = "Auth",
     responses(

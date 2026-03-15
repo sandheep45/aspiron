@@ -3,8 +3,8 @@ use axum::{
     routing::{get, post},
 };
 
-use crate::services::community::{
-    attached_notes_to_thread, create_community_posts, create_community_thread,
+use crate::services::community::handler::{
+    attach_notes_to_thread, create_community_posts, create_community_thread,
     fetch_community_threads_by_id, fetch_community_threads_per_topic,
 };
 use crate::setup::app::AppState;
@@ -26,6 +26,6 @@ pub fn router(_app_state: &AppState) -> Router<AppState> {
         )
         .route(
             "/community/threads/{thread_id}/attach-note",
-            post(attached_notes_to_thread),
+            post(attach_notes_to_thread),
         )
 }

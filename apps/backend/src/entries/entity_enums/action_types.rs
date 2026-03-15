@@ -17,6 +17,7 @@ use ts_rs::TS;
     Deserialize,
     TS,
 )]
+#[allow(non_camel_case_types)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "action_type")]
 #[ts(export, rename = "ActionTypeEnum")]
 pub enum ActionTypeEnum {
@@ -49,19 +50,19 @@ pub enum ActionTypeEnum {
     TAKE,
     #[sea_orm(string_value = "VIEW_RESULTS")]
     #[ts(rename = "VIEW_RESULTS")]
-    ViewResults,
+    VIEW_RESULTS,
     #[sea_orm(string_value = "VIEW_ANY_RESULTS")]
     #[ts(rename = "VIEW_ANY_RESULTS")]
-    ViewAnyResults,
+    VIEW_ANY_RESULTS,
     #[sea_orm(string_value = "ASSIGN_ROLES")]
     #[ts(rename = "ASSIGN_ROLES")]
-    AssignRoles,
+    ASSIGN_ROLES,
     #[sea_orm(string_value = "VIEW_ANALYTICS")]
     #[ts(rename = "VIEW_ANALYTICS")]
-    ViewAnalytics,
+    VIEW_ANALYTICS,
     #[sea_orm(string_value = "MANAGE_SETTINGS")]
     #[ts(rename = "MANAGE_SETTINGS")]
-    ManageSettings,
+    MANAGE_SETTINGS,
     #[sea_orm(string_value = "AUDIT")]
     #[ts(rename = "AUDIT")]
     AUDIT,
@@ -79,11 +80,11 @@ impl fmt::Display for ActionTypeEnum {
             ActionTypeEnum::MODERATE => write!(f, "MODERATE"),
             ActionTypeEnum::GRADE => write!(f, "GRADE"),
             ActionTypeEnum::TAKE => write!(f, "TAKE"),
-            ActionTypeEnum::ViewResults => write!(f, "VIEW_RESULTS"),
-            ActionTypeEnum::ViewAnyResults => write!(f, "VIEW_ANY_RESULTS"),
-            ActionTypeEnum::AssignRoles => write!(f, "ASSIGN_ROLES"),
-            ActionTypeEnum::ViewAnalytics => write!(f, "VIEW_ANALYTICS"),
-            ActionTypeEnum::ManageSettings => write!(f, "MANAGE_SETTINGS"),
+            ActionTypeEnum::VIEW_RESULTS => write!(f, "VIEW_RESULTS"),
+            ActionTypeEnum::VIEW_ANY_RESULTS => write!(f, "VIEW_ANY_RESULTS"),
+            ActionTypeEnum::ASSIGN_ROLES => write!(f, "ASSIGN_ROLES"),
+            ActionTypeEnum::VIEW_ANALYTICS => write!(f, "VIEW_ANALYTICS"),
+            ActionTypeEnum::MANAGE_SETTINGS => write!(f, "MANAGE_SETTINGS"),
             ActionTypeEnum::AUDIT => write!(f, "AUDIT"),
         }
     }

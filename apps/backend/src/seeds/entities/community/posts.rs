@@ -16,7 +16,7 @@ impl<'a> SeedRunner<'a> {
             *self
                 .relationship_map
                 .subject_ids
-                .get(&crate::entries::entitiy_enums::exam_types::ExamTypeEnums::JEE)
+                .get(&crate::entries::entity_enums::exam_types::ExamTypeEnums::JEE)
                 .unwrap_or(&vec![])
                 .first()
                 .unwrap(),

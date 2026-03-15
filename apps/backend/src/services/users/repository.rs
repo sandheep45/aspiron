@@ -10,8 +10,8 @@ use crate::entries::entities::role_permission::Entity as RolePermissionEntity;
 use crate::entries::entities::user::Entity as UserEntity;
 use crate::entries::entities::user_profile::Entity as UserProfileEntity;
 use crate::entries::entities::user_role::Entity as UserRoleEntity;
-use crate::entries::entitiy_enums::action_types::ActionTypeEnum;
-use crate::entries::entitiy_enums::resource_types::ResourceTypeEnum;
+use crate::entries::entity_enums::action_types::ActionTypeEnum;
+use crate::entries::entity_enums::resource_types::ResourceTypeEnum;
 use crate::setup::error::AppError;
 
 #[derive(Clone)]
@@ -59,20 +59,17 @@ impl UserRepository {
         &self,
         user_id: Uuid,
     ) -> Result<UserProfileResponse, AppError> {
-        // Get user information
         let user = UserEntity::find_by_id(user_id)
             .one(&*self.db)
             .await
             .map_err(AppError::Database)?
             .ok_or_else(|| AppError::not_found("User not found"))?;
 
-        // Get user profile
         let user_profile = UserProfileEntity::find_by_id(user_id)
             .one(&*self.db)
             .await
             .map_err(AppError::Database)?;
 
-        // Get user roles
         let user_roles = UserRoleEntity::find()
             .filter(crate::entries::entities::user_role::Column::UserId.eq(user_id))
             .filter(crate::entries::entities::user_role::Column::IsActive.eq(true))
@@ -80,36 +77,45 @@ impl UserRepository {
             .await
             .map_err(AppError::Database)?;
 
-        let role_ids: Vec<Uuid> = user_roles
-            .into_iter()
-            .map(|user_role| user_role.role_id)
-            .collect();
+        let role_ids: Vec<Uuid> = user_roles.iter().map(|ur| ur.role_id).collect();
 
-        // Get roles information
-        let roles = RoleEntity::find()
-            .filter(crate::entries::entities::role::Column::Id.is_in(role_ids.clone()))
-            .all(&*self.db)
-            .await
-            .map_err(AppError::Database)?;
+        let roles = if role_ids.is_empty() {
+            vec![]
+        } else {
+            RoleEntity::find()
+                .filter(crate::entries::entities::role::Column::Id.is_in(role_ids))
+                .all(&*self.db)
+                .await
+                .map_err(AppError::Database)?
+        };
 
-        // Get role permissions
-        let role_permission_entities = RolePermissionEntity::find()
-            .filter(crate::entries::entities::role_permission::Column::RoleId.is_in(role_ids))
-            .all(&*self.db)
-            .await
-            .map_err(AppError::Database)?;
+        let role_ids_for_permissions: Vec<Uuid> = roles.iter().map(|r| r.id).collect();
 
-        let permission_ids: Vec<Uuid> = role_permission_entities
-            .into_iter()
-            .map(|role_permission| role_permission.permission_id)
-            .collect();
+        let role_permissions = if role_ids_for_permissions.is_empty() {
+            vec![]
+        } else {
+            RolePermissionEntity::find()
+                .filter(
+                    crate::entries::entities::role_permission::Column::RoleId
+                        .is_in(role_ids_for_permissions),
+                )
+                .all(&*self.db)
+                .await
+                .map_err(AppError::Database)?
+        };
 
-        // Get permissions
-        let permissions = PermissionEntity::find()
-            .filter(crate::entries::entities::permission::Column::Id.is_in(permission_ids))
-            .all(&*self.db)
-            .await
-            .map_err(AppError::Database)?;
+        let permission_ids: Vec<Uuid> =
+            role_permissions.iter().map(|rp| rp.permission_id).collect();
+
+        let permissions = if permission_ids.is_empty() {
+            vec![]
+        } else {
+            PermissionEntity::find()
+                .filter(crate::entries::entities::permission::Column::Id.is_in(permission_ids))
+                .all(&*self.db)
+                .await
+                .map_err(AppError::Database)?
+        };
 
         // Convert to response DTOs
         let user_response = UserResponse {
@@ -185,7 +191,7 @@ impl UserRepository {
 
         for permission in permissions {
             if let Some((resource_type, action, ownership)) =
-                self.parse_permission_name(&permission.name)
+                UserRepository::parse_permission_name(&permission.name)
             {
                 resource_permissions.push(ResourcePermissionResponse {
                     resource_type,
@@ -199,61 +205,10 @@ impl UserRepository {
         Ok(resource_permissions)
     }
 
-    fn parse_permission_name(
-        &self,
+    pub fn parse_permission_name(
         permission_name: &str,
     ) -> Option<(ResourceTypeEnum, ActionTypeEnum, OwnershipType)> {
-        let parts: Vec<&str> = permission_name.split('.').collect();
-
-        match parts.as_slice() {
-            [resource_str, action_str, ownership_str] => {
-                let resource_type = match *resource_str {
-                    "USER" => ResourceTypeEnum::USER,
-                    "CONTENT" => ResourceTypeEnum::CONTENT,
-                    "ASSESSMENT" => ResourceTypeEnum::ASSESSMENT,
-                    "COMMUNITY" => ResourceTypeEnum::COMMUNITY,
-                    "SYSTEM" => ResourceTypeEnum::SYSTEM,
-                    "SUBJECT" => ResourceTypeEnum::SUBJECT,
-                    "CHAPTER" => ResourceTypeEnum::CHAPTER,
-                    "TOPIC" => ResourceTypeEnum::TOPIC,
-                    "VIDEO" => ResourceTypeEnum::VIDEO,
-                    "QUIZ" => ResourceTypeEnum::QUIZ,
-                    "QUESTION" => ResourceTypeEnum::QUESTION,
-                    "THREAD" => ResourceTypeEnum::THREAD,
-                    "POST" => ResourceTypeEnum::POST,
-                    "NOTE" => ResourceTypeEnum::NOTE,
-                    _ => return None,
-                };
-
-                let action = match *action_str {
-                    "CREATE" => ActionTypeEnum::CREATE,
-                    "READ" => ActionTypeEnum::READ,
-                    "UPDATE" => ActionTypeEnum::UPDATE,
-                    "DELETE" => ActionTypeEnum::DELETE,
-                    "MANAGE" => ActionTypeEnum::MANAGE,
-                    "PUBLISH" => ActionTypeEnum::PUBLISH,
-                    "MODERATE" => ActionTypeEnum::MODERATE,
-                    "GRADE" => ActionTypeEnum::GRADE,
-                    "TAKE" => ActionTypeEnum::TAKE,
-                    "VIEW_RESULTS" => ActionTypeEnum::ViewResults,
-                    "VIEW_ANY_RESULTS" => ActionTypeEnum::ViewAnyResults,
-                    "ASSIGN_ROLES" => ActionTypeEnum::AssignRoles,
-                    "VIEW_ANALYTICS" => ActionTypeEnum::ViewAnalytics,
-                    "MANAGE_SETTINGS" => ActionTypeEnum::ManageSettings,
-                    "AUDIT" => ActionTypeEnum::AUDIT,
-                    _ => return None,
-                };
-
-                let ownership = match *ownership_str {
-                    "own" => OwnershipType::Own,
-                    "all" => OwnershipType::All,
-                    _ => return None,
-                };
-
-                Some((resource_type, action, ownership))
-            }
-            _ => None,
-        }
+        super::utils::permission::parse_permission_name(permission_name)
     }
 
     pub async fn has_permission(

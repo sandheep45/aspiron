@@ -3,7 +3,7 @@ use sea_orm::{ActiveModelTrait, DatabaseTransaction, Set};
 use uuid::Uuid;
 
 use crate::entries::entities::content_subject;
-use crate::entries::entitiy_enums::exam_types::ExamTypeEnums;
+use crate::entries::entity_enums::exam_types::ExamTypeEnums;
 use crate::seeds::runner::SeedRunner;
 
 impl<'a> SeedRunner<'a> {

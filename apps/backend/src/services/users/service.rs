@@ -80,52 +80,15 @@ impl UserService {
     }
 
     fn parse_resource_type(&self, resource_type: &str) -> Result<ResourceTypeEnum, AppError> {
-        match resource_type.to_uppercase().as_str() {
-            "USER" => Ok(ResourceTypeEnum::USER),
-            "CONTENT" => Ok(ResourceTypeEnum::CONTENT),
-            "ASSESSMENT" => Ok(ResourceTypeEnum::ASSESSMENT),
-            "COMMUNITY" => Ok(ResourceTypeEnum::COMMUNITY),
-            "SYSTEM" => Ok(ResourceTypeEnum::SYSTEM),
-            "SUBJECT" => Ok(ResourceTypeEnum::SUBJECT),
-            "CHAPTER" => Ok(ResourceTypeEnum::CHAPTER),
-            "TOPIC" => Ok(ResourceTypeEnum::TOPIC),
-            "VIDEO" => Ok(ResourceTypeEnum::VIDEO),
-            "QUIZ" => Ok(ResourceTypeEnum::QUIZ),
-            "QUESTION" => Ok(ResourceTypeEnum::QUESTION),
-            "THREAD" => Ok(ResourceTypeEnum::THREAD),
-            "POST" => Ok(ResourceTypeEnum::POST),
-            "NOTE" => Ok(ResourceTypeEnum::NOTE),
-            _ => Err(AppError::validation("Invalid resource type")),
-        }
+        super::utils::permission::parse_resource_type_result(resource_type)
     }
 
     fn parse_action_type(&self, action: &str) -> Result<ActionTypeEnum, AppError> {
-        match action.to_uppercase().as_str() {
-            "CREATE" => Ok(ActionTypeEnum::CREATE),
-            "READ" => Ok(ActionTypeEnum::READ),
-            "UPDATE" => Ok(ActionTypeEnum::UPDATE),
-            "DELETE" => Ok(ActionTypeEnum::DELETE),
-            "MANAGE" => Ok(ActionTypeEnum::MANAGE),
-            "PUBLISH" => Ok(ActionTypeEnum::PUBLISH),
-            "MODERATE" => Ok(ActionTypeEnum::MODERATE),
-            "GRADE" => Ok(ActionTypeEnum::GRADE),
-            "TAKE" => Ok(ActionTypeEnum::TAKE),
-            "VIEW_RESULTS" => Ok(ActionTypeEnum::ViewResults),
-            "VIEW_ANY_RESULTS" => Ok(ActionTypeEnum::ViewAnyResults),
-            "ASSIGN_ROLES" => Ok(ActionTypeEnum::AssignRoles),
-            "VIEW_ANALYTICS" => Ok(ActionTypeEnum::ViewAnalytics),
-            "MANAGE_SETTINGS" => Ok(ActionTypeEnum::ManageSettings),
-            "AUDIT" => Ok(ActionTypeEnum::AUDIT),
-            _ => Err(AppError::validation("Invalid action type")),
-        }
+        super::utils::permission::parse_action_type_result(action)
     }
 
     fn parse_ownership_type(&self, ownership: &str) -> Result<OwnershipType, AppError> {
-        match ownership.to_lowercase().as_str() {
-            "own" => Ok(OwnershipType::Own),
-            "all" => Ok(OwnershipType::All),
-            _ => Err(AppError::validation("Invalid ownership type")),
-        }
+        super::utils::permission::parse_ownership_type_result(ownership)
     }
 
     pub async fn get_permission_summary(

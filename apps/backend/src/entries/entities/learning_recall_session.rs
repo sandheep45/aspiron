@@ -1,4 +1,4 @@
-use crate::entries::entitiy_enums::learning_recall_session_status::LearningRecallSessionStatusEnum;
+use crate::entries::entity_enums::learning_recall_session_status::LearningRecallSessionStatusEnum;
 use sea_orm::prelude::DateTimeWithTimeZone;
 use sea_orm::*;
 use uuid::Uuid;

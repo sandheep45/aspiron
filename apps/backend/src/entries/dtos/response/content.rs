@@ -1,25 +1,15 @@
-use crate::entries::entitiy_enums::exam_types::ExamTypeEnums;
 use sea_orm::prelude::DateTimeWithTimeZone;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, rename = "SubjectsResponse")]
-pub struct SubjectsResponse {
-    pub subjects: Vec<SubjectDto>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, rename = "SubjectDto")]
 pub struct SubjectDto {
     pub id: Uuid,
     pub name: String,
-    pub exam_type: ExamTypeEnums,
-    #[ts(type = "Date")]
-    pub created_at: DateTimeWithTimeZone,
-    #[ts(type = "Date")]
-    pub updated_at: DateTimeWithTimeZone,
+    pub description: Option<String>,
+    pub icon_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -56,10 +46,6 @@ pub struct TopicDto {
     pub name: String,
     pub chapter_id: Uuid,
     pub order_number: i32,
-    #[ts(type = "Date")]
-    pub created_at: DateTimeWithTimeZone,
-    #[ts(type = "Date")]
-    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -94,11 +80,4 @@ pub struct PlaybackTokenResponse {
     pub playback_token: String,
     #[ts(type = "Date")]
     pub expires_at: DateTimeWithTimeZone,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, rename = "OfficialNotesResponse")]
-pub struct OfficialNotesResponse {
-    pub notes: Vec<crate::entries::dtos::response::learning::NoteDto>,
-    pub pagination: Option<crate::entries::dtos::response::common::PaginationInfo>,
 }

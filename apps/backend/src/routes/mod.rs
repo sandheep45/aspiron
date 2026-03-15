@@ -3,6 +3,7 @@ pub mod auth;
 pub mod community;
 pub mod content;
 pub mod health;
+pub mod insights;
 pub mod learning;
 pub mod live_session;
 pub mod notification;
@@ -23,4 +24,5 @@ pub fn api_v1_router(app_state: &AppState) -> axum::Router<AppState> {
         .merge(learning::router(app_state))
         .merge(live_session::router(app_state))
         .merge(notification::router(app_state))
+        .merge(insights::router(app_state))
 }

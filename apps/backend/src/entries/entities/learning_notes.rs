@@ -1,4 +1,4 @@
-use crate::entries::entitiy_enums::{
+use crate::entries::entity_enums::{
     content_owner_types::ContentOwnerTypeEnum, notes_content_type::NotesContentTypeEnum,
     trust_level::TrustLevelEnum,
 };
