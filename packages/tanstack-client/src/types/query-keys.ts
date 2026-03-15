@@ -8,6 +8,10 @@ export const queryKeys = {
     currentUser: () => ['auth', 'currentUser'] as const,
   },
 
+  admin: {
+    insights: () => ['insights'] as const,
+  },
+
   // Users
   users: {
     all: () => ['users'] as const,
@@ -16,6 +20,12 @@ export const queryKeys = {
       [...queryKeys.users.lists(), { page, limit }] as const,
     details: () => [...queryKeys.users.all(), 'detail'] as const,
     detail: (id: string) => [...queryKeys.users.details(), id] as const,
+  },
+
+  contents: {
+    topics: {
+      getTopicById: (topicId: string) => ['getTopicById', topicId],
+    },
   },
 
   // Courses
