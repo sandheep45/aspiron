@@ -1,18 +1,23 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
+import { ActionRequired } from '@/modules/dashboard/components/action-required'
 
 export const Route = createFileRoute('/_private-routes/dashboard/')({
   component: RouteComponent,
   staticData: {
-    breadcrumb: 'Dashboard',
+    breadcrumb: undefined,
   },
 })
 
 function RouteComponent() {
   return (
-    <div>
-      Hello "/_private-routes/dashboard/"!
-      <Button variant={'ghost'}>skvj</Button>
+    <div className='flex w-full flex-col gap-4'>
+      <p className='text-lg text-slate-400'>
+        What needs your attention right now
+      </p>
+
+      <section>
+        <ActionRequired />
+      </section>
     </div>
   )
 }

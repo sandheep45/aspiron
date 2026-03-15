@@ -1,12 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_private-routes/')({
-  component: RouteComponent,
+  beforeLoad: () => {
+    throw redirect({
+      to: '/dashboard',
+    })
+  },
   staticData: {
     breadcrumb: undefined,
   },
 })
-
-function RouteComponent() {
-  return <div>Hello "/_private-routes/"! vnvkub</div>
-}

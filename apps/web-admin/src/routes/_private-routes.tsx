@@ -29,7 +29,9 @@ function RouteComponent() {
       <AppSidebar />
       <SidebarInset className='overflow-auto py-2.5 pr-2'>
         <AppNavbar />
-        <Outlet />
+        <div className='p-5'>
+          <Outlet />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )

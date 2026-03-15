@@ -13,51 +13,51 @@ import type * as React from 'react'
 export interface SidebarItem {
   id: string
   label: string
-  href: LinkProps['to']
+  hrefTo: LinkProps['to']
   icon: React.JSX.Element
 }
 
-export const sidebarItems: SidebarItem[] = [
+export const sidebarItems = [
   {
     id: 'dashboard',
     label: 'Dashboard',
     icon: <LayoutDashboard className='h-5 w-5' />,
-    href: '/dashboard',
+    hrefTo: '/dashboard',
   },
   {
     id: 'content',
     label: 'Content',
     icon: <FileText className='h-5 w-5' />,
-    href: '/content',
+    hrefTo: '/content',
   },
   {
     id: 'tests',
     label: 'Tests & Quizzes',
     icon: <ClipboardCheck className='h-5 w-5' />,
-    href: '/quizzes',
+    hrefTo: '/quizzes',
   },
   {
     id: 'classes',
     label: 'Live Classes',
     icon: <Video className='h-5 w-5' />,
-    href: '/live-classes',
+    hrefTo: '/live-classes',
   },
   {
     id: 'community',
     label: 'Community',
     icon: <Users className='h-5 w-5' />,
-    href: '/community',
+    hrefTo: '/community',
   },
   {
     id: 'analytics',
     label: 'Analytics',
     icon: <BarChart3 className='h-5 w-5' />,
-    href: '/analytics',
+    hrefTo: '/analytics',
   },
   {
     id: 'settings',
     label: 'Settings',
     icon: <Settings className='h-5 w-5' />,
-    href: '/settings',
+    hrefTo: '/settings',
   },
-]
+] as const satisfies SidebarItem[]

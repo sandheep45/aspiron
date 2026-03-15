@@ -40,12 +40,16 @@ const buttonVariants = cva(
 )
 
 type ButtonVariantsProps = VariantProps<typeof buttonVariants>
-type ButtonProps = ButtonPrimitive.Props & ButtonVariantsProps
+type ButtonProps = ButtonPrimitive.Props &
+  ButtonVariantsProps & {
+    loading: boolean
+  }
 
 function Button({
   className,
   variant = 'default',
   size = 'default',
+  loading,
   ...props
 }: ButtonProps) {
   return (

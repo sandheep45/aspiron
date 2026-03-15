@@ -10,13 +10,31 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
   const matches = useMatches()
 
   const breadcrumbs = matches
-    .filter((match) => match.staticData?.breadcrumb)
+    .filter((match) => {
+      const staticBreadcrumb = match.staticData?.breadcrumb
+      const loaderBreadcrumb = match.loaderData?.breadcrumb
+      return !!staticBreadcrumb || !!loaderBreadcrumb
+    })
     .map((match, index, filteredMatches) => {
-      const breadcrumb = match.staticData.breadcrumb as string
+      const staticBreadcrumb = match.staticData.breadcrumb
+      const loaderBreadcrumb = match.loaderData?.breadcrumb
+
+      let label: string
+
+      if (typeof staticBreadcrumb === 'function') {
+        label = staticBreadcrumb(match)
+      } else if (typeof staticBreadcrumb === 'string') {
+        label = staticBreadcrumb
+      } else if (typeof loaderBreadcrumb === 'string') {
+        label = loaderBreadcrumb
+      } else {
+        label = ''
+      }
+
       const isLast = index === filteredMatches.length - 1
 
       return {
-        label: breadcrumb,
+        label,
         href: match.pathname,
         isLast,
       }

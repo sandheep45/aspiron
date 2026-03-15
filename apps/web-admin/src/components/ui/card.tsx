@@ -1,21 +1,63 @@
+import { cva, type VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
 import { cn } from '@/lib/utils'
+import { Spinner } from './spinner'
+
+const cardVariants = cva('group flex flex-col transition-all', {
+  variants: {
+    variant: {
+      default:
+        'gap-4 overflow-hidden rounded-lg bg-card py-4 text-card-foreground ring-1 ring-foreground/10',
+      elevated:
+        'bg-gradient-to-br from-slate-900/90 to-slate-900/50 backdrop-blur-sm border border-slate-800/50 rounded-2xl p-6 hover:border-rose-500/30 hover:shadow-lg hover:shadow-rose-500/5',
+    },
+    size: {
+      default: '',
+      sm: 'gap-3 py-3',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+    size: 'default',
+  },
+})
+
+export interface CardProps
+  extends React.ComponentProps<'div'>,
+    VariantProps<typeof cardVariants> {
+  loading?: boolean
+}
 
 function Card({
   className,
-  size = 'default',
+  size,
+  variant,
+  loading,
+  children,
   ...props
-}: React.ComponentProps<'div'> & { size?: 'default' | 'sm' }) {
+}: CardProps) {
   return (
     <div
       data-slot='card'
       data-size={size}
       className={cn(
-        'group/card flex flex-col gap-4 overflow-hidden rounded-lg bg-card py-4 text-card-foreground text-xs/relaxed ring-1 ring-foreground/10 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg',
+        cardVariants({ variant, size }),
+        'relative', // needed for overlay
         className,
       )}
       {...props}
-    />
+    >
+      {/* Optional loading overlay */}
+      {loading && (
+        <div className='absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/30 backdrop-blur-sm dark:bg-black/30'>
+          <Spinner className='size-10' />
+        </div>
+      )}
+
+      <div className={cn(loading ? 'pointer-events-none opacity-50' : '')}>
+        {children}
+      </div>
+    </div>
   )
 }
 

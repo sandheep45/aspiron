@@ -17,12 +17,14 @@ import { Route as PrivateRoutesSettingsIndexRouteImport } from './routes/_privat
 import { Route as PrivateRoutesQuizzesIndexRouteImport } from './routes/_private-routes/quizzes/index'
 import { Route as PrivateRoutesLiveClassesIndexRouteImport } from './routes/_private-routes/live-classes/index'
 import { Route as PrivateRoutesDashboardIndexRouteImport } from './routes/_private-routes/dashboard/index'
-import { Route as PrivateRoutesContentIndexRouteImport } from './routes/_private-routes/content/index'
 import { Route as PrivateRoutesCommunityIndexRouteImport } from './routes/_private-routes/community/index'
 import { Route as PrivateRoutesAnalyticsIndexRouteImport } from './routes/_private-routes/analytics/index'
 import { Route as AuthAuthLayoutLoginRouteImport } from './routes/auth/_auth-layout/login'
 import { Route as AuthAuthLayoutForgotPasswordRouteImport } from './routes/auth/_auth-layout/forgot-password'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as PrivateRoutesContentContentLayoutRouteImport } from './routes/_private-routes/content/_content-layout'
+import { Route as PrivateRoutesContentContentLayoutIndexRouteImport } from './routes/_private-routes/content/_content-layout/index'
+import { Route as PrivateRoutesContentContentLayoutTopicIdRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id'
 
 const PrivateRoutesRoute = PrivateRoutesRouteImport.update({
   id: '/_private-routes',
@@ -67,12 +69,6 @@ const PrivateRoutesDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => PrivateRoutesRoute,
   } as any)
-const PrivateRoutesContentIndexRoute =
-  PrivateRoutesContentIndexRouteImport.update({
-    id: '/content/',
-    path: '/content/',
-    getParentRoute: () => PrivateRoutesRoute,
-  } as any)
 const PrivateRoutesCommunityIndexRoute =
   PrivateRoutesCommunityIndexRouteImport.update({
     id: '/community/',
@@ -101,21 +97,41 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivateRoutesContentContentLayoutRoute =
+  PrivateRoutesContentContentLayoutRouteImport.update({
+    id: '/content/_content-layout',
+    path: '/content',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesContentContentLayoutIndexRoute =
+  PrivateRoutesContentContentLayoutIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PrivateRoutesContentContentLayoutRoute,
+  } as any)
+const PrivateRoutesContentContentLayoutTopicIdRoute =
+  PrivateRoutesContentContentLayoutTopicIdRouteImport.update({
+    id: '/topic/$id',
+    path: '/topic/$id',
+    getParentRoute: () => PrivateRoutesContentContentLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PrivateRoutesIndexRoute
   '/auth': typeof AuthAuthLayoutRouteWithChildren
+  '/content': typeof PrivateRoutesContentContentLayoutRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth/forgot-password': typeof AuthAuthLayoutForgotPasswordRoute
   '/auth/login': typeof AuthAuthLayoutLoginRoute
   '/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
   '/community/': typeof PrivateRoutesCommunityIndexRoute
-  '/content/': typeof PrivateRoutesContentIndexRoute
   '/dashboard/': typeof PrivateRoutesDashboardIndexRoute
   '/live-classes/': typeof PrivateRoutesLiveClassesIndexRoute
   '/quizzes/': typeof PrivateRoutesQuizzesIndexRoute
   '/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/': typeof AuthAuthLayoutIndexRoute
+  '/content/': typeof PrivateRoutesContentContentLayoutIndexRoute
+  '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PrivateRoutesIndexRoute
@@ -124,46 +140,51 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthAuthLayoutLoginRoute
   '/analytics': typeof PrivateRoutesAnalyticsIndexRoute
   '/community': typeof PrivateRoutesCommunityIndexRoute
-  '/content': typeof PrivateRoutesContentIndexRoute
   '/dashboard': typeof PrivateRoutesDashboardIndexRoute
   '/live-classes': typeof PrivateRoutesLiveClassesIndexRoute
   '/quizzes': typeof PrivateRoutesQuizzesIndexRoute
   '/settings': typeof PrivateRoutesSettingsIndexRoute
   '/auth': typeof AuthAuthLayoutIndexRoute
+  '/content': typeof PrivateRoutesContentContentLayoutIndexRoute
+  '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_private-routes': typeof PrivateRoutesRouteWithChildren
   '/auth/_auth-layout': typeof AuthAuthLayoutRouteWithChildren
   '/_private-routes/': typeof PrivateRoutesIndexRoute
+  '/_private-routes/content/_content-layout': typeof PrivateRoutesContentContentLayoutRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth/_auth-layout/forgot-password': typeof AuthAuthLayoutForgotPasswordRoute
   '/auth/_auth-layout/login': typeof AuthAuthLayoutLoginRoute
   '/_private-routes/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
   '/_private-routes/community/': typeof PrivateRoutesCommunityIndexRoute
-  '/_private-routes/content/': typeof PrivateRoutesContentIndexRoute
   '/_private-routes/dashboard/': typeof PrivateRoutesDashboardIndexRoute
   '/_private-routes/live-classes/': typeof PrivateRoutesLiveClassesIndexRoute
   '/_private-routes/quizzes/': typeof PrivateRoutesQuizzesIndexRoute
   '/_private-routes/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/_auth-layout/': typeof AuthAuthLayoutIndexRoute
+  '/_private-routes/content/_content-layout/': typeof PrivateRoutesContentContentLayoutIndexRoute
+  '/_private-routes/content/_content-layout/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/content'
     | '/api/auth/$'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/analytics/'
     | '/community/'
-    | '/content/'
     | '/dashboard/'
     | '/live-classes/'
     | '/quizzes/'
     | '/settings/'
     | '/auth/'
+    | '/content/'
+    | '/content/topic/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,28 +193,31 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/analytics'
     | '/community'
-    | '/content'
     | '/dashboard'
     | '/live-classes'
     | '/quizzes'
     | '/settings'
     | '/auth'
+    | '/content'
+    | '/content/topic/$id'
   id:
     | '__root__'
     | '/_private-routes'
     | '/auth/_auth-layout'
     | '/_private-routes/'
+    | '/_private-routes/content/_content-layout'
     | '/api/auth/$'
     | '/auth/_auth-layout/forgot-password'
     | '/auth/_auth-layout/login'
     | '/_private-routes/analytics/'
     | '/_private-routes/community/'
-    | '/_private-routes/content/'
     | '/_private-routes/dashboard/'
     | '/_private-routes/live-classes/'
     | '/_private-routes/quizzes/'
     | '/_private-routes/settings/'
     | '/auth/_auth-layout/'
+    | '/_private-routes/content/_content-layout/'
+    | '/_private-routes/content/_content-layout/topic/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -260,13 +284,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesDashboardIndexRouteImport
       parentRoute: typeof PrivateRoutesRoute
     }
-    '/_private-routes/content/': {
-      id: '/_private-routes/content/'
-      path: '/content'
-      fullPath: '/content/'
-      preLoaderRoute: typeof PrivateRoutesContentIndexRouteImport
-      parentRoute: typeof PrivateRoutesRoute
-    }
     '/_private-routes/community/': {
       id: '/_private-routes/community/'
       path: '/community'
@@ -302,14 +319,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_private-routes/content/_content-layout': {
+      id: '/_private-routes/content/_content-layout'
+      path: '/content'
+      fullPath: '/content'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/content/_content-layout/': {
+      id: '/_private-routes/content/_content-layout/'
+      path: '/'
+      fullPath: '/content/'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutIndexRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutRoute
+    }
+    '/_private-routes/content/_content-layout/topic/$id': {
+      id: '/_private-routes/content/_content-layout/topic/$id'
+      path: '/topic/$id'
+      fullPath: '/content/topic/$id'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutRoute
+    }
   }
 }
 
+interface PrivateRoutesContentContentLayoutRouteChildren {
+  PrivateRoutesContentContentLayoutIndexRoute: typeof PrivateRoutesContentContentLayoutIndexRoute
+  PrivateRoutesContentContentLayoutTopicIdRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+}
+
+const PrivateRoutesContentContentLayoutRouteChildren: PrivateRoutesContentContentLayoutRouteChildren =
+  {
+    PrivateRoutesContentContentLayoutIndexRoute:
+      PrivateRoutesContentContentLayoutIndexRoute,
+    PrivateRoutesContentContentLayoutTopicIdRoute:
+      PrivateRoutesContentContentLayoutTopicIdRoute,
+  }
+
+const PrivateRoutesContentContentLayoutRouteWithChildren =
+  PrivateRoutesContentContentLayoutRoute._addFileChildren(
+    PrivateRoutesContentContentLayoutRouteChildren,
+  )
+
 interface PrivateRoutesRouteChildren {
   PrivateRoutesIndexRoute: typeof PrivateRoutesIndexRoute
+  PrivateRoutesContentContentLayoutRoute: typeof PrivateRoutesContentContentLayoutRouteWithChildren
   PrivateRoutesAnalyticsIndexRoute: typeof PrivateRoutesAnalyticsIndexRoute
   PrivateRoutesCommunityIndexRoute: typeof PrivateRoutesCommunityIndexRoute
-  PrivateRoutesContentIndexRoute: typeof PrivateRoutesContentIndexRoute
   PrivateRoutesDashboardIndexRoute: typeof PrivateRoutesDashboardIndexRoute
   PrivateRoutesLiveClassesIndexRoute: typeof PrivateRoutesLiveClassesIndexRoute
   PrivateRoutesQuizzesIndexRoute: typeof PrivateRoutesQuizzesIndexRoute
@@ -318,9 +374,10 @@ interface PrivateRoutesRouteChildren {
 
 const PrivateRoutesRouteChildren: PrivateRoutesRouteChildren = {
   PrivateRoutesIndexRoute: PrivateRoutesIndexRoute,
+  PrivateRoutesContentContentLayoutRoute:
+    PrivateRoutesContentContentLayoutRouteWithChildren,
   PrivateRoutesAnalyticsIndexRoute: PrivateRoutesAnalyticsIndexRoute,
   PrivateRoutesCommunityIndexRoute: PrivateRoutesCommunityIndexRoute,
-  PrivateRoutesContentIndexRoute: PrivateRoutesContentIndexRoute,
   PrivateRoutesDashboardIndexRoute: PrivateRoutesDashboardIndexRoute,
   PrivateRoutesLiveClassesIndexRoute: PrivateRoutesLiveClassesIndexRoute,
   PrivateRoutesQuizzesIndexRoute: PrivateRoutesQuizzesIndexRoute,
