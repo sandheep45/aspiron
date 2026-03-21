@@ -4,7 +4,8 @@ use axum::middleware;
 use axum::routing::get;
 use std::sync::{Arc, LazyLock, RwLock};
 
-use crate::middleware::auth::authenticate;
+use crate::middleware::auth::AuthMiddlewareState;
+use crate::middleware::client_type::validate_client_type;
 use crate::{
     routes::api_v1_router,
     setup::{config::Config, openapi, openapi::ApiDoc},
@@ -122,12 +123,15 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
         ])
         .allow_credentials(true);
 
+    let auth_state = AuthMiddlewareState::new(config.jwt.secret.clone());
+
     let router = axum::Router::new()
         .route("/api-docs/openapi.json", get(openapi::openapi_json))
         .merge(SwaggerUi::new("/swagger").url("/api-docs/openapi-swagger.json", ApiDoc::openapi()))
         .nest(&api_v1_prefix, api_v1_router(&app_state))
+        .layer(axum::Extension(auth_state))
         .layer(TraceLayer::new_for_http())
-        .layer(middleware::from_fn(authenticate))
+        .layer(middleware::from_fn(validate_client_type))
         .layer(cors);
 
     // Optional: route registry

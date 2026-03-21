@@ -1,57 +1,133 @@
-use std::collections::HashSet;
+use std::sync::{Arc, LazyLock, RwLock};
 
 use axum::{
     body::Body,
-    http::{Request, Response, StatusCode},
+    extract::FromRequestParts,
+    http::Request,
     middleware::Next,
-    response::IntoResponse,
+    response::{IntoResponse, Response},
 };
-use once_cell::sync::Lazy;
+use uuid::Uuid;
 
-use crate::constants::AllowedClientType;
+use crate::setup::error::AppError;
+use crate::utils::jwt::decode_jwt;
 
-// Exact route whitelist
-static WHITELIST_ROUTES: Lazy<HashSet<&'static str>> =
-    Lazy::new(|| HashSet::from(["/api-docs/openapi.json", "/api-docs/openapi-swagger.json"]));
-
-// Prefix-based whitelist (for route groups)
-static WHITELIST_PREFIXES: &[&str] = &["/swagger"];
-
-fn is_whitelisted(path: &str) -> bool {
-    WHITELIST_ROUTES.contains(path)
-        || WHITELIST_PREFIXES
-            .iter()
-            .any(|prefix| path.starts_with(prefix))
+#[derive(Clone, Debug)]
+pub enum PathMatch {
+    Exact(String),
+    Prefix(String),
 }
 
-pub async fn authenticate(mut request: Request<Body>, next: Next) -> Response<Body> {
+impl PathMatch {
+    pub fn exact(path: &str) -> Self {
+        Self::Exact(path.to_string())
+    }
+
+    pub fn prefix(path: &str) -> Self {
+        Self::Prefix(path.to_string())
+    }
+}
+
+static EXEMPT_PATHS: LazyLock<RwLock<Vec<PathMatch>>> = LazyLock::new(|| RwLock::new(Vec::new()));
+
+pub fn register_exempt_paths(paths: Vec<PathMatch>) {
+    EXEMPT_PATHS.write().unwrap().extend(paths);
+}
+
+fn is_path_exempt(path: &str) -> bool {
+    let exempt = EXEMPT_PATHS.read().unwrap();
+    exempt.iter().any(|m| match m {
+        PathMatch::Exact(p) => p.as_str() == path,
+        PathMatch::Prefix(p) => path.starts_with(p.as_str()),
+    })
+}
+
+#[derive(Clone)]
+pub struct AuthMiddlewareState {
+    pub jwt_secret: Arc<String>,
+}
+
+impl AuthMiddlewareState {
+    pub fn new(jwt_secret: String) -> Self {
+        Self {
+            jwt_secret: Arc::new(jwt_secret),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct AuthUser(pub Uuid);
+
+impl<S> FromRequestParts<S> for AuthUser
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        _state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        parts
+            .extensions
+            .get::<AuthUser>()
+            .cloned()
+            .ok_or(AppError::Auth("Authentication required".to_string()))
+    }
+}
+
+pub async fn require_auth(mut request: Request<Body>, next: Next) -> Response {
     let path = request.uri().path();
 
-    if is_whitelisted(path) {
+    if is_path_exempt(path) {
         return next.run(request).await;
     }
 
-    let client_type_header = match request.headers().get("x-client-type") {
-        Some(value) => value,
+    let state = request.extensions().get::<AuthMiddlewareState>().cloned();
+
+    let state = match state {
+        Some(s) => s,
         None => {
-            return (StatusCode::UNAUTHORIZED, "Missing x-client-type header").into_response();
+            return AppError::Internal(anyhow::anyhow!("Auth middleware not configured"))
+                .into_response();
         }
     };
 
-    let client_type_str = match client_type_header.to_str() {
-        Ok(v) => v,
-        Err(_) => {
-            return (StatusCode::BAD_REQUEST, "Invalid header format").into_response();
-        }
-    };
+    let token = extract_token(&request);
 
-    let client_type = match client_type_str.parse::<AllowedClientType>() {
-        Ok(client) => client,
-        Err(_) => {
-            return (StatusCode::FORBIDDEN, "Client type not allowed").into_response();
-        }
-    };
+    match token {
+        Some(token) => match decode_jwt(&token, &state.jwt_secret) {
+            Ok(claims) => match Uuid::parse_str(&claims.sub) {
+                Ok(user_id) => {
+                    request.extensions_mut().insert(AuthUser(user_id));
+                    next.run(request).await
+                }
+                Err(_) => AppError::Auth("Invalid user ID".to_string()).into_response(),
+            },
+            Err(_) => AppError::Auth("Invalid or expired token".to_string()).into_response(),
+        },
+        None => AppError::Auth("Missing authentication token".to_string()).into_response(),
+    }
+}
 
-    request.extensions_mut().insert(client_type);
-    next.run(request).await
+fn extract_token(request: &Request<Body>) -> Option<String> {
+    if let Some(cookie_header) = request.headers().get("cookie")
+        && let Ok(cookie_str) = cookie_header.to_str()
+    {
+        for cookie in cookie_str.split(';') {
+            let cookie = cookie.trim();
+            if cookie.starts_with("access_token=") {
+                return Some(cookie.strip_prefix("access_token=").unwrap().to_string());
+            }
+        }
+    }
+
+    if let Some(auth_header) = request.headers().get("authorization")
+        && let Ok(auth_str) = auth_header.to_str()
+        && let Some(token) = auth_str.strip_prefix("Bearer ")
+    {
+        return Some(token.to_string());
+    }
+
+    None
 }

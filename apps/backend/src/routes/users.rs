@@ -1,7 +1,7 @@
-use axum::Extension;
-use axum::{Router, routing::get};
+use axum::{Extension, Router, routing::get};
 
-use crate::services::users::{UsersState, get_user_by_email};
+use crate::services::users::handler::get_user_by_email;
+use crate::services::users::state::UsersState;
 use crate::setup::app::AppState;
 
 pub fn router(app_state: &AppState) -> Router<AppState> {
