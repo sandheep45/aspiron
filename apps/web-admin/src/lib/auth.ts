@@ -1,4 +1,5 @@
 import { type AuthResponse, apiClient } from '@aspiron/api-client'
+import { isAxiosError } from '@aspiron/api-client/axios-utils'
 import Credentials from '@auth/core/providers/credentials'
 import { createServerFn } from '@tanstack/react-start'
 import {
@@ -21,10 +22,17 @@ export const authConfig: StartAuthJSConfig = {
   providers: [
     Credentials({
       authorize: async (credentials) => {
-        const data = await apiClient.post('/auth/login', credentials)
-        const loggedInUserData = data.data
-        return {
-          ...loggedInUserData,
+        try {
+          const data = await apiClient.post('/auth/login', credentials)
+          const loggedInUserData = data.data
+          return {
+            ...loggedInUserData,
+          }
+        } catch (error) {
+          if (isAxiosError(error)) {
+            console.log('error', error.response)
+          }
+          return null
         }
       },
     }),

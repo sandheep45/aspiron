@@ -86,8 +86,8 @@ check-js:
 ci:
     just format
     just lint
-    just check
     just build-all
+    just check
 
 # ==================================================
 # Build / Test (Parallel + Cached)
