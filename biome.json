@@ -133,6 +133,12 @@
       }
     },
     {
+      "includes": ["**/search-index.ts"],
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
       "includes": ["apps/web-admin/src/components/ui/**/*.tsx"],
       "linter": {
         "rules": {

@@ -3,14 +3,17 @@
   "private": false,
   "version": "0.0.1",
   "type": "module",
-  "main": "./dist/api-client.umd.js",
-  "module": "./dist/api-client.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/api-client.js",
-      "require": "./dist/api-client.umd.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./axios-utils": {
+      "import": "./dist/axios-utils.js",
+      "types": "./dist/axios-utils.d.ts"
     }
   },
   "files": [

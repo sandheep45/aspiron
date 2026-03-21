@@ -21,13 +21,19 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'ApiClient',
-      fileName: 'api-client',
+      fileName: 'index',
+      formats: ['es'],
     },
     rollupOptions: {
-      external: [],
-      output: {
-        globals: {},
+      input: {
+        index: resolve(__dirname, 'src/index.ts'),
+        'axios-utils': resolve(__dirname, 'src/axios-utils.ts'),
       },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name]-[hash].js',
+      },
+      external: ['axios'],
     },
   },
 })
