@@ -4,7 +4,7 @@
 export type LiveClassResponse = {
   id: string;
   topic_id: string;
-  scheduled_at: string;
+  scheduled_at: Date;
   duration_min: number;
   provider: string;
   join_url: string;

@@ -10,8 +10,11 @@ use crate::setup::error::AppError;
     get,
     path = "/api/v1/admin/insights",
     tag = "Insights",
+    params(
+        InsightsQueryParams
+    ),
     responses(
-        (status = 200, description = "Get admin insights for time window")
+        (status = 200, description = "Get admin insights with pagination and filtering")
     )
 )]
 pub async fn get_insights(

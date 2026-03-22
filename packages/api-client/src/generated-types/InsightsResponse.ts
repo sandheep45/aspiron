@@ -2,10 +2,12 @@
 // Relative imports converted to absolute imports by generate-types recipe. DO NOT EDIT.
 import type { Insight } from "@/generated-types/Insight";
 import type { InsightSummary } from "@/generated-types/InsightSummary";
+import type { PaginationResponse } from "@/generated-types/PaginationResponse";
 import type { TimeWindow } from "@/generated-types/TimeWindow";
 
 export type InsightsResponse = {
   time_window: TimeWindow;
   insights: Array<Insight>;
   summary: InsightSummary;
+  pagination: PaginationResponse;
 };

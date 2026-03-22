@@ -2,17 +2,10 @@
 // Relative imports converted to absolute imports by generate-types recipe. DO NOT EDIT.
 import type { InsightSeverity } from "@/generated-types/InsightSeverity";
 import type { InsightType } from "@/generated-types/InsightType";
-import type { InsightsSortBy } from "@/generated-types/InsightsSortBy";
-import type { SortOrder } from "@/generated-types/SortOrder";
 
-export type InsightsQueryParams = {
-  page?: number;
-  limit?: number;
-  search?: string;
+export type InsightFilters = {
   severity?: InsightSeverity;
   insight_type?: InsightType;
   start?: bigint;
   end?: bigint;
-  sort_by?: InsightsSortBy;
-  sort_order?: SortOrder;
 };

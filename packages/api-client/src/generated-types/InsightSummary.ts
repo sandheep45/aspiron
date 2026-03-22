@@ -2,6 +2,9 @@
 // Relative imports converted to absolute imports by generate-types recipe. DO NOT EDIT.
 
 export type InsightSummary = {
+  total: number;
+  filtered_item: string | null;
+  filtered_item_count: number;
   danger: number;
   success: number;
   neutral: number;

@@ -27,10 +27,9 @@ pub async fn get_insights_handler(
     Extension(insights_state): Extension<InsightsState>,
     Query(params): Query<InsightsQueryParams>,
 ) -> Result<Json<InsightsResponse>, AppError> {
-    let (start, end) = params.get_time_window();
     let insights = insights_state
         .insights_service
-        .get_insights(start, end)
+        .get_insights(&params)
         .await?;
     Ok(Json(insights))
 }

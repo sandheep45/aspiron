@@ -18,7 +18,7 @@ pub struct SubjectDto {
 #[ts(export, rename = "ChaptersResponse")]
 pub struct ChaptersResponse {
     pub chapters: Vec<ChapterDto>,
-    pub pagination: Option<crate::entries::dtos::response::common::PaginationInfo>,
+    pub pagination: Option<crate::entries::dtos::response::common::PaginationResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
@@ -42,7 +42,7 @@ pub struct ChapterDto {
 #[ts(export, rename = "TopicsResponse")]
 pub struct TopicsResponse {
     pub topics: Vec<TopicDto>,
-    pub pagination: Option<crate::entries::dtos::response::common::PaginationInfo>,
+    pub pagination: Option<crate::entries::dtos::response::common::PaginationResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
@@ -60,7 +60,7 @@ pub struct TopicDto {
 #[ts(export, rename = "VideosResponse")]
 pub struct VideosResponse {
     pub videos: Vec<VideoDto>,
-    pub pagination: Option<crate::entries::dtos::response::common::PaginationInfo>,
+    pub pagination: Option<crate::entries::dtos::response::common::PaginationResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
