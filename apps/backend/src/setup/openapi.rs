@@ -34,12 +34,16 @@ impl Modify for AddXClientTypeHeader {
     modifiers(&AddXClientTypeHeader),
     paths(
         routes::health::health,
+        crate::routes::community::public_threads,
         services::auth::handler::authenticate_user,
         services::auth::handler::refresh_token,
         services::auth::handler::register_user,
+        services::auth::handler::log_out,
         services::auth::handler::get_me,
+        services::users::handler::get_user_by_email,
         services::assessment::handler::get_quizzes_by_topic_id,
         services::assessment::handler::fetch_quiz_by_id,
+        services::assessment::handler::get_questions_by_quiz_id,
         services::assessment::handler::create_attempt,
         services::assessment::handler::submit_attempt,
         services::assessment::handler::get_results_by_attempt_id,
@@ -69,7 +73,8 @@ impl Modify for AddXClientTypeHeader {
         services::live_session::handler::join_live_class_by_id,
         services::live_session::handler::fetch_upcoming_live_classes,
         services::notification::handler::get_all_notifications,
-        services::notification::handler::update_notification_status
+        services::notification::handler::update_notification_status,
+        routes::insights::get_insights
     )
 )]
 pub struct ApiDoc;

@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "PaginationInfo")]
 pub struct PaginationInfo {
     pub page: u32,
@@ -10,14 +11,14 @@ pub struct PaginationInfo {
     pub total_pages: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "SuccessResponse")]
 pub struct SuccessResponse {
     pub success: bool,
     pub message: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "ErrorResponse")]
 pub struct ErrorResponse {
     pub success: bool,

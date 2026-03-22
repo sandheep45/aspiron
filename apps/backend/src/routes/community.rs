@@ -35,6 +35,14 @@ pub fn router(_app_state: &AppState) -> Router<AppState> {
         .layer(middleware::from_fn(require_auth))
 }
 
-async fn public_threads() -> axum::Json<bool> {
+#[utoipa::path(
+    get,
+    path = "/api/v1/community/threads/public",
+    tag = "Community",
+    responses(
+        (status = 200, description = "Get public threads")
+    )
+)]
+pub async fn public_threads() -> axum::Json<bool> {
     axum::Json(true)
 }

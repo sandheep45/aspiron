@@ -8,7 +8,7 @@ use crate::setup::error::AppError;
 
 #[utoipa::path(
     get,
-    path = "/admin/insights",
+    path = "/api/v1/admin/insights",
     tag = "Insights",
     responses(
         (status = 200, description = "Get admin insights for time window")

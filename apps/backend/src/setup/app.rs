@@ -127,7 +127,14 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
 
     let router = axum::Router::new()
         .route("/api-docs/openapi.json", get(openapi::openapi_json))
-        .merge(SwaggerUi::new("/swagger").url("/api-docs/openapi-swagger.json", ApiDoc::openapi()))
+        .merge(
+            SwaggerUi::new("/swagger")
+                .url("/api-docs/openapi-swagger.json", ApiDoc::openapi())
+                .config(
+                    utoipa_swagger_ui::Config::new(["/api-docs/openapi-swagger.json"])
+                        .doc_expansion("none"),
+                ),
+        )
         .nest(&api_v1_prefix, api_v1_router(&app_state))
         .layer(axum::Extension(auth_state))
         .layer(TraceLayer::new_for_http())

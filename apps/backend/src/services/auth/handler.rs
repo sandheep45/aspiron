@@ -120,6 +120,14 @@ pub async fn register_user() -> ResponseJson<bool> {
     ResponseJson(true)
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/logout",
+    tag = "Auth",
+    responses(
+        (status = 200, description = "User logged out")
+    )
+)]
 pub async fn log_out() -> ResponseJson<bool> {
     ResponseJson(true)
 }

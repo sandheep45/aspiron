@@ -1,9 +1,10 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, ToSchema)]
 #[serde(rename_all = "lowercase")]
 #[ts(export, rename = "InsightSeverity")]
 pub enum Severity {
@@ -14,7 +15,7 @@ pub enum Severity {
     Info,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[ts(export, rename = "InsightType")]
 pub enum InsightType {
@@ -37,39 +38,45 @@ impl InsightType {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export)]
 pub struct QuizReviewPendingMetadata {
+    #[schema(value_type = String)]
     pub quiz_id: Uuid,
     pub pending_count: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export)]
 pub struct LowAttendanceMetadata {
+    #[schema(value_type = String)]
     pub session_id: Uuid,
+    #[schema(value_type = String)]
     pub topic_id: Uuid,
     pub attendee_count: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export)]
 pub struct TopicDifficultyMetadata {
+    #[schema(value_type = String)]
     pub topic_id: Uuid,
     pub avg_progress: f64,
     pub attempt_count: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export)]
 pub struct LowEngagementMetadata {
+    #[schema(value_type = String)]
     pub topic_id: Uuid,
     pub active_users: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "Insight")]
 pub struct Insight {
+    #[schema(value_type = String)]
     pub id: Uuid,
     pub insight_type: InsightType,
     pub severity: Severity,
@@ -77,10 +84,11 @@ pub struct Insight {
     pub description: String,
     pub metadata: serde_json::Value,
     #[ts(type = "Date")]
+    #[schema(value_type = String)]
     pub detected_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "InsightSummary")]
 pub struct InsightSummary {
     pub danger: usize,
@@ -118,7 +126,7 @@ impl InsightSummary {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "InsightsResponse")]
 pub struct InsightsResponse {
     pub time_window: TimeWindow,
@@ -126,11 +134,13 @@ pub struct InsightsResponse {
     pub summary: InsightSummary,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "TimeWindow")]
 pub struct TimeWindow {
     #[ts(type = "Date")]
+    #[schema(value_type = String)]
     pub start: DateTime<Utc>,
     #[ts(type = "Date")]
+    #[schema(value_type = String)]
     pub end: DateTime<Utc>,
 }

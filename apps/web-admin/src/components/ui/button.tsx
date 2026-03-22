@@ -42,7 +42,7 @@ const buttonVariants = cva(
 type ButtonVariantsProps = VariantProps<typeof buttonVariants>
 type ButtonProps = ButtonPrimitive.Props &
   ButtonVariantsProps & {
-    loading: boolean
+    loading?: boolean
   }
 
 function Button({

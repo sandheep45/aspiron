@@ -1,12 +1,15 @@
 use serde::Deserialize;
 use ts_rs::TS;
+use utoipa::{IntoParams, ToSchema};
 
-#[derive(Debug, Deserialize, TS)]
+#[derive(Debug, Deserialize, TS, ToSchema, IntoParams)]
 #[ts(export, rename = "InsightsQueryParams")]
 pub struct InsightsQueryParams {
     #[serde(default)]
+    #[param(example = 1735689600)]
     pub start: Option<i64>,
     #[serde(default)]
+    #[param(example = 1736294400)]
     pub end: Option<i64>,
 }
 
