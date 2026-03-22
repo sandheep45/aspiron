@@ -11,52 +11,60 @@ impl<'a> SeedRunner<'a> {
             println!("📊 Seeding assessment attempts...");
         }
 
-        // Create attempts for 10 students across quizzes
-        let student_ids = if let Some(ids) = self
+        let student_ids = self
             .relationship_map
             .user_ids
             .get(&crate::entries::entity_enums::user_types::UserTypeEnums::STUDENT)
-        {
-            ids
-        } else {
-            &vec![]
-        };
+            .cloned()
+            .unwrap_or_default();
 
-        for student_id in student_ids.iter().take(10) {
-            // Get random quizzes for this student
-            let topics = self.relationship_map.get_topics_for_subject(
-                *self
-                    .relationship_map
-                    .subject_ids
-                    .get(&crate::entries::entity_enums::exam_types::ExamTypeEnums::JEE)
-                    .unwrap_or(&vec![])
-                    .first()
-                    .unwrap(),
-            );
-
-            for quiz_idx in 0..3.min(topics.len() / 2) {
-                // Each student attempts 3-5 quizzes
-                if let Some(topic_id) = topics.get(quiz_idx * 2) {
-                    let quiz_ids = self.relationship_map.get_quizzes_for_topic(*topic_id);
-
-                    if let Some(quiz_id) = quiz_ids.first() {
-                        let attempt_model = assessment_attempt::ActiveModel {
-                            id: Set(Uuid::new_v4()),
-                            started_at: Set(chrono::Utc::now().into()),
-                            submitted_at: Set(Some(chrono::Utc::now().into())), // fixed
-                            quiz_id: Set(*quiz_id),
-                            user_id: Set(*student_id),
-                            score: Set(60 + rand::random::<i32>() % 40), // 60-99%
-                        };
-
-                        attempt_model.insert(txn).await?;
-                    }
-                }
+        if student_ids.is_empty() {
+            if self.config.show_progress {
+                println!("⚠️ No students found, skipping assessment attempts");
             }
+            return Ok(());
         }
 
+        let all_quiz_ids: Vec<Uuid> = self
+            .relationship_map
+            .quiz_map
+            .values()
+            .flatten()
+            .copied()
+            .collect();
+
+        if all_quiz_ids.is_empty() {
+            if self.config.show_progress {
+                println!("⚠️ No quizzes found, skipping assessment attempts");
+            }
+            return Ok(());
+        }
+
+        let mut all_attempt_ids = Vec::new();
+        let mut attempts_count = 0;
+
+        for (quiz_idx, quiz_id) in all_quiz_ids.iter().enumerate().take(30) {
+            let student_id = student_ids[quiz_idx % student_ids.len()];
+
+            let attempt_id = Uuid::new_v4();
+            let attempt_model = assessment_attempt::ActiveModel {
+                id: Set(attempt_id),
+                started_at: Set(chrono::Utc::now().into()),
+                submitted_at: Set(Some(chrono::Utc::now().into())),
+                quiz_id: Set(*quiz_id),
+                user_id: Set(student_id),
+                score: Set(60 + rand::random::<i32>() % 40),
+            };
+
+            attempt_model.insert(txn).await?;
+            all_attempt_ids.push(attempt_id);
+            attempts_count += 1;
+        }
+
+        self.relationship_map.attempt_ids = all_attempt_ids;
+
         if self.config.show_progress {
-            println!("✅ Seeded assessment attempts");
+            println!("✅ Seeded {} assessment attempts", attempts_count);
         }
 
         Ok(())

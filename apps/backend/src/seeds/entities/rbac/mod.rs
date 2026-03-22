@@ -8,6 +8,10 @@ use crate::entries::entity_enums::{
 };
 use crate::seeds::runner::SeedRunner;
 
+pub mod audit_logs;
+pub mod resource_permissions;
+pub mod user_sessions;
+
 impl<'a> SeedRunner<'a> {
     pub async fn seed_rbac(&mut self, txn: &DatabaseTransaction) -> Result<()> {
         if self.config.show_progress {
@@ -272,7 +276,6 @@ impl<'a> SeedRunner<'a> {
         ];
 
         for (name, resource_type, action, description) in permissions {
-            // ✅ FIXED: Clone enums before use to prevent move errors
             let resource_type_lookup = resource_type.clone();
             let action_lookup = action.clone();
 
@@ -283,7 +286,6 @@ impl<'a> SeedRunner<'a> {
                 .await?;
 
             let permission_id = if let Some(existing) = &existing_permission {
-                // ✅ FIXED: Clone ID before move into ActiveModel
                 let existing_id = existing.id;
 
                 let mut model: permission::ActiveModel = (*existing).clone().into();

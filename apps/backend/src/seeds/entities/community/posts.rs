@@ -11,57 +11,66 @@ impl<'a> SeedRunner<'a> {
             println!("💬 Seeding community posts...");
         }
 
-        // Create 2-3 posts per thread
-        let topics = self.relationship_map.get_topics_for_subject(
+        let topic_ids = self.relationship_map.get_topics_for_subject(
             *self
                 .relationship_map
                 .subject_ids
                 .get(&crate::entries::entity_enums::exam_types::ExamTypeEnums::JEE)
                 .unwrap_or(&vec![])
                 .first()
-                .unwrap(),
+                .unwrap_or(&Uuid::nil()),
         );
 
-        for _topic_id in topics.iter().take(5) {
-            // Sample 5 topics for posts
-            // Create actual threads for posts
-            let thread_ids: Vec<Uuid> = (0..2).map(|_| Uuid::new_v4()).collect();
+        let thread_ids = if self.relationship_map.thread_ids.is_empty() {
+            let mut new_thread_ids = Vec::new();
 
-            // First, insert the threads into the database
-            for thread_id in &thread_ids {
+            for topic_id in topic_ids.iter().take(10) {
                 let user_id = self.relationship_map.get_random_student_id().unwrap();
+                let thread_id = Uuid::new_v4();
+
                 let thread_model = crate::entries::entities::community_thread::ActiveModel {
-                    id: Set(*thread_id),
+                    id: Set(thread_id),
                     user_id: Set(user_id),
-                    topic_id: Set(*_topic_id),
-                    title: Set(format!("Discussion thread for topic {}", _topic_id)),
+                    topic_id: Set(*topic_id),
+                    title: Set(format!("Discussion thread for topic {}", topic_id)),
                     created_at: Set(chrono::Utc::now().into()),
                 };
                 thread_model.insert(txn).await?;
+                new_thread_ids.push(thread_id);
             }
 
-            for post_num in 1..=3 {
-                let user_id = self.relationship_map.get_random_student_id().unwrap();
-                let thread_id = thread_ids[post_num % thread_ids.len()];
+            new_thread_ids
+        } else {
+            self.relationship_map.thread_ids.clone()
+        };
 
-                let post_id = Uuid::new_v4();
-                let post_content = match post_num {
-                    1 => "This is a helpful explanation of the concept.",
-                    2 => "I have the same doubt. Can someone clarify?",
-                    3 => "Here's a tip that helped me understand this better.",
-                    _ => "Thanks for the explanation! This makes sense now.",
-                };
-
-                let post_model = community_post::ActiveModel {
-                    id: Set(post_id),
-                    user_id: Set(user_id),
-                    thread_id: Set(thread_id),
-                    content: Set(post_content.to_string()),
-                    created_at: Set(chrono::Utc::now().into()),
-                };
-
-                post_model.insert(txn).await?;
+        if thread_ids.is_empty() {
+            if self.config.show_progress {
+                println!("⚠️ No community threads found, skipping posts");
             }
+            return Ok(());
+        }
+
+        for post_num in 0..30 {
+            let user_id = self.relationship_map.get_random_student_id().unwrap();
+            let thread_id = thread_ids[post_num % thread_ids.len()];
+
+            let post_content = match post_num % 3 {
+                0 => "This is a helpful explanation of the concept.",
+                1 => "I have the same doubt. Can someone clarify?",
+                2 => "Here's a tip that helped me understand this better.",
+                _ => "Thanks for the explanation! This makes sense now.",
+            };
+
+            let post_model = community_post::ActiveModel {
+                id: Set(Uuid::new_v4()),
+                user_id: Set(user_id),
+                thread_id: Set(thread_id),
+                content: Set(post_content.to_string()),
+                created_at: Set(chrono::Utc::now().into()),
+            };
+
+            post_model.insert(txn).await?;
         }
 
         if self.config.show_progress {

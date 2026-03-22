@@ -12,7 +12,8 @@ impl<'a> SeedRunner<'a> {
             println!("🧵 Seeding community threads...");
         }
 
-        // Create 10 threads per subject
+        let mut all_thread_ids = Vec::new();
+
         for subject_ids in self.relationship_map.subject_ids.values() {
             for subject_id in subject_ids {
                 let topics = self.relationship_map.get_topics_for_subject(*subject_id);
@@ -20,10 +21,8 @@ impl<'a> SeedRunner<'a> {
                 for thread_num in 1..=10 {
                     if let Some(topic_id) = topics.get(thread_num * topics.len() / 10) {
                         let user_id = if thread_num <= 5 {
-                            // First 5 threads by teachers
                             self.relationship_map.get_random_teacher_id().unwrap()
                         } else {
-                            // Remaining threads by students
                             self.relationship_map.get_random_student_id().unwrap()
                         };
 
@@ -44,10 +43,13 @@ impl<'a> SeedRunner<'a> {
                         };
 
                         thread_model.insert(txn).await?;
+                        all_thread_ids.push(thread_id);
                     }
                 }
             }
         }
+
+        self.relationship_map.thread_ids = all_thread_ids;
 
         if self.config.show_progress {
             println!("✅ Seeded community threads");

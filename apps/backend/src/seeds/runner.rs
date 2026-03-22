@@ -18,6 +18,11 @@ pub struct RelationshipMap {
     pub video_map: HashMap<Uuid, Vec<Uuid>>,   // topic_id -> video_ids
     pub quiz_map: HashMap<Uuid, Vec<Uuid>>,    // topic_id -> quiz_ids
     pub question_map: HashMap<Uuid, Vec<Uuid>>, // quiz_id -> question_ids
+    pub session_ids: Vec<Uuid>,                // recall session IDs
+    pub thread_ids: Vec<Uuid>,                 // community thread IDs
+    pub attempt_ids: Vec<Uuid>,                // assessment attempt IDs
+    pub notification_event_ids: Vec<Uuid>,     // notification event IDs
+    pub live_session_ids: Vec<Uuid>,           // live session IDs
 }
 
 impl RelationshipMap {
@@ -115,11 +120,21 @@ impl<'a> SeedRunner<'a> {
 
         // Phase 4: User interactions
         self.seed_learning_progress(&txn).await?;
+        self.seed_learning_notes(&txn).await?;
+        self.seed_recall_sessions(&txn).await?;
+        self.seed_learning_recall_answers(&txn).await?;
         self.seed_community_threads(&txn).await?;
         self.seed_community_posts(&txn).await?;
-        self.seed_learning_notes(&txn).await?;
+        self.seed_community_bot_events(&txn).await?;
         self.seed_assessment_attempts(&txn).await?;
-        self.seed_recall_sessions(&txn).await?;
+        self.seed_assessment_proctoring(&txn).await?;
+        self.seed_live_sessions(&txn).await?;
+        self.seed_live_session_recordings(&txn).await?;
+        self.seed_notification_events(&txn).await?;
+        self.seed_notification_logs(&txn).await?;
+        self.seed_audit_logs(&txn).await?;
+        self.seed_resource_permissions(&txn).await?;
+        self.seed_user_sessions(&txn).await?;
 
         if self.config.validate_relationships {
             self.validate_relationships(&txn).await?;

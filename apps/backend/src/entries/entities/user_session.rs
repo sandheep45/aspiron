@@ -3,31 +3,35 @@ use sea_orm::*;
 use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "assessment_proctoring")]
+#[sea_orm(table_name = "user_sessions")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
-    pub attempt_id: Uuid,
-    pub signal_type: String,
-    pub signal_value: String,
+    pub user_id: Uuid,
+    pub session_token_hash: String,
+    pub ip_address: Option<String>,
+    pub user_agent: Option<String>,
     pub created_at: DateTimeWithTimeZone,
+    pub last_activity: DateTimeWithTimeZone,
+    pub expires_at: DateTimeWithTimeZone,
+    pub is_active: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::assessment_attempt::Entity",
-        from = "Column::AttemptId",
-        to = "super::assessment_attempt::Column::Id",
+        belongs_to = "super::user::Entity",
+        from = "Column::UserId",
+        to = "super::user::Column::Id",
         on_update = "Cascade",
         on_delete = "Cascade"
     )]
-    AssessmentAttempt,
+    User,
 }
 
-impl Related<super::assessment_attempt::Entity> for Entity {
+impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::AssessmentAttempt.def()
+        Relation::User.def()
     }
 }
 

@@ -3,7 +3,7 @@ use sea_orm::*;
 use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "live_session_live_recordings")]
+#[sea_orm(table_name = "live_session_recordings")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
