@@ -12,6 +12,7 @@ pub struct Model {
     pub question: String,
     pub answer: String,
     pub is_correct: bool,
+    pub score: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

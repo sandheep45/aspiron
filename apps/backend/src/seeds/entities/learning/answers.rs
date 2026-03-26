@@ -70,6 +70,11 @@ impl<'a> SeedRunner<'a> {
                     question: Set(question),
                     answer: Set(answer),
                     is_correct: Set(rng.gen_bool(0.75)),
+                    score: Set(if is_mcq {
+                        None
+                    } else {
+                        Some(rng.gen_range(40..=100))
+                    }),
                 };
 
                 answer_model.insert(txn).await?;

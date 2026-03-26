@@ -10,6 +10,7 @@ use crate::entities::migration::{
     m20260120_00012_create_user_roles_table, m20260120_00013_create_audit_logs_table,
     m20260120_00014_create_resource_permissions_table, m20260120_00015_create_user_sessions_table,
     m20260120_00016_create_user_profiles_table,
+    m20260327_000001_add_score_to_learning_recall_answers,
 };
 
 pub mod entities;
@@ -38,6 +39,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260120_00014_create_resource_permissions_table::Migration),
             Box::new(m20260120_00015_create_user_sessions_table::Migration),
             Box::new(m20260120_00016_create_user_profiles_table::Migration),
+            Box::new(m20260327_000001_add_score_to_learning_recall_answers::Migration),
         ]
     }
 }

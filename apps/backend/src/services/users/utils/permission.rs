@@ -9,6 +9,13 @@ pub fn parse_permission_name(
     let parts: Vec<&str> = permission_name.split('.').collect();
 
     match parts.as_slice() {
+        // 2-part: RESOURCE.ACTION - default ownership to All
+        [resource_str, action_str] => {
+            let resource_type = parse_resource_type(resource_str)?;
+            let action = parse_action_type(action_str)?;
+            Some((resource_type, action, OwnershipType::All))
+        }
+        // 3-part: RESOURCE.ACTION.OWNERSHIP
         [resource_str, action_str, ownership_str] => {
             let resource_type = parse_resource_type(resource_str)?;
             let action = parse_action_type(action_str)?;

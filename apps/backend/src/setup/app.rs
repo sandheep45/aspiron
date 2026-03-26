@@ -123,7 +123,8 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
         ])
         .allow_credentials(true);
 
-    let auth_state = AuthMiddlewareState::new(config.jwt.secret.clone());
+    let auth_state =
+        AuthMiddlewareState::new(config.jwt.secret.clone(), config.jwt.cookie_name.clone());
 
     let router = axum::Router::new()
         .route("/api-docs/openapi.json", get(openapi::openapi_json))

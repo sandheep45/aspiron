@@ -6,7 +6,10 @@ edition = "2024"
 [dependencies]
 async-trait = "*"
 axum = { version = "*", features = ["macros"] }
-tower = { version = "*", features = ["util", "filter"] }
+rustls = "0.23"
+rustls-pemfile = "2"
+tokio-rustls = "0.26"
+axum-server = { version = "*", features = ["tls-rustls"] }
 tower-http = { version = "*", features = ["cors", "trace", "request-id"] }
 jsonwebtoken = { version = "*", features = ["rust_crypto"] }
 sea-orm = { version = "*", features = [
@@ -44,6 +47,7 @@ ts-rs = { version = "*", features = [
   "serde-json-impl",
   "format",
 ] }
+time = { version = "0.3.47", features = ["serde"] }
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"

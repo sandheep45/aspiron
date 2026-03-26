@@ -45,12 +45,14 @@ fn is_path_exempt(path: &str) -> bool {
 #[derive(Clone)]
 pub struct AuthMiddlewareState {
     pub jwt_secret: Arc<String>,
+    pub cookie_name: String,
 }
 
 impl AuthMiddlewareState {
-    pub fn new(jwt_secret: String) -> Self {
+    pub fn new(jwt_secret: String, cookie_name: String) -> Self {
         Self {
             jwt_secret: Arc::new(jwt_secret),
+            cookie_name,
         }
     }
 }
@@ -93,7 +95,7 @@ pub async fn require_auth(mut request: Request<Body>, next: Next) -> Response {
         }
     };
 
-    let token = extract_token(&request);
+    let token = extract_token(&request, &state.cookie_name);
 
     match token {
         Some(token) => match decode_jwt(&token, &state.jwt_secret) {
@@ -104,20 +106,28 @@ pub async fn require_auth(mut request: Request<Body>, next: Next) -> Response {
                 }
                 Err(_) => AppError::Auth("Invalid user ID".to_string()).into_response(),
             },
-            Err(_) => AppError::Auth("Invalid or expired token".to_string()).into_response(),
+            Err(err) => match err {
+                crate::utils::jwt::JwtError::Expired(_) => {
+                    AppError::access_token_expired("Access token has expired").into_response()
+                }
+                crate::utils::jwt::JwtError::Invalid(_) => {
+                    AppError::auth("Invalid access token").into_response()
+                }
+            },
         },
         None => AppError::Auth("Missing authentication token".to_string()).into_response(),
     }
 }
 
-fn extract_token(request: &Request<Body>) -> Option<String> {
+fn extract_token(request: &Request<Body>, cookie_name: &str) -> Option<String> {
     if let Some(cookie_header) = request.headers().get("cookie")
         && let Ok(cookie_str) = cookie_header.to_str()
     {
+        let prefix = format!("{}=", cookie_name);
         for cookie in cookie_str.split(';') {
             let cookie = cookie.trim();
-            if cookie.starts_with("access_token=") {
-                return Some(cookie.strip_prefix("access_token=").unwrap().to_string());
+            if cookie.starts_with(&prefix) {
+                return Some(cookie.strip_prefix(&prefix).unwrap().to_string());
             }
         }
     }

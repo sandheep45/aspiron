@@ -189,3 +189,27 @@ pub struct TimeWindow {
     #[schema(value_type = String)]
     pub end: DateTime<Utc>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "TopicPerformanceResponse")]
+pub struct TopicPerformanceResponse {
+    pub topics: Vec<TopicPerformance>,
+    pub pagination: PaginationResponse,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
+pub struct TopicPerformance {
+    #[schema(value_type = String)]
+    pub topic_id: Uuid,
+    pub topic_name: String,
+    pub chapter_name: String,
+    pub subject_name: String,
+    #[ts(optional)]
+    pub recall_strength_mcq: Option<f64>,
+    #[ts(optional)]
+    pub recall_strength_reflection: Option<f64>,
+    pub practice_accuracy: f64,
+    pub students_affected: i64,
+    pub total_students: i64,
+}

@@ -1,12 +1,16 @@
 use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
+use uuid::Uuid;
 
 use super::repository::InsightsRepository;
-use crate::entries::dtos::payload::insights::InsightsQueryParams;
-use crate::entries::dtos::response::common::PaginationResponse;
+use crate::entries::dtos::payload::insights::{
+    InsightsQueryParams, TopicPerformanceQueryParams, TopicPerformanceSortBy,
+};
+use crate::entries::dtos::response::common::{PaginationResponse, SortOrder};
 use crate::entries::dtos::response::insights::{
     InsightSummary, InsightType, InsightsResponse, SeverityCounts, TimeWindow,
+    TopicPerformanceResponse,
 };
 use crate::setup::error::AppError;
 
@@ -20,6 +24,107 @@ impl InsightsService {
         Self {
             repository: InsightsRepository::new(db),
         }
+    }
+
+    pub async fn get_topic_performance(
+        &self,
+        params: &TopicPerformanceQueryParams,
+        teacher_subject_ids: Option<Vec<Uuid>>,
+    ) -> Result<TopicPerformanceResponse, AppError> {
+        let mut performances = self
+            .repository
+            .get_topic_performance(
+                params.get_subject_id(),
+                params.get_chapter_id(),
+                params.get_topic_id(),
+            )
+            .await?;
+
+        if let Some(subject_ids) = teacher_subject_ids {
+            performances.retain(|p| {
+                subject_ids
+                    .iter()
+                    .any(|sid| p.subject_name == sid.to_string())
+            });
+        }
+
+        if let Some(search) = &params.pagination.search {
+            let search_lower = search.to_lowercase();
+            performances.retain(|p| {
+                p.topic_name.to_lowercase().contains(&search_lower)
+                    || p.chapter_name.to_lowercase().contains(&search_lower)
+                    || p.subject_name.to_lowercase().contains(&search_lower)
+            });
+        }
+
+        let total = performances.len();
+
+        let is_asc = params.sort.sort_order == Some(SortOrder::Asc);
+        match params.sort.sort_by {
+            Some(TopicPerformanceSortBy::TopicName) => {
+                performances.sort_by(|a, b| {
+                    let cmp = a.topic_name.cmp(&b.topic_name);
+                    if is_asc { cmp } else { cmp.reverse() }
+                });
+            }
+            Some(TopicPerformanceSortBy::RecallStrengthMcq) => {
+                performances.sort_by(|a, b| {
+                    let a_val = a.recall_strength_mcq.unwrap_or(0.0);
+                    let b_val = b.recall_strength_mcq.unwrap_or(0.0);
+                    let cmp = a_val.partial_cmp(&b_val).unwrap();
+                    if is_asc { cmp } else { cmp.reverse() }
+                });
+            }
+            Some(TopicPerformanceSortBy::RecallStrengthReflection) => {
+                performances.sort_by(|a, b| {
+                    let a_val = a.recall_strength_reflection.unwrap_or(0.0);
+                    let b_val = b.recall_strength_reflection.unwrap_or(0.0);
+                    let cmp = a_val.partial_cmp(&b_val).unwrap();
+                    if is_asc { cmp } else { cmp.reverse() }
+                });
+            }
+            Some(TopicPerformanceSortBy::PracticeAccuracy) => {
+                performances.sort_by(|a, b| {
+                    let cmp = a
+                        .practice_accuracy
+                        .partial_cmp(&b.practice_accuracy)
+                        .unwrap();
+                    if is_asc { cmp } else { cmp.reverse() }
+                });
+            }
+            Some(TopicPerformanceSortBy::StudentsAffected) => {
+                performances.sort_by(|a, b| {
+                    let cmp = a.students_affected.cmp(&b.students_affected);
+                    if is_asc { cmp } else { cmp.reverse() }
+                });
+            }
+            None => {}
+        }
+
+        let offset = params.get_offset();
+        let limit = params.get_limit();
+        let paginated: Vec<_> = performances
+            .into_iter()
+            .skip(offset as usize)
+            .take(limit as usize)
+            .collect();
+
+        let total_pages = if total == 0 {
+            0
+        } else {
+            ((total as f64) / limit as f64).ceil() as u32
+        };
+
+        Ok(TopicPerformanceResponse {
+            topics: paginated,
+            pagination: PaginationResponse {
+                page: params.get_page(),
+                limit,
+                total: total as u64,
+                filtered_total: total as u64,
+                total_pages,
+            },
+        })
     }
 
     pub async fn get_insights(

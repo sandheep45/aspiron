@@ -11,6 +11,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
+import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { fetchSession } from '@/lib/auth'
 import appCss from '../styles.css?url'
@@ -61,6 +62,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider defaultTheme='dark'>
           <TooltipProvider>
             <SidebarProvider>{children}</SidebarProvider>
+            <Toaster richColors />
           </TooltipProvider>
         </ThemeProvider>
         <TanStackDevtools

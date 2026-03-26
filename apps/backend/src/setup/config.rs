@@ -7,6 +7,32 @@ pub struct Config {
     pub jwt: JwtConfig,
     pub logging: LoggingConfig,
     pub cors: CorsConfig,
+    pub ssl: SslConfig,
+}
+
+#[derive(Debug, Clone)]
+pub struct SslConfig {
+    pub cert_path: String,
+    pub key_path: String,
+}
+
+impl SslConfig {
+    pub fn from_manifest_dir() -> Self {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .and_then(|p| p.parent())
+            .unwrap();
+        Self {
+            cert_path: root
+                .join("local.aspiron.test.pem")
+                .to_string_lossy()
+                .into_owned(),
+            key_path: root
+                .join("local.aspiron.test-key.pem")
+                .to_string_lossy()
+                .into_owned(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -41,7 +67,8 @@ pub struct DatabaseConfig {
 #[derive(Debug, Clone)]
 pub struct JwtConfig {
     pub secret: String,
-    pub expiry_hours: u64,
+    pub access_token_expiry_seconds: u64,
+    pub refresh_token_expiry_seconds: u64,
     pub cookie_name: String,
 }
 
@@ -65,9 +92,9 @@ impl Config {
                     "0.0.0.0".to_string()
                 }),
                 port: std::env::var("APP_PORT")
-                    .unwrap_or_else(|_| "8080".to_string())
+                    .unwrap_or_else(|_| "8082".to_string())
                     .parse()
-                    .unwrap_or(8080),
+                    .unwrap_or(8082),
                 env: std::env::var("APP_ENV").unwrap_or_else(|_| {
                     eprintln!("APP_ENV not set, using 'development'");
                     "development".to_string()
@@ -106,10 +133,14 @@ impl Config {
                     eprintln!("JWT_SECRET not set, using default (INSECURE)");
                     "insecure-default-secret-for-development-only".to_string()
                 }),
-                expiry_hours: std::env::var("JWT_EXPIRY_HOURS")
-                    .unwrap_or_else(|_| "24".to_string())
+                access_token_expiry_seconds: std::env::var("JWT_ACCESS_TOKEN_EXPIRY_SECONDS")
+                    .unwrap_or_else(|_| "86400".to_string())
                     .parse()
-                    .unwrap_or(24),
+                    .unwrap_or(24 * 60 * 60),
+                refresh_token_expiry_seconds: std::env::var("JWT_REFRESH_TOKEN_EXPIRY_SECONDS")
+                    .unwrap_or_else(|_| "604800".to_string())
+                    .parse()
+                    .unwrap_or(7 * 24 * 60 * 60),
                 cookie_name: std::env::var("JWT_COOKIE_NAME").unwrap_or_else(|_| {
                     eprintln!("JWT_COOKIE_NAME not set, using 'jwt'");
                     "jwt".to_string()
@@ -132,6 +163,7 @@ impl Config {
                     .map(|s| s.to_string())
                     .collect(),
             },
+            ssl: SslConfig::from_manifest_dir(),
         }
     }
 

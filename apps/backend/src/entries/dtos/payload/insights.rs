@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde::de;
 use ts_rs::TS;
 use utoipa::IntoParams;
+use uuid::Uuid;
 
 use crate::entries::dtos::response::common::{PaginationPayload, SortOrder};
 use crate::entries::dtos::response::insights::{InsightType, Severity};
@@ -179,5 +180,120 @@ impl InsightsQueryParams {
             .unwrap_or(now);
 
         (start, end)
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, TS, utoipa::ToSchema,
+)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, rename = "TopicPerformanceSortBy")]
+pub enum TopicPerformanceSortBy {
+    #[serde(rename = "topic_name")]
+    #[ts(rename = "topic_name")]
+    TopicName,
+    #[serde(rename = "recall_strength_mcq")]
+    #[ts(rename = "recall_strength_mcq")]
+    RecallStrengthMcq,
+    #[serde(rename = "recall_strength_reflection")]
+    #[ts(rename = "recall_strength_reflection")]
+    RecallStrengthReflection,
+    #[serde(rename = "practice_accuracy")]
+    #[ts(rename = "practice_accuracy")]
+    PracticeAccuracy,
+    #[serde(rename = "students_affected")]
+    #[ts(rename = "students_affected")]
+    StudentsAffected,
+}
+
+#[derive(Debug, Clone, TS, IntoParams, utoipa::ToSchema)]
+#[ts(export, rename = "TopicPerformanceSort")]
+pub struct TopicPerformanceSort {
+    #[ts(optional)]
+    pub sort_by: Option<TopicPerformanceSortBy>,
+    #[ts(optional)]
+    pub sort_order: Option<SortOrder>,
+}
+
+impl<'de> Deserialize<'de> for TopicPerformanceSort {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Helper {
+            sort_by: Option<String>,
+            sort_order: Option<String>,
+        }
+
+        let helper = Helper::deserialize(deserializer)?;
+
+        let sort_by = helper
+            .sort_by
+            .map(|s| {
+                serde_json::from_str(&format!("\"{}\"", s))
+                    .map_err(|_| de::Error::custom("invalid sort_by"))
+            })
+            .transpose()?;
+
+        let sort_order = helper
+            .sort_order
+            .map(|s| {
+                serde_json::from_str(&format!("\"{}\"", s))
+                    .map_err(|_| de::Error::custom("invalid sort_order"))
+            })
+            .transpose()?;
+
+        Ok(TopicPerformanceSort {
+            sort_by,
+            sort_order,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, TS, IntoParams)]
+#[ts(export, rename = "TopicPerformanceQueryParams")]
+pub struct TopicPerformanceQueryParams {
+    #[ts(optional)]
+    pub subject_id: Option<String>,
+    #[ts(optional)]
+    pub chapter_id: Option<String>,
+    #[ts(optional)]
+    pub topic_id: Option<String>,
+    #[serde(flatten)]
+    pub pagination: PaginationPayload,
+    #[serde(flatten)]
+    pub sort: TopicPerformanceSort,
+}
+
+impl TopicPerformanceQueryParams {
+    pub fn get_subject_id(&self) -> Option<Uuid> {
+        self.subject_id
+            .as_ref()
+            .and_then(|s| Uuid::parse_str(s).ok())
+    }
+
+    pub fn get_chapter_id(&self) -> Option<Uuid> {
+        self.chapter_id
+            .as_ref()
+            .and_then(|s| Uuid::parse_str(s).ok())
+    }
+
+    pub fn get_topic_id(&self) -> Option<Uuid> {
+        self.topic_id.as_ref().and_then(|s| Uuid::parse_str(s).ok())
+    }
+}
+
+impl TopicPerformanceQueryParams {
+    pub fn get_page(&self) -> u32 {
+        self.pagination.page.unwrap_or(1)
+    }
+
+    pub fn get_limit(&self) -> u32 {
+        self.pagination.limit.unwrap_or(20).min(100)
+    }
+
+    pub fn get_offset(&self) -> u32 {
+        (self.get_page() - 1) * self.get_limit()
     }
 }

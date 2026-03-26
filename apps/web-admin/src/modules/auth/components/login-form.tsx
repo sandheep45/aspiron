@@ -1,27 +1,54 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { Lock, Mail } from 'lucide-react'
+import { toast } from 'sonner'
 import { useAppForm } from '@/components/forms/form-core'
 import { loginFormOption } from '@/modules/auth/form-option'
-import { useCsrfTokenQuery } from '@/modules/auth/hooks/use-csrf-token-query'
+import { signInServerFunction } from '@/modules/auth/server-function/sign-in.function'
 
 export const LoginForm = () => {
-  const { data } = useCsrfTokenQuery()
+  const navigate = useNavigate()
+  const signIn = useServerFn(signInServerFunction)
   const loginAppForm = useAppForm({
     ...loginFormOption,
     defaultValues: {
       ...loginFormOption.defaultValues,
-      csrfToken: data,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await signIn({
+          data: value,
+        })
+        navigate({
+          to: '/dashboard',
+        })
+      } catch (error) {
+        if (error instanceof Error) {
+          const jsonMatch = error.message.match(/\{.*\}/)
+
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0])
+            toast.error(parsed.error.message)
+          }
+        }
+      }
     },
   })
+
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    loginAppForm.handleSubmit()
+  }
 
   return (
     <div className='w-full max-w-100 space-y-6 rounded-2xl border border-slate-800/50 bg-slate-900/80 p-6 shadow-2xl backdrop-blur-xl'>
       <h2 className='font-semibold text-lg'>Log in to your account</h2>
       <loginAppForm.AppForm>
         <form
-          action={'/api/auth/callback/credentials'}
           method='POST'
           className='flex w-full flex-col gap-3'
+          onSubmit={handleSubmit}
         >
           <div className='flex w-full flex-col gap-4'>
             <loginAppForm.AppField name='email'>
@@ -46,9 +73,6 @@ export const LoginForm = () => {
                   }}
                 />
               )}
-            </loginAppForm.AppField>
-            <loginAppForm.AppField name='csrfToken'>
-              {(field) => <field.FormInput hidden className='hidden' />}
             </loginAppForm.AppField>
           </div>
           <Link

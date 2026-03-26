@@ -8,7 +8,12 @@ import {
   getRequest,
   setCookie,
 } from '@tanstack/react-start/server'
-import { getSession, type StartAuthJSConfig } from 'start-authjs'
+import {
+  CredentialsSignin,
+  getSession,
+  StartAuthJS,
+  type StartAuthJSConfig,
+} from 'start-authjs'
 
 export const authConfig: StartAuthJSConfig = {
   basePath: '/api/auth',
@@ -25,12 +30,13 @@ export const authConfig: StartAuthJSConfig = {
         try {
           const data = await apiClient.post('/auth/login', credentials)
           const loggedInUserData = data.data
+
           return {
             ...loggedInUserData,
           }
         } catch (error) {
           if (isAxiosError(error)) {
-            console.log('error', error.response)
+            throw new CredentialsSignin(JSON.stringify(error.response?.data))
           }
           return null
         }
@@ -55,6 +61,8 @@ export const authConfig: StartAuthJSConfig = {
     },
   },
 }
+
+export const { GET, POST, signIn, signOut } = StartAuthJS(authConfig)
 
 declare module 'start-authjs' {
   interface AuthSession {

@@ -81,6 +81,7 @@ const TopicDifficultyInsightActionButton = ({
   })
   return (
     <Button
+      nativeButton={false}
       render={
         <Link
           to='/content/topic/$id'

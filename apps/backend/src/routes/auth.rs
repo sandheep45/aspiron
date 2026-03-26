@@ -15,7 +15,14 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         PathMatch::exact("/auth/logout"),
     ]);
 
-    let auth_state = AuthState::new(app_state.db.clone());
+    let auth_state = AuthState::new(
+        app_state.db.clone(),
+        app_state.config.jwt.secret.clone(),
+        app_state.config.jwt.access_token_expiry_seconds,
+        app_state.config.jwt.refresh_token_expiry_seconds,
+        app_state.config.jwt.cookie_name.clone(),
+        app_state.config.app.env == "development",
+    );
 
     Router::new()
         .route("/auth/login", post(authenticate_user))

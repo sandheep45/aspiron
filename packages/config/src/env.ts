@@ -23,7 +23,8 @@ export const env = createEnv({
     DATABASE_POOL_SIZE: z.coerce.number(),
 
     JWT_SECRET: z.string().min(32),
-    JWT_EXPIRY_HOURS: z.coerce.number(),
+    JWT_ACCESS_TOKEN_EXPIRY_SECONDS: z.coerce.number(),
+    JWT_REFRESH_TOKEN_EXPIRY_SECONDS: z.coerce.number(),
     JWT_COOKIE_NAME: z.string(),
 
     LOG_LEVEL: z.string(),

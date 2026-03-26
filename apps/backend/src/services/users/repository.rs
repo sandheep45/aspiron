@@ -197,7 +197,7 @@ impl UserRepository {
                     resource_type,
                     action,
                     ownership,
-                    resource_id: None, // Can be set if specific resource instance is needed
+                    resource_id: None,
                 });
             }
         }

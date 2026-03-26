@@ -54,4 +54,5 @@ pub enum LearningRecallAnswerTableIdentifier {
     Question,
     Answer,
     IsCorrect,
+    Score,
 }

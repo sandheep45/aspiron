@@ -7,13 +7,22 @@ import viteReact from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 
-const config = defineConfig({
+const config = defineConfig(({ mode }) => ({
   envDir: '../../',
   envPrefix: [PUBLIC_ENV_PREFIX],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+  },
+  server: {
+    allowedHosts: ['local.aspiron.test'],
+    ...(mode === 'development' && {
+      https: {
+        key: '../../local.aspiron.test-key.pem',
+        cert: '../../local.aspiron.test.pem',
+      },
+    }),
   },
   optimizeDeps: {
     include: ['react', 'react-dom', '@tanstack/react-query'],
@@ -23,7 +32,6 @@ const config = defineConfig({
   },
   plugins: [
     devtools(),
-    // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
     }),
@@ -35,6 +43,6 @@ const config = defineConfig({
       },
     }),
   ],
-})
+}))
 
 export default config

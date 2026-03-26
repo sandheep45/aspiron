@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 
-use crate::constants::AllowedClientType;
 use crate::entries::dtos::response::auth::{
     AuthPermissionResponse, AuthResponse, AuthRoleResponse, AuthUserResponse,
 };
@@ -98,7 +97,7 @@ impl AuthService {
             access_token: String::new(),
             refresh_token: String::new(),
             token_type: "Bearer".to_string(),
-            expires_in: 3600,
+            expires_in: 60,
             user,
             roles,
             permissions,
@@ -109,12 +108,34 @@ impl AuthService {
         &self,
         user_id: &str,
         jwt_secret: &str,
+        access_token_expiry: u64,
+        refresh_token_expiry: u64,
     ) -> Result<(String, String), AppError> {
-        let access_token = encode_access_token(user_id, jwt_secret)
-            .map_err(|_| AppError::Internal(anyhow::anyhow!("Failed to generate access token")))?;
-        let refresh_token = encode_refresh_token(user_id, jwt_secret)
-            .map_err(|_| AppError::Internal(anyhow::anyhow!("Failed to generate refresh token")))?;
+        let access_token = encode_access_token(user_id, jwt_secret, access_token_expiry)
+            .map_err(|_| AppError::auth("Failed to generate access token"))?;
+        let refresh_token = encode_refresh_token(user_id, jwt_secret, refresh_token_expiry)
+            .map_err(|_| AppError::auth("Failed to generate refresh token"))?;
         Ok((access_token, refresh_token))
+    }
+
+    pub async fn generate_new_access_token(
+        &self,
+        user_id: &str,
+        jwt_secret: &str,
+        access_token_expiry: u64,
+        refresh_token_expiry: u64,
+    ) -> Result<AuthResponse, AppError> {
+        let mut auth_response = self.build_auth_response(user_id).await?;
+
+        let access_token = encode_access_token(user_id, jwt_secret, access_token_expiry)
+            .map_err(|_| AppError::auth("Failed to generate access token"))?;
+        let refresh_token = encode_refresh_token(user_id, jwt_secret, refresh_token_expiry)
+            .map_err(|_| AppError::auth("Failed to generate refresh token"))?;
+
+        auth_response.access_token = access_token;
+        auth_response.refresh_token = refresh_token;
+        auth_response.expires_in = access_token_expiry as i64;
+        Ok(auth_response)
     }
 
     pub async fn login(
@@ -122,46 +143,21 @@ impl AuthService {
         email: &str,
         password: &str,
         jwt_secret: &str,
+        access_token_expiry: u64,
+        refresh_token_expiry: u64,
     ) -> Result<AuthResponse, AppError> {
         let user = self.authenticate(email, password).await?;
-        let (access_token, refresh_token) =
-            self.generate_tokens(&user.id.to_string(), jwt_secret)?;
+        let (access_token, refresh_token) = self.generate_tokens(
+            &user.id.to_string(),
+            jwt_secret,
+            access_token_expiry,
+            refresh_token_expiry,
+        )?;
         let mut auth_response = self.build_auth_response(&user.id.to_string()).await?;
         auth_response.access_token = access_token;
         auth_response.refresh_token = refresh_token;
+        auth_response.expires_in = access_token_expiry as i64;
         Ok(auth_response)
-    }
-
-    pub async fn login_with_cookies(
-        &self,
-        email: &str,
-        password: &str,
-        jwt_secret: &str,
-        client_type: Option<AllowedClientType>,
-        cookie_name: String,
-        is_development: bool,
-    ) -> Result<LoginResponse, AppError> {
-        let user = self.authenticate(email, password).await?;
-        let (access_token, refresh_token) =
-            self.generate_tokens(&user.id.to_string(), jwt_secret)?;
-        let mut auth_response = self.build_auth_response(&user.id.to_string()).await?;
-        auth_response.access_token = access_token.clone();
-        auth_response.refresh_token = refresh_token.clone();
-
-        let cookies = match client_type {
-            Some(AllowedClientType::BROWSER) => Some(LoginCookies {
-                access_token,
-                refresh_token,
-                cookie_name,
-                is_development,
-            }),
-            Some(AllowedClientType::MOBILE) | None => None,
-        };
-
-        Ok(LoginResponse {
-            auth_response,
-            cookies,
-        })
     }
 
     pub async fn get_current_user(&self, user_id: uuid::Uuid) -> Result<AuthResponse, AppError> {

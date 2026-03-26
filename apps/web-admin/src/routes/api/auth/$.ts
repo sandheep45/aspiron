@@ -1,13 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { StartAuthJS } from 'start-authjs'
-import { authConfig } from '@/lib/auth'
+import { GET, POST } from '@/lib/auth'
 
 /**
  * Auth.js API route handler
  * Handles all auth routes: /api/auth/*
  */
-const { GET, POST } = StartAuthJS(authConfig)
-
 export const Route = createFileRoute('/api/auth/$')({
   server: {
     handlers: {

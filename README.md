@@ -343,21 +343,27 @@ brew install just
 ### Setup
 
 ```bash
+# Option 1: Use the convenience command (recommended)
+# This generates SSL certificates, installs dependencies, and sets up the database
+just setup
+
+# Option 2: Manual setup
 # Install all dependencies (including mobile)
 pnpm install
 
 # Copy environment templates
-cp apps/backend/.env.example apps/backend/.env
+cp .env.example .env
 
-# Build all apps
-pnpm build
+# Build all packages (config, api-client, tanstack-client)
+just build-packages
 
 # Set up database
 just migrate
 just seed  # Seed development data
 
 # Start development servers
-pnpm --filter documentation run dev
+just run-rust backend
+just dev-js web-admin
 ```
 
 ### Running Individual Apps
@@ -376,6 +382,9 @@ just dev-mobile
 
 ## Quick Start Commands
 ```bash
+# Full setup: generates SSL certs, installs deps, sets up database
+just setup
+
 # To setup fresh database:
 just migrate
 just seed
@@ -402,6 +411,7 @@ just seed community   # Seed only forum threads and posts
 
 ## Setup Workflows
 ```bash
+just setup           # Full setup: SSL certs + install + migrate + seed
 just fresh-db        # Reset database (migrate reset + migrate + seed)
 just setup-dev       # Full development setup (install + migrate + seed)
 ```

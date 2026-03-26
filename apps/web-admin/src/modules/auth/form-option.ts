@@ -8,6 +8,7 @@ export const loginFormOption = formOptions({
   defaultValues: {
     email: 'barbara_turner.1@admin.aspiron',
     password: 'admin123',
+    providerId: 'credentials',
   },
 })
 

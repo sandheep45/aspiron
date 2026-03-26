@@ -14,6 +14,7 @@ use crate::services::auth::state::AuthState;
 use crate::services::auth::utils::build_token_cookie;
 use crate::setup::app::AppState;
 use crate::setup::error::AppError;
+use crate::utils::jwt::decode_jwt;
 
 #[axum::debug_handler]
 #[utoipa::path(
@@ -27,7 +28,7 @@ use crate::setup::error::AppError;
 )]
 pub async fn authenticate_user(
     Extension(auth_state): Extension<AuthState>,
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
     headers: HeaderMap,
     Json(login_payload): Json<LoginRequest>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -36,34 +37,26 @@ pub async fn authenticate_user(
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.parse::<AllowedClientType>().ok());
 
-    let result = auth_state
-        .auth_service
-        .login_with_cookies(
-            &login_payload.email,
-            &login_payload.password,
-            &state.config.jwt.secret,
-            client_type,
-            state.config.jwt.cookie_name.clone(),
-            state.config.app.env == "development",
-        )
+    let (auth_response, cookies) = auth_state
+        .login_with_cookies(&login_payload.email, &login_payload.password, client_type)
         .await?;
 
-    match result.cookies {
+    match cookies {
         Some(cookies) => {
             let access_cookie = build_token_cookie(
                 cookies.cookie_name.clone(),
                 cookies.access_token,
-                Duration::hours(1),
+                Duration::seconds(auth_state.access_token_expiry as i64),
                 cookies.is_development,
             );
             let refresh_cookie = build_token_cookie(
                 format!("{}_refresh", cookies.cookie_name),
                 cookies.refresh_token,
-                Duration::days(7),
+                Duration::seconds(auth_state.refresh_token_expiry as i64),
                 cookies.is_development,
             );
 
-            let mut response = ResponseJson(result.auth_response).into_response();
+            let mut response = ResponseJson(auth_response).into_response();
             response
                 .headers_mut()
                 .append(SET_COOKIE, access_cookie.to_string().parse().unwrap());
@@ -73,7 +66,7 @@ pub async fn authenticate_user(
 
             Ok(response)
         }
-        None => Ok(ResponseJson(result.auth_response).into_response()),
+        None => Ok(ResponseJson(auth_response).into_response()),
     }
 }
 
@@ -104,8 +97,63 @@ pub async fn get_me(
         (status = 200, description = "Refresh access token")
     )
 )]
-pub async fn refresh_token() -> ResponseJson<bool> {
-    ResponseJson(true)
+pub async fn refresh_token(
+    Extension(auth_state): Extension<AuthState>,
+    State(_state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<impl IntoResponse, AppError> {
+    let refresh_token = headers
+        .get("cookie")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|cookies| {
+            cookies
+                .split(';')
+                .find(|c| c.trim().starts_with(&auth_state.refresh_cookie_name))
+        })
+        .and_then(|c| c.split('=').nth(1))
+        .map(|s| s.to_string())
+        .ok_or_else(|| AppError::auth("Refresh token not found"))?;
+
+    let claims = decode_jwt(&refresh_token, &auth_state.jwt_secret).map_err(|err| match err {
+        crate::utils::jwt::JwtError::Expired(_) => {
+            AppError::refresh_token_expired("Refresh token has expired")
+        }
+        crate::utils::jwt::JwtError::Invalid(_) => AppError::auth("Invalid refresh token"),
+    })?;
+
+    let auth_response = auth_state
+        .auth_service
+        .generate_new_access_token(
+            &claims.sub,
+            &auth_state.jwt_secret,
+            auth_state.access_token_expiry,
+            auth_state.refresh_token_expiry,
+        )
+        .await?;
+
+    let access_cookie = build_token_cookie(
+        auth_state.cookie_name.clone(),
+        auth_response.access_token.clone(),
+        Duration::seconds(auth_state.access_token_expiry as i64),
+        auth_state.is_development,
+    );
+    let refresh_cookie = build_token_cookie(
+        auth_state.refresh_cookie_name.clone(),
+        auth_response.refresh_token.clone(),
+        Duration::seconds(auth_state.refresh_token_expiry as i64),
+        auth_state.is_development,
+    );
+
+    let mut response = ResponseJson(auth_response).into_response();
+
+    response
+        .headers_mut()
+        .append(SET_COOKIE, access_cookie.to_string().parse().unwrap());
+    response
+        .headers_mut()
+        .append(SET_COOKIE, refresh_cookie.to_string().parse().unwrap());
+
+    Ok(response)
 }
 
 #[utoipa::path(
