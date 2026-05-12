@@ -1,14 +1,14 @@
+import { isAxiosError } from '@aspiron/api-client/axios-utils'
+import { useLoginMutation } from '@aspiron/tanstack-client'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import { Lock, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppForm } from '@/components/forms/form-core'
 import { loginFormOption } from '@/modules/auth/form-option'
-import { signInServerFunction } from '@/modules/auth/server-function/sign-in.function'
 
 export const LoginForm = () => {
   const navigate = useNavigate()
-  const signIn = useServerFn(signInServerFunction)
+  const { mutate } = useLoginMutation()
   const loginAppForm = useAppForm({
     ...loginFormOption,
     defaultValues: {
@@ -16,12 +16,28 @@ export const LoginForm = () => {
     },
     onSubmit: async ({ value }) => {
       try {
-        await signIn({
-          data: value,
-        })
-        navigate({
-          to: '/dashboard',
-        })
+        mutate(
+          {
+            ...value,
+          },
+          {
+            onError(error, variables, onMutateResult, context) {
+              if (isAxiosError(error)) {
+                console.log(
+                  error.response?.data,
+                  variables,
+                  onMutateResult,
+                  context,
+                )
+              }
+            },
+            onSuccess: () => {
+              navigate({
+                to: '/dashboard',
+              })
+            },
+          },
+        )
       } catch (error) {
         if (error instanceof Error) {
           const jsonMatch = error.message.match(/\{.*\}/)

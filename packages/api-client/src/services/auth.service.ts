@@ -1,42 +1,62 @@
 /**
- * Authentication service methods
+ * Authentication service methods (DRY + Axios-native)
  */
 
+import type { AxiosRequestConfig } from 'axios'
 import {
   apiClient,
   createApiClient,
   type ServiceOptions,
 } from '@/client/axios-instance'
+import type { ApiResponse, AuthResponse, LoginRequest } from '@/generated-types'
 
-export interface LoginRequest {
-  email: string
-  password: string
-}
+/**
+ * Get axios client
+ */
+const getClient = (options?: ServiceOptions) =>
+  options?.axiosConfig ? createApiClient(options.axiosConfig) : apiClient
 
-export interface LoginResponse {
-  user: User
-  success: boolean
-}
-
-export interface User {
-  id: string
-  email: string
-  name: string
-  role: 'student' | 'teacher' | 'admin'
+/**
+ * Generic request using axios.request()
+ */
+const request = async <T>(
+  config: AxiosRequestConfig,
+  options?: ServiceOptions,
+): Promise<ApiResponse<T>> => {
+  const client = getClient(options)
+  const response = await client.request<ApiResponse<T>>(config)
+  return response.data
 }
 
 export const authService = {
-  async login(
-    credentials: LoginRequest,
-    options?: ServiceOptions,
-  ): Promise<LoginResponse> {
-    const client = options?.axiosConfig
-      ? createApiClient(options.axiosConfig)
-      : apiClient
-    const response = await client.post<LoginResponse>(
-      '/auth/login',
-      credentials,
+  login(credentials: LoginRequest, options?: ServiceOptions) {
+    return request<null>(
+      {
+        method: 'POST',
+        url: '/auth/login',
+        data: credentials,
+      },
+      options,
     )
-    return response.data
+  },
+
+  refreshAccessToken(options?: ServiceOptions) {
+    return request<null>(
+      {
+        method: 'GET',
+        url: '/auth/refresh-token',
+      },
+      options,
+    )
+  },
+
+  getMyProfile(options?: ServiceOptions) {
+    return request<AuthResponse>(
+      {
+        method: 'GET',
+        url: '/auth/me',
+      },
+      options,
+    )
   },
 }

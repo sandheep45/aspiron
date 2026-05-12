@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use ts_rs::TS;
 
-#[derive(Debug, Clone, TS)]
+#[derive(Debug, Clone, Copy, TS)]
 #[ts(export)]
 pub enum AllowedClientType {
     #[ts(rename = "BROWSER")]

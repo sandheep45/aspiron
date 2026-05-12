@@ -2,15 +2,9 @@ import { type AuthResponse, apiClient } from '@aspiron/api-client'
 import { isAxiosError } from '@aspiron/api-client/axios-utils'
 import Credentials from '@auth/core/providers/credentials'
 import { createServerFn } from '@tanstack/react-start'
-import {
-  deleteCookie,
-  getCookies,
-  getRequest,
-  setCookie,
-} from '@tanstack/react-start/server'
+import { getCookies } from '@tanstack/react-start/server'
 import {
   CredentialsSignin,
-  getSession,
   StartAuthJS,
   type StartAuthJSConfig,
 } from 'start-authjs'
@@ -28,12 +22,13 @@ export const authConfig: StartAuthJSConfig = {
     Credentials({
       authorize: async (credentials) => {
         try {
-          const data = await apiClient.post('/auth/login', credentials)
-          const loggedInUserData = data.data
-
-          return {
-            ...loggedInUserData,
+          if (credentials.data) {
+            const refreshTokenData = JSON.parse(credentials.data as string)
+            return { ...refreshTokenData }
           }
+
+          const data = await apiClient.post('/auth/login', credentials)
+          return { ...data.data }
         } catch (error) {
           if (isAxiosError(error)) {
             throw new CredentialsSignin(JSON.stringify(error.response?.data))
@@ -72,27 +67,17 @@ declare module 'start-authjs' {
 
 export const fetchSession = createServerFn({ method: 'GET' }).handler(
   async () => {
-    const request = getRequest()
     const cookies = getCookies()
-    const session = await getSession(request, authConfig)
 
-    const hasJwt = 'jwt' in cookies
-    const hasRefresh = 'jwt_refresh' in cookies
+    const jwtRefreshCookie = cookies.jwt_refresh
 
-    // If session exists but cookies are missing → set them
-    if (session && (!hasJwt || !hasRefresh)) {
-      const { access_token, refresh_token } = session.session
+    if (jwtRefreshCookie)
+      return {
+        isAuthenticated: true,
+      }
 
-      setCookie('jwt', access_token)
-      setCookie('jwt_refresh', refresh_token)
+    return {
+      isAuthenticated: false,
     }
-
-    // If cookies exist but session is missing → clear them
-    if (!session && (hasJwt || hasRefresh)) {
-      deleteCookie('jwt')
-      deleteCookie('jwt_refresh')
-    }
-
-    return session
   },
 )

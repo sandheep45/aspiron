@@ -38,7 +38,9 @@ pub enum AppError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[allow(clippy::from_str_radix_10)]
 #[ts(export, rename = "ErrorCode")]
+#[ts(repr(enum))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ErrorCode {
     Validation,

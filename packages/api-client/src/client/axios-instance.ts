@@ -28,6 +28,8 @@ const defaultConfig: AxiosConfigOptions = {
   withCredentials: true,
 }
 
+let isRefreshing = false
+
 const createAxiosInstanceWithConfig = (
   config?: AxiosRequestConfig,
 ): AxiosInstance => {
@@ -58,12 +60,42 @@ const createAxiosInstanceWithConfig = (
       defaultAuthStrategy.handleResponse(response)
       return response
     },
-    (error) => {
-      // Handle common error scenarios
-      if (error.response?.status === 401) {
-        // Unauthorized - could trigger logout or token refresh
-        defaultAuthStrategy.clearAuth()
+    async (error) => {
+      const originalRequest = error.config
+      const status = error.response?.status
+
+      // Handle 401 - token refresh
+      if (status === 401 && originalRequest) {
+        // Skip if already retried
+        if (originalRequest._retry) {
+          return Promise.reject(error)
+        }
+
+        // Handle token refresh
+        if (!isRefreshing) {
+          originalRequest._retry = true
+          isRefreshing = true
+
+          try {
+            // Call refresh token endpoint (cookies auto-attached by browser)
+            await instance.get('/auth/refresh-token')
+
+            // All handlers completed, retry the original request
+            return instance(originalRequest)
+          } catch (refreshError) {
+            // Refresh failed
+            defaultAuthStrategy.clearAuth()
+            return Promise.reject(refreshError)
+          } finally {
+            isRefreshing = false
+          }
+        }
+
+        // If already refreshing, reject - caller will retry later
+        return Promise.reject(error)
       }
+
+      // Non-401 errors - just reject
       return Promise.reject(error)
     },
   )

@@ -6,7 +6,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 export const Route = createFileRoute('/_private-routes')({
   component: RouteComponent,
   beforeLoad: ({ context }) => {
-    if (!context.session) {
+    if (!context.isAuthenticated) {
       throw redirect({
         to: '/auth',
       })

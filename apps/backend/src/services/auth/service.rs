@@ -3,7 +3,7 @@ use std::sync::Arc;
 use sea_orm::DatabaseConnection;
 
 use crate::entries::dtos::response::auth::{
-    AuthPermissionResponse, AuthResponse, AuthRoleResponse, AuthUserResponse,
+    AuthPermissionResponse, AuthResponse, AuthRoleResponse, AuthUserResponse, MobileTokenResponse,
 };
 use crate::entries::dtos::response::users::UserProfileResponse;
 use crate::services::users::repository::UserRepository;
@@ -94,10 +94,6 @@ impl AuthService {
             .collect();
 
         Ok(AuthResponse {
-            access_token: String::new(),
-            refresh_token: String::new(),
-            token_type: "Bearer".to_string(),
-            expires_in: 60,
             user,
             roles,
             permissions,
@@ -124,18 +120,20 @@ impl AuthService {
         jwt_secret: &str,
         access_token_expiry: u64,
         refresh_token_expiry: u64,
-    ) -> Result<AuthResponse, AppError> {
-        let mut auth_response = self.build_auth_response(user_id).await?;
+    ) -> Result<MobileTokenResponse, AppError> {
+        let _ = self.build_auth_response(user_id).await?;
 
         let access_token = encode_access_token(user_id, jwt_secret, access_token_expiry)
             .map_err(|_| AppError::auth("Failed to generate access token"))?;
         let refresh_token = encode_refresh_token(user_id, jwt_secret, refresh_token_expiry)
             .map_err(|_| AppError::auth("Failed to generate refresh token"))?;
 
-        auth_response.access_token = access_token;
-        auth_response.refresh_token = refresh_token;
-        auth_response.expires_in = access_token_expiry as i64;
-        Ok(auth_response)
+        Ok(MobileTokenResponse {
+            access_token,
+            refresh_token,
+            token_type: "Bearer".to_string(),
+            expires_in: access_token_expiry as i64,
+        })
     }
 
     pub async fn login(
@@ -145,7 +143,7 @@ impl AuthService {
         jwt_secret: &str,
         access_token_expiry: u64,
         refresh_token_expiry: u64,
-    ) -> Result<AuthResponse, AppError> {
+    ) -> Result<MobileTokenResponse, AppError> {
         let user = self.authenticate(email, password).await?;
         let (access_token, refresh_token) = self.generate_tokens(
             &user.id.to_string(),
@@ -153,11 +151,13 @@ impl AuthService {
             access_token_expiry,
             refresh_token_expiry,
         )?;
-        let mut auth_response = self.build_auth_response(&user.id.to_string()).await?;
-        auth_response.access_token = access_token;
-        auth_response.refresh_token = refresh_token;
-        auth_response.expires_in = access_token_expiry as i64;
-        Ok(auth_response)
+        let _ = self.build_auth_response(&user.id.to_string()).await?;
+        Ok(MobileTokenResponse {
+            access_token,
+            refresh_token,
+            token_type: "Bearer".to_string(),
+            expires_in: access_token_expiry as i64,
+        })
     }
 
     pub async fn get_current_user(&self, user_id: uuid::Uuid) -> Result<AuthResponse, AppError> {

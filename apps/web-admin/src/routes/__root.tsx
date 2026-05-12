@@ -1,4 +1,3 @@
-import type { AuthResponse } from '@aspiron/api-client'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
 import type { QueryClient } from '@tanstack/react-query'
@@ -17,8 +16,15 @@ import { fetchSession } from '@/lib/auth'
 import appCss from '../styles.css?url'
 
 interface RouterContext {
-  session: AuthResponse | null
   queryClient: QueryClient
+}
+
+declare global {
+  interface WindowEventMap {
+    // "local-storage": CustomEvent;
+    access_token_expired: CustomEvent
+    refresh_token_expired: CustomEvent
+  }
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({

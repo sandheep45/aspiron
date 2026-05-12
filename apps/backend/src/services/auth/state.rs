@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::entries::dtos::response::auth::AuthResponse;
+use crate::entries::dtos::response::auth::MobileTokenResponse;
 use crate::services::auth::service::{AuthService, LoginCookies};
 use crate::setup::error::AppError;
 
@@ -41,7 +41,7 @@ impl AuthState {
         email: &str,
         password: &str,
         client_type: Option<crate::constants::AllowedClientType>,
-    ) -> Result<(AuthResponse, Option<LoginCookies>), AppError> {
+    ) -> Result<(MobileTokenResponse, Option<LoginCookies>), AppError> {
         let user = self.auth_service.authenticate(email, password).await?;
         let (access_token, refresh_token) = self.auth_service.generate_tokens(
             &user.id.to_string(),
@@ -49,13 +49,17 @@ impl AuthState {
             self.access_token_expiry,
             self.refresh_token_expiry,
         )?;
-        let mut auth_response = self
+        let _ = self
             .auth_service
             .build_auth_response(&user.id.to_string())
             .await?;
-        auth_response.access_token = access_token.clone();
-        auth_response.refresh_token = refresh_token.clone();
-        auth_response.expires_in = self.access_token_expiry as i64;
+
+        let mobile_tokens = MobileTokenResponse {
+            access_token: access_token.clone(),
+            refresh_token: refresh_token.clone(),
+            token_type: "Bearer".to_string(),
+            expires_in: self.access_token_expiry as i64,
+        };
 
         let cookies = match client_type {
             Some(crate::constants::AllowedClientType::BROWSER) => Some(LoginCookies {
@@ -67,6 +71,6 @@ impl AuthState {
             Some(crate::constants::AllowedClientType::MOBILE) | None => None,
         };
 
-        Ok((auth_response, cookies))
+        Ok((mobile_tokens, cookies))
     }
 }

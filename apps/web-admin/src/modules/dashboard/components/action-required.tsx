@@ -13,10 +13,7 @@ import { dashboardQuickActionRouteMapper } from '../utils'
 
 export function ActionRequired() {
   const { data } = useInsightQuery({
-    args: {
-      start: BigInt(1767225600),
-      end: BigInt(1798761600),
-    },
+    args: {},
   })
   return (
     <div className='space-y-5'>

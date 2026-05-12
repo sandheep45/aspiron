@@ -11,13 +11,18 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "AuthResponse")]
 pub struct AuthResponse {
+    pub user: AuthUserResponse,
+    pub roles: Vec<AuthRoleResponse>,
+    pub permissions: Vec<AuthPermissionResponse>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "MobileTokenResponse")]
+pub struct MobileTokenResponse {
     pub access_token: String,
     pub refresh_token: String,
     pub token_type: String,
     pub expires_in: i64,
-    pub user: AuthUserResponse,
-    pub roles: Vec<AuthRoleResponse>,
-    pub permissions: Vec<AuthPermissionResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]

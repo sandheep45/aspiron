@@ -9,11 +9,6 @@ export * from './client/axios-instance'
 // Configuration
 export * from './generated-types'
 // Services
-export {
-  authService,
-  type LoginRequest,
-  type LoginResponse,
-  type User,
-} from './services/auth.service'
+export { authService } from './services/auth.service'
 // Utilities
 export * from './utils/error-handler'

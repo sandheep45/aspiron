@@ -1,4 +1,5 @@
-import { Link, useRouteContext } from '@tanstack/react-router'
+import { useMyProfileQuery } from '@aspiron/tanstack-client'
+import { Link } from '@tanstack/react-router'
 import { HomeIcon } from 'lucide-react'
 import { Logout } from '@/components/logout'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -23,9 +24,8 @@ import { useBreadcrumbs } from '@/hooks/use-breadcrumbs'
 
 export function AppNavbar() {
   const breadcrumbs = useBreadcrumbs()
-  const { session } = useRouteContext({
-    from: '__root__',
-  })
+  const { data: queryData } = useMyProfileQuery()
+  const { data } = queryData ?? {}
 
   return (
     <header className='sticky top-0 z-10 flex h-12 items-center justify-between rounded-lg border-slate-800/50 border-b bg-slate-900/40 px-6 backdrop-blur-xl'>
@@ -70,16 +70,13 @@ export function AppNavbar() {
 
       <DropdownMenu>
         <DropdownMenuTrigger>
-          {session?.user.avatar_url ? (
+          {data?.user.avatar_url ? (
             <Avatar>
-              <AvatarImage
-                src={session?.user.avatar_url}
-                alt={session.user.email}
-              />
-              <AvatarFallback>{`${session.user.first_name?.[0]} ${session.user.last_name?.[0]}`}</AvatarFallback>
+              <AvatarImage src={data?.user.avatar_url} alt={data.user.email} />
+              <AvatarFallback>{`${data.user.first_name?.[0]} ${data.user.last_name?.[0]}`}</AvatarFallback>
             </Avatar>
           ) : (
-            `${session?.user.first_name} ${session?.user.last_name}`
+            `${data?.user.first_name} ${data?.user.last_name}`
           )}
         </DropdownMenuTrigger>
 

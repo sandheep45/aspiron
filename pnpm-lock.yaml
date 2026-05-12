@@ -259,6 +259,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      eventemitter3:
+        specifier: ^5.0.1
+        version: 5.0.4
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -356,6 +359,9 @@ importers:
       axios:
         specifier: ^1.6.0
         version: 1.13.5
+      eventemitter3:
+        specifier: ^5.0.1
+        version: 5.0.4
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
