@@ -15,7 +15,9 @@
       "!**/generated-types",
       "!**/routeTree.gen.ts",
       "!**/.expo",
-      "!**/expo-env.d.ts"
+      "!**/expo-env.d.ts",
+      "!**/.opencode/skills",
+      "!**/generated_passwords.json"
     ],
     "ignoreUnknown": true
   },

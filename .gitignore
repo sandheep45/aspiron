@@ -158,6 +158,9 @@ Thumbs.db
 *.swo
 *~
 
+# Cursor skills (duplicates .opencode/skills/)
+.agents/
+
 # Temporary files
 *.tmp
 *.temp
