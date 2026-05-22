@@ -17,7 +17,8 @@
       "!**/.expo",
       "!**/expo-env.d.ts",
       "!**/.opencode/skills",
-      "!**/generated_passwords.json"
+      "!**/generated_passwords.json",
+      "!**/openapi.json"
     ],
     "ignoreUnknown": true
   },

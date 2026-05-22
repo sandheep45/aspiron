@@ -1,4 +1,4 @@
-use sea_orm_migration::{MigrationTrait, MigratorTrait, async_trait};
+use sea_orm_migration::{MigrationTrait, async_trait};
 
 use crate::entities::migration::{
     m20260120_00000_create_enums, m20260120_00001_create_user_tables,
@@ -15,6 +15,8 @@ use crate::entities::migration::{
 
 pub mod entities;
 pub mod identifiers;
+
+pub use sea_orm_migration::MigratorTrait;
 
 pub struct Migrator;
 

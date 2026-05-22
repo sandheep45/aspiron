@@ -2,7 +2,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum_server::tls_rustls::RustlsConfig;
-use backend::setup::{app, config, telemetry};
+use backend::setup::{app, cli, config, telemetry};
 use sea_orm::DatabaseConnection;
 
 use backend::setup::config::SslConfig;
@@ -10,6 +10,10 @@ use backend::setup::config::SslConfig;
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     telemetry::init_from_env();
+
+    if cli::handle_args().await? {
+        return Ok(());
+    }
 
     tracing::info!("Starting Aspiron Backend...");
 

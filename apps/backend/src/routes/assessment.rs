@@ -7,9 +7,11 @@ use crate::services::assessment::handler::{
     create_attempt, fetch_quiz_by_id, get_questions_by_quiz_id, get_quizzes_by_topic_id,
     get_results_by_attempt_id, submit_attempt,
 };
+use crate::services::assessment::state::AssessmentState;
 use crate::setup::app::AppState;
 
-pub fn router(_app_state: &AppState) -> Router<AppState> {
+pub fn router(app_state: &AppState) -> Router<AppState> {
+    let assessment_state = AssessmentState::new(app_state.db.clone());
     Router::new()
         .route("/topics/{topic_id}/quizzes", get(get_quizzes_by_topic_id))
         .route("/quizzes/{quiz_id}", get(fetch_quiz_by_id))
@@ -23,4 +25,5 @@ pub fn router(_app_state: &AppState) -> Router<AppState> {
             "/attempts/{attempt_id}/results",
             get(get_results_by_attempt_id),
         )
+        .layer(axum::Extension(assessment_state))
 }

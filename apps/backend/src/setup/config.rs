@@ -84,6 +84,42 @@ pub struct CorsConfig {
 }
 
 impl Config {
+    pub fn for_test() -> Self {
+        Self {
+            app: AppConfig {
+                host: "127.0.0.1".to_string(),
+                port: 0,
+                env: "test".to_string(),
+                api_version: "/api/v1".to_string(),
+            },
+            database: DatabaseConfig {
+                host: "127.0.0.1".to_string(),
+                port: 5432,
+                username: "postgres".to_string(),
+                password: "postgres".to_string(),
+                name: "test_aspiron".to_string(),
+                pool_size: 1,
+            },
+            jwt: JwtConfig {
+                secret: "test-jwt-secret-for-testing-only-32chars!!".to_string(),
+                access_token_expiry_seconds: 3600,
+                refresh_token_expiry_seconds: 86400,
+                cookie_name: "test_jwt".to_string(),
+            },
+            logging: LoggingConfig {
+                level: "error".to_string(),
+                format: "compact".to_string(),
+            },
+            cors: CorsConfig {
+                origins: vec!["http://localhost:3000".to_string()],
+            },
+            ssl: SslConfig {
+                cert_path: String::new(),
+                key_path: String::new(),
+            },
+        }
+    }
+
     pub fn from_env() -> Self {
         Config {
             app: AppConfig {

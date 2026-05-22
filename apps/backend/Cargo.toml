@@ -51,7 +51,11 @@ time = { version = "0.3.47", features = ["serde"] }
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"
-testcontainers = "*"
+testcontainers = "0.23"
+testcontainers-modules = { version = "0.11", features = ["postgres"] }
+migrations = { workspace = true }
+tower = { version = "*", features = ["util"] }
+http = "1"
 
 [features]
 seed = []

@@ -114,6 +114,7 @@ ci:
     just lint
     just build-all
     just check
+    just validate-openapi
 
 # ==================================================
 # Build / Test (Parallel + Cached)
@@ -285,6 +286,17 @@ create-rust-app name dir="packages":
         \"$APP_DIR\"," Cargo.toml
         echo "Added $APP_DIR to workspace"
     fi
+
+# ==================================================
+# OpenAPI / Swagger
+# ==================================================
+# Generate OpenAPI spec from backend routes
+
+generate-openapi:
+    cargo run -p backend --bin backend -- --generate-openapi
+
+validate-openapi:
+    apps/backend/scripts/validate-openapi.sh
 
 # ==================================================
 # Rust → TypeScript Bindings (ts-rs)
