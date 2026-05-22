@@ -1,10 +1,28 @@
-use axum::{body::to_bytes, http::StatusCode};
+use std::collections::HashMap;
+
+use axum::{body::Body, body::to_bytes, http::StatusCode};
 
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
 use backend::entries::entity_enums::user_types::UserTypeEnums;
 
 use crate::fixtures::scenario_builder::ScenarioBuilder;
-use crate::harness::{TestApp, extract_cookies, extract_jwt_cookie};
+use crate::harness::{TestApp, extract_jwt_cookie};
+
+fn extract_cookies(response: &axum::http::Response<Body>) -> HashMap<String, String> {
+    let mut cookies = HashMap::new();
+    for header in response.headers().get_all("set-cookie") {
+        let cookie_str = header.to_str().expect("cookie should be valid utf-8");
+        if let Some(name_value) = cookie_str.split(';').next() {
+            let trimmed = name_value.trim();
+            if let Some(eq_pos) = trimmed.find('=') {
+                let name = trimmed[..eq_pos].to_string();
+                let value = trimmed[eq_pos + 1..].to_string();
+                cookies.insert(name, value);
+            }
+        }
+    }
+    cookies
+}
 
 #[tokio::test]
 async fn student_registers_logs_in_and_accesses_content() {

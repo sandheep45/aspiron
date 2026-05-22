@@ -1,0 +1,1582 @@
+---
+source: apps/backend/tests/unit/openapi_snapshot.rs
+expression: openapi
+---
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Aspiron API",
+    "description": "Backend API for the Aspiron project",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/admin/insights": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Insights"
+        ],
+        "operationId": "get_insights",
+        "parameters": [
+          {
+            "name": "pagination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PaginationPayload"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/InsightFilters"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/InsightSort"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get admin insights with pagination and filtering"
+          }
+        }
+      }
+    },
+    "/api/v1/attempts": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Assessment"
+        ],
+        "operationId": "create_attempt",
+        "responses": {
+          "200": {
+            "description": "Create assessment attempt"
+          }
+        }
+      }
+    },
+    "/api/v1/attempts/{attempt_id}/results": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Assessment"
+        ],
+        "operationId": "get_results_by_attempt_id",
+        "parameters": [
+          {
+            "name": "attempt_id",
+            "in": "path",
+            "description": "Attempt ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get attempt results"
+          }
+        }
+      }
+    },
+    "/api/v1/attempts/{attempt_id}/submit": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Assessment"
+        ],
+        "operationId": "submit_attempt",
+        "parameters": [
+          {
+            "name": "attempt_id",
+            "in": "path",
+            "description": "Attempt ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submit assessment attempt"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "authenticate_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User authenticated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MobileTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "log_out",
+        "responses": {
+          "200": {
+            "description": "User logged out"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "get_me",
+        "responses": {
+          "200": {
+            "description": "Get current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "refresh_token",
+        "responses": {
+          "200": {
+            "description": "Refresh access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MobileTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register-user": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "register_user",
+        "responses": {
+          "200": {
+            "description": "Register a new user"
+          }
+        }
+      }
+    },
+    "/api/v1/chapters/{chapter_id}/topics": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "get_topics_by_chapter_id",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get topics by chapter ID"
+          }
+        }
+      }
+    },
+    "/api/v1/community/threads": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "create_community_thread",
+        "responses": {
+          "200": {
+            "description": "Create a community thread"
+          }
+        }
+      }
+    },
+    "/api/v1/community/threads/public": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "public_threads",
+        "responses": {
+          "200": {
+            "description": "Get public threads"
+          }
+        }
+      }
+    },
+    "/api/v1/community/threads/{thread_id}": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "fetch_community_threads_by_id",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "description": "Thread ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetch community thread by ID"
+          }
+        }
+      }
+    },
+    "/api/v1/community/threads/{thread_id}/attach-note": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "attach_notes_to_thread",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "description": "Thread ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attach note to thread"
+          }
+        }
+      }
+    },
+    "/api/v1/community/threads/{thread_id}/posts": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "create_community_posts",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "description": "Thread ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create community posts"
+          }
+        }
+      }
+    },
+    "/api/v1/community/topics/{topic_id}/threads": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "fetch_community_threads_per_topic",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "description": "Topic ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetch community threads per topic"
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/classes/upcoming": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Live Session"
+        ],
+        "operationId": "fetch_upcoming_live_classes",
+        "responses": {
+          "200": {
+            "description": "Fetch upcoming live classes"
+          }
+        }
+      }
+    },
+    "/api/v1/live/classes/{class_id}/join": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Live Session"
+        ],
+        "operationId": "join_live_class_by_id",
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "description": "Class ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Join live class by ID"
+          }
+        }
+      }
+    },
+    "/api/v1/live/classes/{class_id}/recording": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Live Session"
+        ],
+        "operationId": "fetch_recorded_live_sessions",
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "description": "Class ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetch recorded live sessions"
+          }
+        }
+      }
+    },
+    "/api/v1/notes": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "get_all_notes",
+        "responses": {
+          "200": {
+            "description": "Get all notes"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "create_note",
+        "responses": {
+          "200": {
+            "description": "Create a note"
+          }
+        }
+      }
+    },
+    "/api/v1/notes/{note_id}": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "delete": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "delete_note",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "description": "Note ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete a note"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "update_note",
+        "parameters": [
+          {
+            "name": "note_id",
+            "in": "path",
+            "description": "Note ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update a note"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Notification"
+        ],
+        "operationId": "get_all_notifications",
+        "responses": {
+          "200": {
+            "description": "Get all notifications"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/status": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "patch": {
+        "tags": [
+          "Notification"
+        ],
+        "operationId": "update_notification_status",
+        "responses": {
+          "200": {
+            "description": "Update notification status"
+          }
+        }
+      }
+    },
+    "/api/v1/progress/summary": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "get_progress_summary",
+        "responses": {
+          "200": {
+            "description": "Get progress summary"
+          }
+        }
+      }
+    },
+    "/api/v1/progress/update": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "update_progress",
+        "responses": {
+          "200": {
+            "description": "Update progress"
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/{quiz_id}": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Assessment"
+        ],
+        "operationId": "fetch_quiz_by_id",
+        "parameters": [
+          {
+            "name": "quiz_id",
+            "in": "path",
+            "description": "Quiz ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get quiz by ID"
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/{quiz_id}/questions": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Assessment"
+        ],
+        "operationId": "get_questions_by_quiz_id",
+        "parameters": [
+          {
+            "name": "quiz_id",
+            "in": "path",
+            "description": "Quiz ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get questions by quiz ID"
+          }
+        }
+      }
+    },
+    "/api/v1/recall/start": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "start_recall",
+        "responses": {
+          "200": {
+            "description": "Start recall session"
+          }
+        }
+      }
+    },
+    "/api/v1/recall/{session_id}/mcqs": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "get_recall_mcq_by_session_id",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "description": "Session ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get recall MCQ by session ID"
+          }
+        }
+      }
+    },
+    "/api/v1/recall/{session_id}/mcqs/submit": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "submit_recall_mcq",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "description": "Session ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submit recall MCQ"
+          }
+        }
+      }
+    },
+    "/api/v1/recall/{session_id}/result": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "get_recall_result_by_session_id",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "description": "Session ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get recall result by session ID"
+          }
+        }
+      }
+    },
+    "/api/v1/subjects": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "get_all_subjects",
+        "responses": {
+          "200": {
+            "description": "Get all subjects"
+          }
+        }
+      }
+    },
+    "/api/v1/subjects/{subject_id}/chapters": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "get_chapters_by_subject_id",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "description": "Subject ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get chapters by subject ID"
+          }
+        }
+      }
+    },
+    "/api/v1/topics/{topic_id}": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "get_topic_by_id",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "description": "Topic ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get topic metadata by topic ID"
+          }
+        }
+      }
+    },
+    "/api/v1/topics/{topic_id}/notes/official": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "operationId": "get_teachers_notes_from_topic_id",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "description": "Topic ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get teacher's notes from topic ID"
+          }
+        }
+      }
+    },
+    "/api/v1/topics/{topic_id}/quizzes": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Assessment"
+        ],
+        "operationId": "get_quizzes_by_topic_id",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "description": "Topic ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get quizzes by topic ID"
+          }
+        }
+      }
+    },
+    "/api/v1/topics/{topic_id}/videos": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "get_videos_by_topic_id",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "description": "Topic ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get videos by topic ID"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "get_user_by_email",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "User email address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user by email"
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{video_id}/offline-token": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "operationId": "get_offline_token_by_video_id",
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "description": "Video ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get offline token by video ID"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionTypeEnum": {
+        "type": "string",
+        "enum": [
+          "CREATE",
+          "READ",
+          "UPDATE",
+          "DELETE",
+          "MANAGE",
+          "PUBLISH",
+          "MODERATE",
+          "GRADE",
+          "TAKE",
+          "VIEW_RESULTS",
+          "VIEW_ANY_RESULTS",
+          "ASSIGN_ROLES",
+          "VIEW_ANALYTICS",
+          "MANAGE_SETTINGS",
+          "AUDIT"
+        ]
+      },
+      "ApiResponse_AuthResponse": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "user",
+              "roles",
+              "permissions"
+            ],
+            "properties": {
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AuthPermissionResponse"
+                }
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AuthRoleResponse"
+                }
+              },
+              "user": {
+                "$ref": "#/components/schemas/AuthUserResponse"
+              }
+            }
+          },
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponse_MobileTokenResponse": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "access_token",
+              "refresh_token",
+              "token_type",
+              "expires_in"
+            ],
+            "properties": {
+              "access_token": {
+                "type": "string"
+              },
+              "expires_in": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "refresh_token": {
+                "type": "string"
+              },
+              "token_type": {
+                "type": "string"
+              }
+            }
+          },
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AuthPermissionResponse": {
+        "type": "object",
+        "required": [
+          "name",
+          "resource_type",
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/ActionTypeEnum"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "resource_type": {
+            "$ref": "#/components/schemas/ResourceTypeEnum"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "required": [
+          "user",
+          "roles",
+          "permissions"
+        ],
+        "properties": {
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthPermissionResponse"
+            }
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthRoleResponse"
+            }
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUserResponse"
+          }
+        }
+      },
+      "AuthRoleResponse": {
+        "type": "object",
+        "required": [
+          "name",
+          "display_name",
+          "is_system_role"
+        ],
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "is_system_role": {
+            "type": "boolean"
+          },
+          "name": {
+            "$ref": "#/components/schemas/UserTypeEnums"
+          }
+        }
+      },
+      "AuthUserResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "avatar_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "last_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "version"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "healthy"
+          },
+          "version": {
+            "type": "string",
+            "example": "0.1.0"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "barbara_turner.1@admin.aspiron"
+          },
+          "password": {
+            "type": "string",
+            "example": "admin123"
+          }
+        }
+      },
+      "MobileTokenResponse": {
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "token_type",
+          "expires_in"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string"
+          }
+        }
+      },
+      "ResourceTypeEnum": {
+        "type": "string",
+        "enum": [
+          "USER",
+          "CONTENT",
+          "ASSESSMENT",
+          "COMMUNITY",
+          "SYSTEM",
+          "SUBJECT",
+          "CHAPTER",
+          "TOPIC",
+          "VIDEO",
+          "QUIZ",
+          "QUESTION",
+          "THREAD",
+          "POST",
+          "NOTE"
+        ]
+      },
+      "UserTypeEnums": {
+        "type": "string",
+        "enum": [
+          "STUDENT",
+          "TEACHER",
+          "ADMIN"
+        ]
+      }
+    }
+  }
+}

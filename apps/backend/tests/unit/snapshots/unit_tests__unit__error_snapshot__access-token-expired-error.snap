@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/error_snapshot.rs
+expression: error_json(err)
+---
+{
+  "error": {
+    "code": "ACCESS_TOKEN_EXPIRED",
+    "message": "token has expired"
+  }
+}

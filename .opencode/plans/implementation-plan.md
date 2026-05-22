@@ -60,6 +60,16 @@ Use `tower::ServiceExt::oneshot` with `axum::body::Body` and `http::Request` —
 
 One postgres container per test suite. Per-test: `BEGIN` → run test → `ROLLBACK`. Dramatically faster than container-per-test. Full isolated DB only for migration tests, concurrency tests, CI edge cases.
 
+### 10. Modularity — Module Boundaries as API Contracts
+
+Every module (domain, feature, package) has a well-defined public API surface. Internal details are private. Modules communicate only through their public interfaces — never by reaching into internals. This means:
+
+- **Rust modules:** Use `pub(crate)` and `pub(super)` intentionally. Only the handler/route registration is `pub` at the top level. Services, repositories, and state are `pub(crate)`.
+- **Feature modules (frontend):** Each `features/<name>/` exports only a barrel `index.ts`. No external code imports from `features/<name>/components/` directly — only through `features/<name>/`.
+- **Package boundaries:** `@aspiron/tanstack-client` never imports from `apps/web-admin`. `@aspiron/api-client` never imports from `@aspiron/tanstack-client`. Dependency direction is strictly: `web-admin → tanstack-client → api-client`.
+- **No circular dependencies:** Between any two modules, dependency must flow in one direction only. A `cargo` or `Madge` check must pass before merging.
+- **Layered dependency rule:** In the backend: `http → application → domain ← infra` (domain knows nothing about infra). No skipping layers.
+
 ---
 
 ## Definition of Done
@@ -932,18 +942,22 @@ impl<R: UserRepository> LoginUseCase<R> {
 - Use `#[allow(dead_code)]` temporarily on old modules during transition
 - Final step: delete old directories, update `lib.rs`
 
-### C.6 DRY/SOLID Critical Design Integration
+### C.6 DRY/SOLID/Modularity Critical Design Integration
 
-The Phase C refactor naturally addresses many DRY/SOLID violations (trait abstractions → DIP, domain separation → SRP, ports → OCP). However, the following items must be verified during migration:
+The Phase C refactor naturally addresses many DRY/SOLID violations (trait abstractions → DIP, domain separation → SRP, ports → OCP). Modularity is enforced through strict visibility and dependency rules. The following items must be verified during migration:
 
 - **No new duplication:** Each domain migration step must check for duplicated code before accepting the migration
 - **Trait-first:** Before writing any repository implementation, define the port trait
 - **God method guard:** Any handler/service/repository method exceeding 60 lines must be reviewed for SRP violation
 - **Generated file policy:** Never manually edit generated files; run `just generate-types` after DTO changes
+- **Module boundary guard:** Every `pub` item must be justified — if it's not part of the module's public API, use `pub(crate)` or `pub(super)` instead
+- **No cross-domain imports:** A module in `application/learning/` must not directly import from `infra/db/repositories/` — it must go through the port trait defined in `application/learning/ports.rs`
+- **Dependency direction check:** After each domain migration, run `cargo check` and verify no circular dependencies exist between the new layered modules
+- **Barrel export required:** Every feature module (backend and frontend) must have a `mod.rs` or `index.ts` barrel that defines the public API. External consumers import only from the barrel, never from internal paths.
 
 ---
 
-## Phase C.7: DRY/SOLID Remediation (Backend)
+## Phase C.7: DRY/SOLID/Modularity Remediation (Backend)
 
 **Protected by:** Phase B scenario tests. All changes run against existing test suite.
 
@@ -963,33 +977,39 @@ The Phase C refactor naturally addresses many DRY/SOLID violations (trait abstra
 |---|---|---|---|
 | 4 | `utils/jwt.rs:20-40,42-62` | `encode_access_token` / `encode_refresh_token` byte-for-byte identical | Extract `fn encode_token()` |
 | 5 | All `services/*/repository.rs` + `services/*/service.rs` | Zero trait abstractions → cannot mock, cannot swap repositories | Define `#[async_trait] pub trait XxxRepository` per domain; inject via constructor |
-| 6 | `services/users/repository.rs:58-176` | `get_user_profile_by_id()` = 118-line god method (5 fetches + 5 mappings + business logic) | Split into `find_user`, `find_profile`, `find_roles`, `find_permissions`; compose in service |
-| 7 | `services/insights/repository.rs:46-416` | Mixes data access + metrics calculation + DTO mapping | Split `InsightMetricsService` out; repo does queries only |
-| 8 | `services/insights/service.rs:29-261` | 230-line methods with duplicated pagination/search/sort inline | Extract `paginate<T>()`, `apply_sort<T>()`, `apply_search<T>()` helpers |
+| 6a | All `services/*/mod.rs`, `services/*/handler.rs` | Over-broad `pub` visibility — internal helpers exposed as public API | Audit every `pub` item; use `pub(crate)` for module-internal symbols; only route registration and state constructors remain `pub` |
+| 6b | `services/` — no barrel exports | Consumers import from arbitrary deep paths (`use crate::services::users::repository::UserRepository`) | Add `mod.rs` barrel for each domain; export only the public API surface (handler router, state, selected types) |
+| 7 | `services/users/repository.rs:58-176` | `get_user_profile_by_id()` = 118-line god method (5 fetches + 5 mappings + business logic) | Split into `find_user`, `find_profile`, `find_roles`, `find_permissions`; compose in service |
+| 8 | `services/insights/repository.rs:46-416` | Mixes data access + metrics calculation + DTO mapping | Split `InsightMetricsService` out; repo does queries only |
+| 9 | `services/insights/service.rs:29-261` | 230-line methods with duplicated pagination/search/sort inline | Extract `paginate<T>()`, `apply_sort<T>()`, `apply_search<T>()` helpers |
 
 ### C.7.3 P2 — Open/Closed + Interface Segregation
 
 | # | File | Violation | Fix |
 |---|---|---|---|
-| 9 | `services/users/utils/permission.rs:42-81` | 14/15-variant manual match duplicates `Display` impl | `#[derive(FromStr)]` on enums; remove manual parse |
-| 10 | `setup/error.rs:72-88,136-191` | `ErrorCode::from` + `IntoResponse` — same variant mapping duplicated | Store `(StatusCode, &str)` as variant fields; dedupe |
-| 11 | `services/insights/service.rs:63-102,212-233` | Match-on-variant for sort — new variant = modify match | Strategy pattern via `HashMap<SortBy, fn>` |
-| 12 | `services/repository.rs:1-23` | `BaseRepository` fat trait (5 methods, unused) | Split into `ReadRepository`/`WriteRepository` or remove dead trait |
-| 13 | `services/*/service.rs` (6 files) | Commented-out `// repository:` fields | Clean up dead comments |
+| 10 | `services/users/utils/permission.rs:42-81` | 14/15-variant manual match duplicates `Display` impl | `#[derive(FromStr)]` on enums; remove manual parse |
+| 11 | `setup/error.rs:72-88,136-191` | `ErrorCode::from` + `IntoResponse` — same variant mapping duplicated | Store `(StatusCode, &str)` as variant fields; dedupe |
+| 12 | `services/insights/service.rs:63-102,212-233` | Match-on-variant for sort — new variant = modify match | Strategy pattern via `HashMap<SortBy, fn>` |
+| 13 | `services/repository.rs:1-23` | `BaseRepository` fat trait (5 methods, unused) | Split into `ReadRepository`/`WriteRepository` or remove dead trait |
+| 14 | `services/*/service.rs` (6 files) | Commented-out `// repository:` fields | Clean up dead comments |
+| 15 | Cross-domain: `services/insights/repository.rs` imports from `entries/entities/` and other domains | No domain boundary enforcement — insights directly reaches into other domains' internals | Enforce that each layer (`application/*/`) only depends on its own ports and domain types; cross-domain communication goes through public handlers only |
 
 ### C.7.4 P3 — Boilerplate Reduction
 
 | # | File | Violation | Fix |
 |---|---|---|---|
-| 14 | 8x `services/*/state.rs` | 16-line State structs with identical `#[derive(Clone)]` + `new(Arc<DatabaseConnection>)` | `state!` macro |
-| 15 | `entries/dtos/payload/insights.rs:151-163,287-298` | Duplicated `get_page()`, `get_limit()`, `get_offset()` | `Paginable` trait with default impls |
-| 16 | All repository files | Entity-to-DTO mapping via inline closure every time | `impl From<EntityModel> for Dto` |
+| 16 | 8x `services/*/state.rs` | 16-line State structs with identical `#[derive(Clone)]` + `new(Arc<DatabaseConnection>)` | `state!` macro |
+| 17 | `entries/dtos/payload/insights.rs:151-163,287-298` | Duplicated `get_page()`, `get_limit()`, `get_offset()` | `Paginable` trait with default impls |
+| 18 | All repository files | Entity-to-DTO mapping via inline closure every time | `impl From<EntityModel> for Dto` |
 
 ### C.7.5 Verification Gate
 
 ```bash
 cargo check --all-targets --all-features
 cargo clippy --all-targets --all-features -- -D warnings
+# Modularity: verify no leaking pub items
+cargo doc --no-deps --document-private-items 2>&1 | head -50
+# Run all tests
 cargo test --test scenarios -- --nocapture
 cargo test --test integration -- --nocapture
 just generate-types
@@ -1103,7 +1123,7 @@ apps/web-admin/src/features/learning/tests/
 └── progress-tracker.test.tsx    # Progress display
 ```
 
-### D.6 Frontend DRY/SOLID Remediation
+### D.6 Frontend DRY/SOLID/Modularity Remediation
 
 **Runs in parallel with:** Phase C.7 (backend). No cross-cutting dependencies.
 
@@ -1122,7 +1142,7 @@ apps/web-admin/src/features/learning/tests/
 | 4 | `components/ui/sidebar.tsx` (727 lines) | 22 components + 1 hook in one file | Split: `sidebar-context.tsx`, `sidebar-root.tsx`, `sidebar-menu.tsx`, `sidebar-group.tsx` |
 | 5 | `modules/dashboard/components/action-required.tsx` | God component: fetching + rendering + 4 if-branches + 4 inline button components | Registry pattern via `dashboardQuickActionRouteMapper`; extract button components |
 
-#### D.6.3 P2 — DRY / Dead Code
+#### D.6.3 P2 — DRY / Dead Code / Modularity
 
 | # | File | Violation | Fix |
 |---|---|---|---|
@@ -1130,14 +1150,16 @@ apps/web-admin/src/features/learning/tests/
 | 7 | `packages/api-client/src/services/*.ts` | `createApiClient` conditional duplicated per method | Extract `getClient()` utility (already exists in `auth.service.ts`) |
 | 8 | `packages/tanstack-client/src/hooks/**/*.ts` | `useAxiosConfig()` merge pattern duplicated each hook | Extract `useMergedAxiosConfig()` utility |
 | 9 | `packages/api-client/src/utils/error-handler.ts` | 76 lines of dead code (all methods just `console.*`) | Implement redirect-on-401 + toasts, or delete class |
+| 9a | All `features/` directories | No barrel `index.ts` exports — consumers import from internal paths | Add `index.ts` barrel per feature module exporting only the public API; enforce via lint rule |
+| 9b | Package dependency: verify `@aspiron/api-client` never imports from `@aspiron/tanstack-client` | Reverse dependency would create circular chain | Run `Madge` or manual audit; fix any violations |
 
-#### D.6.4 P3 — LSP / ISP / Polish
+#### D.6.4 P3 — LSP / ISP / Polish / Modularity
 
 | # | File | Violation | Fix |
 |---|---|---|---|
 | 10 | `components/forms/form-elements/submit-button.tsx:10-11` | Overrides consumer's `variant` during submit | Respect consumer's variant; add loading visual |
 | 11 | `packages/api-client/src/types/index.ts:3-6` | `ServiceMethodArguments.args` always `?` | Two variants: required/optional |
-| 12 | `modules/dashboard/components/action-required.tsx:9` | Imports `iconContainerVariants` from different component | Define `insightActionVariants` |
+| 12 | `modules/dashboard/components/action-required.tsx:9` | Imports `iconContainerVariants` from different component (cross-module coupling) | Define `insightActionVariants` in the dashboard module's own scope |
 | 13 | `modules/auth/hooks/use-csrf-token-query.ts` | Uses raw `fetch` instead of `apiClient` | Route through `auth.service.ts` |
 | 14 | `modules/auth/components/login-form.tsx:42-49` | Inline regex error parsing | Move parsing to service layer |
 | 15 | `components/logout.tsx` | Full form + server function for simple logout | Create `useLogoutMutation` hook; simplify to button |
@@ -1148,6 +1170,8 @@ apps/web-admin/src/features/learning/tests/
 pnpm typecheck
 pnpm biome check .
 pnpm --filter web-admin exec vitest run
+# Modularity: verify no circular package deps
+pnpm exec madge --circular apps/web-admin/src/
 ```
 
 ---
@@ -1420,7 +1444,7 @@ Phase E (Week 6-8) — CI Architecture
 - [ ] Zod adapters for runtime validation
 - [ ] 5+ frontend component tests passing
 
-### Phase C.7 (Backend DRY/SOLID)
+### Phase C.7 (Backend DRY/SOLID/Modularity)
 - [ ] All `todo!()` and `unimplemented!()` removed from production code
 - [ ] All orphan stub handler files deleted
 - [ ] `encode_access_token` / `encode_refresh_token` consolidated
@@ -1429,10 +1453,13 @@ Phase E (Week 6-8) — CI Architecture
 - [ ] Permission parsing uses `FromStr` derive, not manual match
 - [ ] `AppError` variant-to-status-code mapping is single-sourced
 - [ ] `Paginable` trait replaces duplicated pagination helpers
+- [ ] Every `pub` item across all backend modules audited — only intended API surface is `pub`; internals use `pub(crate)`
+- [ ] Every backend domain module has a barrel `mod.rs` exporting only its public API
+- [ ] No cross-layer dependency violations: `http → application → domain ← infra` enforced
 - [ ] `cargo clippy -D warnings` passes clean
 - [ ] All Phase B scenario tests still pass
 
-### Phase D.6 (Frontend DRY/SOLID)
+### Phase D.6 (Frontend DRY/SOLID/Modularity)
 - [ ] Hardcoded credentials removed from `form-option.ts`
 - [ ] Route loaders use `queryClient.ensureQueryData` with TanStack Query keys
 - [ ] `FieldWrapper` base component extracted; form field boilerplate eliminated
@@ -1441,6 +1468,8 @@ Phase E (Week 6-8) — CI Architecture
 - [ ] All `WithZodSchema` dead types deleted
 - [ ] `getClient()` utility shared across API client services
 - [ ] `submit-button.tsx` respects consumer's variant prop
+- [ ] Every feature module has a barrel `index.ts` — no external imports from internal paths
+- [ ] No circular dependencies between packages (`Madge` check passes)
 - [ ] `pnpm typecheck` and `pnpm biome check .` pass
 
 ### Phase E (CI)

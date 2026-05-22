@@ -1,14 +1,10 @@
-use std::collections::HashMap;
-
 use axum::{
     Router,
     body::Body,
     http::{Request, StatusCode},
 };
-use backend::setup::{
-    app::{AppState, create_app},
-    config::Config,
-};
+use backend::setup::app::{AppState, create_app};
+use backend::setup::config::Config;
 use migrations::{Migrator, MigratorTrait};
 use sea_orm::{
     ActiveModelTrait, ConnectionTrait, Database, DatabaseConnection, DatabaseTransaction,
@@ -61,7 +57,7 @@ impl TestApp {
             .expect("failed to run migrations");
 
         let config = Config::for_test();
-        let app_state = AppState::new(Arc::new(config), db);
+        let app_state = AppState::new(Arc::new(config.clone()), db);
         let db = Arc::clone(&app_state.db);
 
         let router_with_state = create_app(&app_state.config, app_state.clone());
@@ -145,27 +141,6 @@ impl TestApp {
             .expect("valid request");
         self.request(req).await
     }
-
-    /// Convenience: send a POST request with a JSON body and a cookie.
-    #[allow(dead_code)]
-    pub async fn post_json_with_cookie(
-        &self,
-        path: &str,
-        body: serde_json::Value,
-        cookie: &str,
-    ) -> axum::http::Response<Body> {
-        let req = Request::builder()
-            .method("POST")
-            .uri(path)
-            .header("content-type", "application/json")
-            .header("x-client-type", "BROWSER")
-            .header("cookie", cookie)
-            .body(Body::from(
-                serde_json::to_string(&body).expect("valid json"),
-            ))
-            .expect("valid request");
-        self.request(req).await
-    }
 }
 
 /// Create a test user directly in the database.
@@ -229,25 +204,6 @@ pub fn extract_jwt_cookie(response: &axum::http::Response<Body>) -> String {
         .expect("cookie should have name=value")
         .trim()
         .to_string()
-}
-
-/// Extract all cookies from a response into a HashMap.
-///
-/// Handles multiple `Set-Cookie` headers by iterating all values.
-pub fn extract_cookies(response: &axum::http::Response<Body>) -> HashMap<String, String> {
-    let mut cookies = HashMap::new();
-    for header in response.headers().get_all("set-cookie") {
-        let cookie_str = header.to_str().expect("cookie should be valid utf-8");
-        if let Some(name_value) = cookie_str.split(';').next() {
-            let trimmed = name_value.trim();
-            if let Some(eq_pos) = trimmed.find('=') {
-                let name = trimmed[..eq_pos].to_string();
-                let value = trimmed[eq_pos + 1..].to_string();
-                cookies.insert(name, value);
-            }
-        }
-    }
-    cookies
 }
 
 #[cfg(test)]
