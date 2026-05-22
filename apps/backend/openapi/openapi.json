@@ -256,7 +256,7 @@
         "tags": [
           "Auth"
         ],
-        "operationId": "refresh_token",
+        "operationId": "refresh_token_handler",
         "responses": {
           "200": {
             "description": "Refresh access token",

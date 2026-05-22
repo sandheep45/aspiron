@@ -1410,33 +1410,33 @@ Phase E (Week 6-8) — CI Architecture
 ## Success Criteria
 
 ### Phase A.1 (Backend Harness)
-- [ ] `TestApp::new()` spins up testcontainers postgres, runs SeaORM migrations, builds router
-- [ ] Per-test transaction rollback works (`BEGIN` → test → `ROLLBACK`)
-- [ ] `tower::ServiceExt::oneshot` request helper works
-- [ ] `/health` endpoint test passes
-- [ ] Auth integration test passes (register → login → authenticated route)
-- [ ] First scenario test passes (onboarding or quiz lifecycle)
+- [x] `TestApp::new()` spins up testcontainers postgres, runs SeaORM migrations, builds router
+- [x] Per-test transaction rollback works (`BEGIN` → test → `ROLLBACK`)
+- [x] `tower::ServiceExt::oneshot` request helper works
+- [x] `/health` endpoint test passes
+- [x] Auth integration test passes (register → login → authenticated route)
+- [x] First scenario test passes (onboarding or quiz lifecycle)
 
 ### Phase A.2-A.5 (Remaining Test Infra)
-- [ ] Frontend vitest configured and running
-- [ ] @aspiron/test-utils package with factories
-- [ ] MSW handlers covering all active API endpoints
-- [ ] OpenAPI spec committed and diff-checked in CI
+- [x] Frontend vitest configured and running
+- [x] @aspiron/test-utils package with factories
+- [x] MSW handlers covering all active API endpoints
+- [x] OpenAPI spec committed and diff-checked in CI
 
 ### Phase B (Scenario Tests)
-- [ ] 6 scenario tests passing (one per critical workflow)
-- [ ] 10+ unit tests passing (algorithms, rules)
-- [ ] 5+ integration tests passing (repositories, middleware)
-- [ ] Scenario builder fluent API working
+- [~] 4/6 scenario tests passing (2 blocked on real handlers)
+- [x] 10+ unit tests passing (33 total: permissions, JWT, snapshots)
+- [x] 5+ integration tests passing (16 total: auth middleware, route responses)
+- [x] Scenario builder fluent API working
 
 ### Phase C (Backend Refactor)
-- [ ] All 10 domains migrated to new layer structure
-- [ ] Domain models separated from SeaORM entities
-- [ ] DTOs in http layer, not domain
-- [ ] Ports (traits) defined for each domain
-- [ ] `cargo check --all-targets --all-features` passes
-- [ ] `cargo clippy -D warnings` passes
-- [ ] All Phase B scenario tests still pass after refactor
+- [~] 1/10 domains migrated to new layer structure (auth)
+- [~] Domain models separated from SeaORM entities (auth done)
+- [~] DTOs in http layer, not domain (auth done)
+- [~] Ports (traits) defined for each domain (auth done)
+- [x] `cargo check --all-targets --all-features` passes
+- [x] `cargo clippy -D warnings` passes
+- [x] All Phase B scenario tests still pass after refactor
 
 ### Phase D (Frontend)
 - [ ] Frontend feature-based reorganization complete
@@ -1474,5 +1474,5 @@ Phase E (Week 6-8) — CI Architecture
 
 ### Phase E (CI)
 - [ ] Fast lane CI completes in < 3 minutes
-- [ ] `just ci` passes (full pre-commit check)
+- [x] `just ci` passes (full pre-commit check, runs on every commit via husky + lint-staged)
 - [ ] Contract coverage metrics script working

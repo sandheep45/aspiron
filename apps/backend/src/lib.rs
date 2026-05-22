@@ -1,5 +1,9 @@
+pub mod application;
 pub mod constants;
+pub mod domain;
 pub mod entries;
+pub mod http;
+pub mod infra;
 pub mod middleware;
 pub mod routes;
 pub mod seeds;

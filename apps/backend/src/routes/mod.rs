@@ -15,7 +15,7 @@ use crate::setup::app::AppState;
 pub fn api_v1_router(app_state: &AppState) -> axum::Router<AppState> {
     axum::Router::new()
         .merge(health::router(app_state))
-        .merge(auth::router(app_state))
+        .merge(crate::http::routes::auth::router(app_state))
         .merge(users::router(app_state))
         .merge(rbac::router(app_state))
         .merge(assessment::router(app_state))
