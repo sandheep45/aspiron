@@ -9,6 +9,7 @@
 - `README*` files contain project overview, architecture, and setup docs — read first when onboarding.
 - This file (`AGENTS.md`) is loaded as system context at every session start — keep it updated with high-signal repo facts.
 - `.opencode/instructions/` contains detailed conventions per concern (frontend, backend, API client, forms).
+- All imports in `apps/web-admin/src/` must use `@/` absolute paths — no relative imports in hand-authored code. Generated files (`routeTree.gen.ts`) are exempt.
 
 ## Workspace
 

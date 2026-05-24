@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { ActionRequired } from './action-required'
+import { ActionRequired } from '@/features/dashboard/components/action-required'
 
 vi.mock('@aspiron/tanstack-client', () => ({
   useInsightQuery: () => ({

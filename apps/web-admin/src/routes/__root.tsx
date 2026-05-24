@@ -13,7 +13,7 @@ import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { fetchSession } from '@/lib/auth'
-import appCss from '../styles.css?url'
+import appCss from '@/styles.css?url'
 
 interface RouterContext {
   queryClient: QueryClient

@@ -15,7 +15,7 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query'
-import { useAxiosConfig } from '@/providers/QueryProvider'
+import { useMergedAxiosConfig } from '@/hooks/use-merged-axios-config'
 
 /**
  * -------------------------
@@ -51,14 +51,11 @@ function useAuthMutation<TData, TVariables>(
   ) => Promise<TData>,
   options?: AuthMutationOptions<TData, TVariables>,
 ) {
-  const providerAxiosConfig = useAxiosConfig()
+  const axiosConfig = useMergedAxiosConfig(options)
 
   return useMutation<TData, Error, TVariables>({
     ...options,
     mutationFn: (variables: TVariables) => {
-      const axiosConfig =
-        options?.axiosConfig ?? providerAxiosConfig ?? undefined
-
       return mutationFn(variables, { axiosConfig })
     },
   })
@@ -72,15 +69,12 @@ function useAuthQuery<TData>(
   queryFn: (options?: { axiosConfig?: AxiosConfigOptions }) => Promise<TData>,
   options?: AuthQueryOptions<TData>,
 ) {
-  const providerAxiosConfig = useAxiosConfig()
+  const axiosConfig = useMergedAxiosConfig(options)
 
   return useQuery<TData, Error>({
     queryKey,
     ...options,
     queryFn: () => {
-      const axiosConfig =
-        options?.axiosConfig ?? providerAxiosConfig ?? undefined
-
       return queryFn({ axiosConfig })
     },
   })

@@ -8,8 +8,8 @@ import {
   IconContainer,
   iconContainerVariants,
 } from '@/components/ui/icon-container'
+import { dashboardQuickActionRouteMapper } from '@/features/dashboard/utils'
 import { cn } from '@/lib/utils'
-import { dashboardQuickActionRouteMapper } from '../utils'
 
 export function ActionRequired() {
   const { data } = useInsightQuery({

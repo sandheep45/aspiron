@@ -4,16 +4,13 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Lock, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppForm } from '@/components/forms/form-core'
-import { loginFormOption } from '@/modules/auth/form-option'
+import { loginFormOption } from '@/features/auth/form-option'
 
 export const LoginForm = () => {
   const navigate = useNavigate()
   const { mutate } = useLoginMutation()
   const loginAppForm = useAppForm({
     ...loginFormOption,
-    defaultValues: {
-      ...loginFormOption.defaultValues,
-    },
     onSubmit: async ({ value }) => {
       try {
         mutate(

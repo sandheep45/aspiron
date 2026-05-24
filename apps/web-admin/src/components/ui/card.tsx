@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
+import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
-import { Spinner } from './spinner'
 
 const cardVariants = cva('group flex flex-col transition-all', {
   variants: {

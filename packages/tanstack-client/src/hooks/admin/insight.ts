@@ -5,7 +5,7 @@ import {
   type InsightsResponse,
 } from '@aspiron/api-client'
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
-import { useAxiosConfig } from '@/providers/QueryProvider'
+import { useMergedAxiosConfig } from '@/hooks/use-merged-axios-config'
 import { queryKeys } from '@/types/query-keys'
 
 export interface UseInsightQueryOptions
@@ -18,14 +18,13 @@ export interface UseInsightQueryOptions
 }
 
 export const useInsightQuery = (options?: UseInsightQueryOptions) => {
-  const providerAxiosConfig = useAxiosConfig()
+  const axiosConfig = useMergedAxiosConfig(options)
   return useQuery({
     ...options,
     queryKey: [queryKeys.admin.insights()],
     queryFn: () => {
-      const config = options?.axiosConfig || providerAxiosConfig || undefined
       return adminInsightServive.getInsightsc({
-        options: { axiosConfig: config },
+        options: { axiosConfig },
         args: options?.args,
       })
     },

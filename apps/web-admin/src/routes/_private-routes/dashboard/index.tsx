@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ActionRequired } from '@/modules/dashboard/components/action-required'
+import { ActionRequired } from '@/features/dashboard/components/action-required'
 
 export const Route = createFileRoute('/_private-routes/dashboard/')({
   component: RouteComponent,

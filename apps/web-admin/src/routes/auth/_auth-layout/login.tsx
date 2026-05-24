@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Shield } from 'lucide-react'
-import { LoginBrandHeader } from '@/modules/auth/components/login-brand-header'
-import { LoginForm } from '@/modules/auth/components/login-form'
+import { LoginBrandHeader } from '@/features/auth/components/login-brand-header'
+import { LoginForm } from '@/features/auth/components/login-form'
 export const Route = createFileRoute('/auth/_auth-layout/login')({
   component: RouteComponent,
   staticData: {

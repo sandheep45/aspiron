@@ -5,7 +5,7 @@ import {
   type TopicDto,
 } from '@aspiron/api-client'
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
-import { useAxiosConfig } from '@/providers/QueryProvider'
+import { useMergedAxiosConfig } from '@/hooks/use-merged-axios-config'
 import { queryKeys } from '@/types/query-keys'
 
 export interface UseGetTopicByIdOptions
@@ -15,17 +15,16 @@ export interface UseGetTopicByIdOptions
 }
 
 export function useGetTopicByIdQuery(options: UseGetTopicByIdOptions) {
-  const providerAxiosConfig = useAxiosConfig()
+  const axiosConfig = useMergedAxiosConfig(options)
 
   return useQuery({
     ...options,
     queryKey: [queryKeys.contents.topics.getTopicById(options.args.topicId)],
     queryFn: () => {
-      const config = options?.axiosConfig || providerAxiosConfig || undefined
       return contentTopicService.getTopicById({
         args: options.args,
         options: {
-          axiosConfig: config,
+          axiosConfig,
         },
       })
     },
