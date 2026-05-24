@@ -1,9 +1,12 @@
 import { Eye, EyeOff } from 'lucide-react'
-import { useId, useState } from 'react'
-import { useFieldContext } from '@/components/forms/form-core'
+import { useState } from 'react'
+import {
+  FieldWrapper,
+  useFieldMeta,
+} from '@/components/forms/field-elements/field-wrapper'
 import type { FormInputProps } from '@/components/forms/types/form-input'
 import { Button } from '@/components/ui/button'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
@@ -16,17 +19,13 @@ export const FormInput = (props: FormInputProps) => {
     ...inputProps
   } = props
   const [showPassword, setShowPassword] = useState(!!isPasswordType)
-
-  const field = useFieldContext<string>()
-  const generatedId = useId()
-
-  const inputId = `${generatedId}-${field.name}`
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+  const { field, isInvalid, inputId } = useFieldMeta<string>()
 
   return (
-    <Field
-      data-invalid={isInvalid}
-      className={cn(props.hidden ? 'hidden' : '')}
+    <FieldWrapper
+      isInvalid={isInvalid}
+      errors={field.state.meta.errors}
+      hidden={props.hidden}
     >
       <FieldLabel {...labelProps} htmlFor={inputId}>
         <span>{labelProps?.children}</span>
@@ -78,8 +77,6 @@ export const FormInput = (props: FormInputProps) => {
           </div>
         )}
       </div>
-
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldWrapper>
   )
 }

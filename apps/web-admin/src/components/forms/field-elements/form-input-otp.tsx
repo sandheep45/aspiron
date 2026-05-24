@@ -1,19 +1,17 @@
-import { useId } from 'react'
-import { useFieldContext } from '@/components/forms/form-core'
+import {
+  FieldWrapper,
+  useFieldMeta,
+} from '@/components/forms/field-elements/field-wrapper'
 import type { FormInputOTPProps } from '@/components/forms/types/form-input-otp'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { FieldLabel } from '@/components/ui/field'
 import { InputOTP } from '@/components/ui/input-otp'
 
 export const FormInputOTP = (props: FormInputOTPProps) => {
   const { labelProps, ...inputOTPProps } = props
-  const field = useFieldContext<string>()
-  const generatedId = useId()
-
-  const inputId = `${generatedId}-${field.name}`
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+  const { field, isInvalid, inputId } = useFieldMeta<string>()
 
   return (
-    <Field data-invalid={isInvalid}>
+    <FieldWrapper isInvalid={isInvalid} errors={field.state.meta.errors}>
       <FieldLabel {...labelProps} htmlFor={inputId}>
         <span>{labelProps?.children}</span>
       </FieldLabel>
@@ -24,7 +22,6 @@ export const FormInputOTP = (props: FormInputOTPProps) => {
         onChange={(value) => field.handleChange(value || '')}
         aria-invalid={isInvalid}
       />
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldWrapper>
   )
 }

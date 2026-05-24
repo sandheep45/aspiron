@@ -1,7 +1,9 @@
-import { useId } from 'react'
-import { useFieldContext } from '@/components/forms/form-core'
+import {
+  FieldWrapper,
+  useFieldMeta,
+} from '@/components/forms/field-elements/field-wrapper'
 import type { FormSelectProps } from '@/components/forms/types/form-select'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { FieldLabel } from '@/components/ui/field'
 import {
   Select,
   SelectContent,
@@ -15,14 +17,10 @@ export const FormSelect = ({
   children,
   ...selectTriggerProps
 }: FormSelectProps) => {
-  const field = useFieldContext<string>()
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-  const generatedId = useId()
-
-  const inputId = `${generatedId}-${field.name}`
+  const { field, isInvalid, inputId } = useFieldMeta<string>()
 
   return (
-    <Field data-invalid={isInvalid}>
+    <FieldWrapper isInvalid={isInvalid} errors={field.state.meta.errors}>
       <FieldLabel {...labelProps} htmlFor={inputId}>
         <span>{labelProps?.children}</span>
       </FieldLabel>
@@ -39,7 +37,6 @@ export const FormSelect = ({
         </SelectTrigger>
         <SelectContent>{children}</SelectContent>
       </Select>
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldWrapper>
   )
 }

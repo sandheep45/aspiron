@@ -1,19 +1,17 @@
-import { useId } from 'react'
-import { useFieldContext } from '@/components/forms/form-core'
+import {
+  FieldWrapper,
+  useFieldMeta,
+} from '@/components/forms/field-elements/field-wrapper'
 import type { FormSliderProps } from '@/components/forms/types/form-slider'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { FieldLabel } from '@/components/ui/field'
 import { Slider } from '@/components/ui/slider'
 
 export const FormSlider = (props: FormSliderProps) => {
   const { labelProps, ...sliderProps } = props
-  const field = useFieldContext<number[]>()
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-  const generatedId = useId()
-
-  const inputId = `${generatedId}-${field.name}`
+  const { field, isInvalid, inputId } = useFieldMeta<number[]>()
 
   return (
-    <Field data-invalid={isInvalid}>
+    <FieldWrapper isInvalid={isInvalid} errors={field.state.meta.errors}>
       <FieldLabel {...labelProps} htmlFor={inputId}>
         <span>{labelProps?.children}</span>
       </FieldLabel>
@@ -26,7 +24,6 @@ export const FormSlider = (props: FormSliderProps) => {
         }
         aria-invalid={isInvalid}
       />
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldWrapper>
   )
 }

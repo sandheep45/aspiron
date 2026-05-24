@@ -1,19 +1,21 @@
-import { useId } from 'react'
-import { useFieldContext } from '@/components/forms/form-core'
+import {
+  FieldWrapper,
+  useFieldMeta,
+} from '@/components/forms/field-elements/field-wrapper'
 import type { FormToggleProps } from '@/components/forms/types/form-toggle'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { FieldLabel } from '@/components/ui/field'
 import { Toggle } from '@/components/ui/toggle'
 
 export const FormToggle = (props: FormToggleProps) => {
   const { labelProps, ...toggleProps } = props
-  const field = useFieldContext<boolean>()
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-  const generatedId = useId()
-
-  const inputId = `${generatedId}-${field.name}`
+  const { field, isInvalid, inputId } = useFieldMeta<boolean>()
 
   return (
-    <Field orientation='horizontal' data-invalid={isInvalid}>
+    <FieldWrapper
+      orientation='horizontal'
+      isInvalid={isInvalid}
+      errors={field.state.meta.errors}
+    >
       <Toggle
         {...toggleProps}
         id={inputId}
@@ -28,7 +30,6 @@ export const FormToggle = (props: FormToggleProps) => {
           <span>{labelProps.children}</span>
         </FieldLabel>
       )}
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldWrapper>
   )
 }
