@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use crate::application::auth::ports::PasswordService;
 use crate::setup::error::AppError;
 
-pub struct BcryptPasswordService;
+pub(crate) struct BcryptPasswordService;
 
 #[async_trait]
 impl PasswordService for BcryptPasswordService {

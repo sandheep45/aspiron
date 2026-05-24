@@ -1,25 +1,18 @@
 use async_trait::async_trait;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use serde::{Deserialize, Serialize};
 
-use crate::application::auth::ports::TokenService;
+use crate::application::auth::ports::{Claims, TokenService};
 use crate::setup::error::AppError;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Claims {
-    pub sub: String,
-    pub exp: usize,
-}
-
-pub struct JwtService {
+pub(crate) struct JwtService {
     secret: String,
     access_expiry: u64,
     refresh_expiry: u64,
 }
 
 impl JwtService {
-    pub fn new(secret: String, access_expiry: u64, refresh_expiry: u64) -> Self {
+    pub(crate) fn new(secret: String, access_expiry: u64, refresh_expiry: u64) -> Self {
         Self {
             secret,
             access_expiry,

@@ -2,11 +2,17 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use sea_orm::DatabaseConnection;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::domain::auth::entities::{CurrentUser, User};
-use crate::infra::auth::jwt::Claims;
 use crate::setup::error::AppError;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Claims {
+    pub sub: String,
+    pub exp: usize,
+}
 
 #[async_trait]
 pub trait UserRepository: Send + Sync {

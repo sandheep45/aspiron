@@ -9,12 +9,12 @@ use crate::domain::community::entities::{Post, Thread};
 use crate::entries::entities::community_thread;
 use crate::setup::error::AppError;
 
-pub struct SeaOrmCommunityRepository {
+pub(crate) struct SeaOrmCommunityRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmCommunityRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }

@@ -71,7 +71,6 @@ impl fmt::Display for ErrorCode {
 
 impl From<&AppError> for ErrorCode {
     fn from(err: &AppError) -> Self {
-        #[allow(unreachable_patterns)]
         match err {
             AppError::Validation(_) => ErrorCode::Validation,
             AppError::Auth(_) => ErrorCode::Auth,
@@ -80,9 +79,7 @@ impl From<&AppError> for ErrorCode {
             AppError::Unauthorized(_) => ErrorCode::Unauthorized,
             AppError::NotFound(_) => ErrorCode::NotFound,
             AppError::Conflict(_) => ErrorCode::Conflict,
-            AppError::Internal(_) => ErrorCode::Internal,
-            AppError::Database(_) => ErrorCode::Internal,
-            _ => panic!("AppError variant not mapped to ErrorCode - please update ErrorCode enum"),
+            AppError::Internal(_) | AppError::Database(_) => ErrorCode::Internal,
         }
     }
 }
@@ -133,60 +130,52 @@ impl AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
-        let (code, message, details, status) = match self {
+        let code = ErrorCode::from(&self);
+        let (status, message, details) = match &self {
             AppError::Database(e) => (
-                ErrorCode::Internal,
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "A database error occurred".to_string(),
                 Some(serde_json::json!({ "detail": e.to_string() })),
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
             ),
             AppError::Validation(e) => (
-                ErrorCode::Validation,
+                axum::http::StatusCode::BAD_REQUEST,
                 "Validation failed".to_string(),
                 Some(serde_json::json!({ "detail": e })),
-                axum::http::StatusCode::BAD_REQUEST,
             ),
             AppError::RefreshTokenExpired(e) => (
-                ErrorCode::RefreshTokenExpired,
+                axum::http::StatusCode::BAD_REQUEST,
                 "Refresh token expired".to_string(),
                 Some(serde_json::json!({ "detail": e })),
-                axum::http::StatusCode::BAD_REQUEST,
             ),
             AppError::AccessTokenExpired(e) => (
-                ErrorCode::AccessTokenExpired,
+                axum::http::StatusCode::BAD_REQUEST,
                 "Access token expired".to_string(),
                 Some(serde_json::json!({ "detail": e })),
-                axum::http::StatusCode::BAD_REQUEST,
             ),
             AppError::Auth(e) => (
-                ErrorCode::Auth,
+                axum::http::StatusCode::UNAUTHORIZED,
                 "Authentication failed".to_string(),
                 Some(serde_json::json!({ "detail": e })),
-                axum::http::StatusCode::UNAUTHORIZED,
             ),
             AppError::Unauthorized(e) => (
-                ErrorCode::Unauthorized,
+                axum::http::StatusCode::FORBIDDEN,
                 "Unauthorized access".to_string(),
                 Some(serde_json::json!({ "detail": e })),
-                axum::http::StatusCode::FORBIDDEN,
             ),
             AppError::NotFound(e) => (
-                ErrorCode::NotFound,
+                axum::http::StatusCode::NOT_FOUND,
                 "Resource not found".to_string(),
                 Some(serde_json::json!({ "detail": e })),
-                axum::http::StatusCode::NOT_FOUND,
             ),
             AppError::Conflict(e) => (
-                ErrorCode::Conflict,
+                axum::http::StatusCode::CONFLICT,
                 "Resource conflict".to_string(),
                 Some(serde_json::json!({ "detail": e })),
-                axum::http::StatusCode::CONFLICT,
             ),
             AppError::Internal(e) => (
-                ErrorCode::Internal,
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "An internal error occurred".to_string(),
                 Some(serde_json::json!({ "detail": e.to_string() })),
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
             ),
         };
 

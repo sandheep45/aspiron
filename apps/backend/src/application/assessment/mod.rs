@@ -8,13 +8,4 @@ pub mod submit_attempt;
 
 use std::sync::Arc;
 
-#[derive(Clone)]
-pub struct AssessmentApplicationState {
-    pub repo: Arc<dyn ports::AssessmentRepository>,
-}
-
-impl AssessmentApplicationState {
-    pub fn new(repo: Arc<dyn ports::AssessmentRepository>) -> Self {
-        Self { repo }
-    }
-}
+app_state!(AssessmentApplicationState, ports::AssessmentRepository);

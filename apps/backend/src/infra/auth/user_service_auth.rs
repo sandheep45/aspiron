@@ -5,12 +5,12 @@ use crate::application::insights::ports::AuthorizationPort;
 use crate::application::users::service::UserService;
 use crate::setup::error::AppError;
 
-pub struct UserServiceAuthAdapter {
+pub(crate) struct UserServiceAuthAdapter {
     inner: UserService,
 }
 
 impl UserServiceAuthAdapter {
-    pub fn new(inner: UserService) -> Self {
+    pub(crate) fn new(inner: UserService) -> Self {
         Self { inner }
     }
 }

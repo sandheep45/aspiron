@@ -12,12 +12,12 @@ use crate::entries::entities::assessment_question;
 use crate::entries::entities::assessment_quiz;
 use crate::setup::error::AppError;
 
-pub struct SeaOrmAssessmentRepository {
+pub(crate) struct SeaOrmAssessmentRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmAssessmentRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }

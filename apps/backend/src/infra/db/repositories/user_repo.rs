@@ -15,12 +15,12 @@ use crate::entries::entities::user_profile::Entity as UserProfileEntity;
 use crate::entries::entities::user_role::Entity as UserRoleEntity;
 use crate::setup::error::AppError;
 
-pub struct SeaOrmUserRepository {
+pub(crate) struct SeaOrmUserRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmUserRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }
@@ -154,12 +154,12 @@ use crate::domain::users::entities::{
     UserProfile as DomainUserProfile,
 };
 
-pub struct SeaOrmUserDomainRepository {
+pub(crate) struct SeaOrmUserDomainRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmUserDomainRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }

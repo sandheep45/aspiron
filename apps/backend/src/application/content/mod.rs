@@ -8,13 +8,4 @@ pub mod ports;
 
 use std::sync::Arc;
 
-#[derive(Clone)]
-pub struct ContentApplicationState {
-    pub repo: Arc<dyn ports::ContentRepository>,
-}
-
-impl ContentApplicationState {
-    pub fn new(repo: Arc<dyn ports::ContentRepository>) -> Self {
-        Self { repo }
-    }
-}
+app_state!(ContentApplicationState, ports::ContentRepository);

@@ -13,12 +13,12 @@ use crate::entries::entities::content_topic;
 use crate::entries::entities::content_video;
 use crate::setup::error::AppError;
 
-pub struct SeaOrmContentRepository {
+pub(crate) struct SeaOrmContentRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmContentRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }

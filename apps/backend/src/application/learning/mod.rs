@@ -12,13 +12,4 @@ pub mod update_progress;
 
 use std::sync::Arc;
 
-#[derive(Clone)]
-pub struct LearningApplicationState {
-    pub repo: Arc<dyn ports::LearningRepository>,
-}
-
-impl LearningApplicationState {
-    pub fn new(repo: Arc<dyn ports::LearningRepository>) -> Self {
-        Self { repo }
-    }
-}
+app_state!(LearningApplicationState, ports::LearningRepository);

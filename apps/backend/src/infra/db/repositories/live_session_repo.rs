@@ -14,12 +14,12 @@ use crate::entries::entities::live_session_recording::{
 };
 use crate::setup::error::AppError;
 
-pub struct SeaOrmLiveSessionRepository {
+pub(crate) struct SeaOrmLiveSessionRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmLiveSessionRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }

@@ -1,3 +1,6 @@
+#[macro_use]
+pub mod macros;
+
 pub mod assessment;
 pub mod auth;
 pub mod community;

@@ -10,12 +10,12 @@ use crate::entries::entities::notification_log;
 use crate::entries::entity_enums::notification_logs_types::NotificationLogsTypesEnum;
 use crate::setup::error::AppError;
 
-pub struct SeaOrmNotificationRepository {
+pub(crate) struct SeaOrmNotificationRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmNotificationRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }

@@ -35,12 +35,12 @@ use crate::entries::entity_enums::learning_recall_question_type::LearningRecallQ
 use crate::entries::entity_enums::learning_recall_session_status::LearningRecallSessionStatusEnum;
 use crate::setup::error::AppError;
 
-pub struct SeaOrmInsightsRepository {
+pub(crate) struct SeaOrmInsightsRepository {
     db: Arc<DatabaseConnection>,
 }
 
 impl SeaOrmInsightsRepository {
-    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+    pub(crate) fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }
