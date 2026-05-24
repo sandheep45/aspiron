@@ -7,7 +7,7 @@ use std::sync::{Arc, LazyLock, RwLock};
 use crate::middleware::auth::AuthMiddlewareState;
 use crate::middleware::client_type::validate_client_type;
 use crate::{
-    routes::api_v1_router,
+    http::routes::api_v1_router,
     setup::{config::Config, openapi, openapi::ApiDoc},
 };
 use sea_orm::DatabaseConnection;

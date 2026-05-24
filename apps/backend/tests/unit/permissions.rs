@@ -1,10 +1,10 @@
-use backend::entries::dtos::response::users::OwnershipType;
-use backend::entries::entity_enums::action_types::ActionTypeEnum;
-use backend::entries::entity_enums::resource_types::ResourceTypeEnum;
-use backend::services::users::utils::permission::{
+use backend::application::users::permission::{
     parse_action_type_result, parse_ownership_type_result, parse_permission_name,
     parse_resource_type_result,
 };
+use backend::entries::entity_enums::action_types::ActionTypeEnum;
+use backend::entries::entity_enums::resource_types::ResourceTypeEnum;
+use backend::http::responses::users::OwnershipType;
 
 #[test]
 fn parse_permission_name_returns_none_for_empty_string() {

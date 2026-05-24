@@ -14,7 +14,7 @@
 | API client | Exists, 78 generated types, 3 services |
 | TanStack hooks | Exists, 3 domains covered |
 | OpenAPI | utoipa configured, paths manually maintained |
-| Backend structure | `entries/routes/services/middleware/setup` — functional but mixed concerns |
+| Backend structure | Partially migrated: auth + learning domains in clean architecture (domain → application → infra → http). Remaining 8 domains still in old `entries/routes/services/` pattern |
 | Frontend structure | Partial feature modules (auth, dashboard), mostly placeholder routes |
 | Monorepo | pnpm workspace, 3 packages (`config`, `api-client`, `tanstack-client`) |
 
@@ -1434,6 +1434,7 @@ Phase E (Week 6-8) — CI Architecture
 - [~] Domain models separated from SeaORM entities (auth done)
 - [~] DTOs in http layer, not domain (auth done)
 - [~] Ports (traits) defined for each domain (auth done)
+- [x] Redundant auth code deleted after migration (services/auth/, routes/auth.rs)
 - [x] `cargo check --all-targets --all-features` passes
 - [x] `cargo clippy -D warnings` passes
 - [x] All Phase B scenario tests still pass after refactor

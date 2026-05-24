@@ -1,1 +1,8 @@
+pub mod assessment_repo;
+pub mod community_repo;
+pub mod content_repo;
+pub mod insights_repo;
+pub mod learning_repo;
+pub mod live_session_repo;
+pub mod notification_repo;
 pub mod user_repo;

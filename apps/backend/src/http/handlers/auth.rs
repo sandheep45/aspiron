@@ -11,7 +11,6 @@ use crate::application::auth::get_current_user;
 use crate::application::auth::login;
 use crate::application::auth::refresh_token;
 use crate::constants::AllowedClientType;
-use crate::entries::dtos::response::common::ApiResponse;
 use crate::entries::entity_enums::action_types::ActionTypeEnum;
 use crate::entries::entity_enums::resource_types::ResourceTypeEnum;
 use crate::entries::entity_enums::user_types::UserTypeEnums;
@@ -19,6 +18,7 @@ use crate::http::payloads::auth::LoginRequest;
 use crate::http::responses::auth::{
     AuthPermissionResponse, AuthResponse, AuthRoleResponse, AuthUserResponse, MobileTokenResponse,
 };
+use crate::http::responses::common::ApiResponse;
 use crate::middleware::auth::AuthUser;
 use crate::setup::app::AppState;
 use crate::setup::error::AppError;

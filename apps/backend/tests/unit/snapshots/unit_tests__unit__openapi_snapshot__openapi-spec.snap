@@ -27,7 +27,7 @@ expression: openapi
         "tags": [
           "Insights"
         ],
-        "operationId": "get_insights",
+        "operationId": "handler_get_insights",
         "parameters": [
           {
             "name": "pagination",
@@ -61,6 +61,87 @@ expression: openapi
         }
       }
     },
+    "/api/v1/admin/insights/topics": {
+      "parameters": [
+        {
+          "name": "x-client-type",
+          "in": "header",
+          "description": "Client type header",
+          "required": false,
+          "example": "BROWSER"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Insights"
+        ],
+        "operationId": "handler_get_topic_performance",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "pagination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PaginationPayload"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TopicPerformanceSort"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get topic performance insights"
+          },
+          "401": {
+            "description": "Unauthorized - Missing VIEW_ANALYTICS permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/attempts": {
       "parameters": [
         {
@@ -75,7 +156,7 @@ expression: openapi
         "tags": [
           "Assessment"
         ],
-        "operationId": "create_attempt",
+        "operationId": "handler_create_attempt",
         "responses": {
           "200": {
             "description": "Create assessment attempt"
@@ -97,7 +178,7 @@ expression: openapi
         "tags": [
           "Assessment"
         ],
-        "operationId": "get_results_by_attempt_id",
+        "operationId": "handler_get_results_by_attempt_id",
         "parameters": [
           {
             "name": "attempt_id",
@@ -105,8 +186,7 @@ expression: openapi
             "description": "Attempt ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -131,7 +211,7 @@ expression: openapi
         "tags": [
           "Assessment"
         ],
-        "operationId": "submit_attempt",
+        "operationId": "handler_submit_attempt",
         "parameters": [
           {
             "name": "attempt_id",
@@ -139,8 +219,7 @@ expression: openapi
             "description": "Attempt ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -306,7 +385,7 @@ expression: openapi
         "tags": [
           "Content"
         ],
-        "operationId": "get_topics_by_chapter_id",
+        "operationId": "handler_get_topics_by_chapter_id",
         "parameters": [
           {
             "name": "chapter_id",
@@ -314,8 +393,7 @@ expression: openapi
             "description": "Chapter ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -340,7 +418,7 @@ expression: openapi
         "tags": [
           "Community"
         ],
-        "operationId": "create_community_thread",
+        "operationId": "handler_create_thread",
         "responses": {
           "200": {
             "description": "Create a community thread"
@@ -362,7 +440,7 @@ expression: openapi
         "tags": [
           "Community"
         ],
-        "operationId": "public_threads",
+        "operationId": "handler_public_threads",
         "responses": {
           "200": {
             "description": "Get public threads"
@@ -384,7 +462,7 @@ expression: openapi
         "tags": [
           "Community"
         ],
-        "operationId": "fetch_community_threads_by_id",
+        "operationId": "handler_get_thread_by_id",
         "parameters": [
           {
             "name": "thread_id",
@@ -392,8 +470,7 @@ expression: openapi
             "description": "Thread ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -418,7 +495,7 @@ expression: openapi
         "tags": [
           "Community"
         ],
-        "operationId": "attach_notes_to_thread",
+        "operationId": "handler_attach_note",
         "parameters": [
           {
             "name": "thread_id",
@@ -426,8 +503,7 @@ expression: openapi
             "description": "Thread ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -452,7 +528,7 @@ expression: openapi
         "tags": [
           "Community"
         ],
-        "operationId": "create_community_posts",
+        "operationId": "handler_create_post",
         "parameters": [
           {
             "name": "thread_id",
@@ -460,8 +536,7 @@ expression: openapi
             "description": "Thread ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -486,7 +561,7 @@ expression: openapi
         "tags": [
           "Community"
         ],
-        "operationId": "fetch_community_threads_per_topic",
+        "operationId": "handler_get_threads_by_topic",
         "parameters": [
           {
             "name": "topic_id",
@@ -494,8 +569,7 @@ expression: openapi
             "description": "Topic ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -549,7 +623,7 @@ expression: openapi
         "tags": [
           "Live Session"
         ],
-        "operationId": "fetch_upcoming_live_classes",
+        "operationId": "handler_get_upcoming_classes",
         "responses": {
           "200": {
             "description": "Fetch upcoming live classes"
@@ -571,7 +645,7 @@ expression: openapi
         "tags": [
           "Live Session"
         ],
-        "operationId": "join_live_class_by_id",
+        "operationId": "handler_join_class",
         "parameters": [
           {
             "name": "class_id",
@@ -605,7 +679,7 @@ expression: openapi
         "tags": [
           "Live Session"
         ],
-        "operationId": "fetch_recorded_live_sessions",
+        "operationId": "handler_get_recorded_sessions",
         "parameters": [
           {
             "name": "class_id",
@@ -639,10 +713,10 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "get_all_notes",
+        "operationId": "handler_get_all_notes",
         "responses": {
           "200": {
-            "description": "Get all notes"
+            "description": "Get all notes for the authenticated user"
           }
         }
       },
@@ -650,7 +724,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "create_note",
+        "operationId": "handler_create_note",
         "responses": {
           "200": {
             "description": "Create a note"
@@ -672,7 +746,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "delete_note",
+        "operationId": "handler_delete_note",
         "parameters": [
           {
             "name": "note_id",
@@ -680,8 +754,7 @@ expression: openapi
             "description": "Note ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -695,7 +768,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "update_note",
+        "operationId": "handler_update_note",
         "parameters": [
           {
             "name": "note_id",
@@ -703,8 +776,7 @@ expression: openapi
             "description": "Note ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -729,7 +801,7 @@ expression: openapi
         "tags": [
           "Notification"
         ],
-        "operationId": "get_all_notifications",
+        "operationId": "handler_get_all",
         "responses": {
           "200": {
             "description": "Get all notifications"
@@ -751,7 +823,7 @@ expression: openapi
         "tags": [
           "Notification"
         ],
-        "operationId": "update_notification_status",
+        "operationId": "handler_update_status",
         "responses": {
           "200": {
             "description": "Update notification status"
@@ -773,7 +845,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "get_progress_summary",
+        "operationId": "handler_get_progress_summary",
         "responses": {
           "200": {
             "description": "Get progress summary"
@@ -795,10 +867,10 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "update_progress",
+        "operationId": "handler_update_progress",
         "responses": {
           "200": {
-            "description": "Update progress"
+            "description": "Update learning progress"
           }
         }
       }
@@ -817,7 +889,7 @@ expression: openapi
         "tags": [
           "Assessment"
         ],
-        "operationId": "fetch_quiz_by_id",
+        "operationId": "handler_fetch_quiz_by_id",
         "parameters": [
           {
             "name": "quiz_id",
@@ -825,8 +897,7 @@ expression: openapi
             "description": "Quiz ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -851,7 +922,7 @@ expression: openapi
         "tags": [
           "Assessment"
         ],
-        "operationId": "get_questions_by_quiz_id",
+        "operationId": "handler_get_questions_by_quiz_id",
         "parameters": [
           {
             "name": "quiz_id",
@@ -859,8 +930,7 @@ expression: openapi
             "description": "Quiz ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -885,10 +955,10 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "start_recall",
+        "operationId": "handler_start_recall",
         "responses": {
           "200": {
-            "description": "Start recall session"
+            "description": "Start a recall session"
           }
         }
       }
@@ -907,7 +977,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "get_recall_mcq_by_session_id",
+        "operationId": "handler_get_recall_mcq_by_session_id",
         "parameters": [
           {
             "name": "session_id",
@@ -915,14 +985,13 @@ expression: openapi
             "description": "Session ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Get recall MCQ by session ID"
+            "description": "Get recall MCQs for a session"
           }
         }
       }
@@ -941,7 +1010,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "submit_recall_mcq",
+        "operationId": "handler_submit_recall_mcq",
         "parameters": [
           {
             "name": "session_id",
@@ -949,14 +1018,13 @@ expression: openapi
             "description": "Session ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Submit recall MCQ"
+            "description": "Submit recall MCQ answers"
           }
         }
       }
@@ -975,7 +1043,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "get_recall_result_by_session_id",
+        "operationId": "handler_get_recall_result_by_session_id",
         "parameters": [
           {
             "name": "session_id",
@@ -983,14 +1051,13 @@ expression: openapi
             "description": "Session ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Get recall result by session ID"
+            "description": "Get recall result"
           }
         }
       }
@@ -1009,7 +1076,7 @@ expression: openapi
         "tags": [
           "Content"
         ],
-        "operationId": "get_all_subjects",
+        "operationId": "handler_get_all_subjects",
         "responses": {
           "200": {
             "description": "Get all subjects"
@@ -1031,7 +1098,7 @@ expression: openapi
         "tags": [
           "Content"
         ],
-        "operationId": "get_chapters_by_subject_id",
+        "operationId": "handler_get_chapters_by_subject_id",
         "parameters": [
           {
             "name": "subject_id",
@@ -1039,8 +1106,7 @@ expression: openapi
             "description": "Subject ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -1065,7 +1131,7 @@ expression: openapi
         "tags": [
           "Content"
         ],
-        "operationId": "get_topic_by_id",
+        "operationId": "handler_get_topic_by_id",
         "parameters": [
           {
             "name": "topic_id",
@@ -1073,8 +1139,7 @@ expression: openapi
             "description": "Topic ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -1099,7 +1164,7 @@ expression: openapi
         "tags": [
           "Learning"
         ],
-        "operationId": "get_teachers_notes_from_topic_id",
+        "operationId": "handler_get_teachers_notes",
         "parameters": [
           {
             "name": "topic_id",
@@ -1107,14 +1172,13 @@ expression: openapi
             "description": "Topic ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Get teacher's notes from topic ID"
+            "description": "Get teacher's notes for a topic"
           }
         }
       }
@@ -1133,7 +1197,7 @@ expression: openapi
         "tags": [
           "Assessment"
         ],
-        "operationId": "get_quizzes_by_topic_id",
+        "operationId": "handler_get_quizzes_by_topic_id",
         "parameters": [
           {
             "name": "topic_id",
@@ -1141,8 +1205,7 @@ expression: openapi
             "description": "Topic ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -1167,7 +1230,7 @@ expression: openapi
         "tags": [
           "Content"
         ],
-        "operationId": "get_videos_by_topic_id",
+        "operationId": "handler_get_videos_by_topic_id",
         "parameters": [
           {
             "name": "topic_id",
@@ -1175,8 +1238,7 @@ expression: openapi
             "description": "Topic ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -1201,7 +1263,7 @@ expression: openapi
         "tags": [
           "Users"
         ],
-        "operationId": "get_user_by_email",
+        "operationId": "handler_get_user_by_email",
         "parameters": [
           {
             "name": "email",
@@ -1234,7 +1296,7 @@ expression: openapi
         "tags": [
           "Content"
         ],
-        "operationId": "get_offline_token_by_video_id",
+        "operationId": "handler_get_offline_token_by_video_id",
         "parameters": [
           {
             "name": "video_id",
@@ -1242,8 +1304,7 @@ expression: openapi
             "description": "Video ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],

@@ -5,6 +5,4 @@ export type ChapterDto = {
   name: string;
   subject_id: string;
   order_number: number;
-  created_at: Date;
-  updated_at: Date;
 };

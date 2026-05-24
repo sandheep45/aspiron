@@ -66,7 +66,7 @@
 - `extract_jwt_cookie()` and `extract_cookies()` in harness for cookie-based auth tests
 - Snapshot testing via `insta` (v1.47+): 6 snapshots in `tests/unit/snapshots/` — OpenAPI spec (1582 lines) + 5 error response shapes (VALIDATION, AUTH, ACCESS_TOKEN_EXPIRED, NOT_FOUND, INTERNAL). Run `cargo insta review` or `cargo insta accept` after intentional API changes.
 - `request_id` field stripped from error snapshots via redaction (non-deterministic UUID)
-- All 134 tests pass (77 ts-rs bindings + 8 harness + 16 integration + 17 scenarios/mod + 33 unit), clippy clean
+- All 190 tests pass (107 ts-rs bindings + 8 harness + 25 integration + 17 scenarios/mod + 33 unit), clippy clean
 
 ### Phase B.3 unit tests completed
 
@@ -95,9 +95,24 @@
 | `note_sharing_workflow` | Community + notes handlers are stubs | Community + Learning notes endpoints |
 | `permission_evolution` | RBAC router is empty | RBAC endpoints |
 
-### Bugfix: assessment routes missing state layer
+### Clean architecture migration: complete
 
-`routes/assessment.rs` was missing `Extension(AssessmentState)`, causing 500 on all assessment endpoints. Fixed by adding `.layer(axum::Extension(assessment_state))`. The handlers are stubs but the router now correctly provides required state.
+All domains migrated from legacy `services/` → `domain/` + `application/` + `infra/` + `http/` pattern:
+
+| Domain | Status | Notes |
+|---|---|---|
+| auth | Done | Old files deleted |
+| assessment | Done | Old files deleted |
+| content | Done | Old files deleted |
+| learning | Done | Old files deleted |
+| community | Done | Old files deleted |
+| notification | Done | Old files deleted |
+| insights | Done | Old files deleted |
+| RBAC | Deleted | Empty stubs removed, no new modules |
+| live_session | Done | Old files deleted |
+| users | Done | Old files deleted |
+
+`services/` directory fully removed from `lib.rs`. Legacy `entries/dtos/response/` still has `assessment`, `auth`, `common`, `content`, `learning` — still referenced by application layer and HTTP handlers. `entries/dtos/payload/` has `assessment`, `auth`, `content`, `insights`, `learning`.
 
 ## Generated code (do not edit)
 
