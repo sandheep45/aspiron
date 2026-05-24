@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useAppForm } from '@/components/forms/form-core'
 import { logoutFormOption } from '@/features/auth/form-option'
@@ -7,15 +6,11 @@ import { signOutServerFunction } from '@/features/auth/server-function/sign-out.
 
 export const Logout = () => {
   const { data } = useCsrfTokenQuery()
-  const _navigate = useNavigate()
   const signOut = useServerFn(signOutServerFunction)
   const logoutAppForm = useAppForm({
     ...logoutFormOption,
     onSubmit: async () => {
       await signOut()
-      // navigate({
-      //   to: "/auth/login",
-      // });
     },
     defaultValues: {
       csrfToken: data,
