@@ -17,6 +17,7 @@ import appCss from '@/styles.css?url'
 
 interface RouterContext {
   queryClient: QueryClient
+  isAuthenticated?: boolean
 }
 
 declare global {
