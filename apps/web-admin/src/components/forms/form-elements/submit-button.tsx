@@ -8,10 +8,10 @@ export function SubmitButton(props: ComponentProps<typeof Button>) {
     <form.Subscribe selector={(state) => state.isSubmitting}>
       {(isSubmitting) => (
         <Button
-          variant={isSubmitting ? 'default' : 'brand'}
           type='submit'
           disabled={isSubmitting}
           {...props}
+          variant={isSubmitting ? 'default' : (props.variant ?? 'brand')}
         />
       )}
     </form.Subscribe>
