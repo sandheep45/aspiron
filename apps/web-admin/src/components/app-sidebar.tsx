@@ -1,6 +1,6 @@
 import { SidebarBrand } from '@/components/sidebar/sidebar-brand'
 import { sidebarItems } from '@/components/sidebar/sidebar-config'
-import { SidebarMenuList } from '@/components/sidebar/sidebarmenu-list'
+import { SidebarMenuList } from '@/components/sidebar/sidebar-menu-list'
 import { Separator } from '@/components/ui/separator'
 import { Sidebar } from '@/components/ui/sidebar'
 
