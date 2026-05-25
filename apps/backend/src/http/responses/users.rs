@@ -87,14 +87,16 @@ pub struct ResourcePermissionResponse {
     pub resource_id: Option<Uuid>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS, ToSchema, strum::EnumString)]
 #[ts(export, rename = "OwnershipType")]
 pub enum OwnershipType {
     #[ts(rename = "OWN")]
     #[schema(rename = "OWN")]
+    #[strum(serialize = "own")]
     Own,
     #[ts(rename = "ALL")]
     #[schema(rename = "ALL")]
+    #[strum(serialize = "all")]
     All,
 }
 

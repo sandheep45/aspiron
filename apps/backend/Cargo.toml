@@ -48,6 +48,7 @@ ts-rs = { version = "*", features = [
   "format",
 ] }
 time = { version = "0.3.47", features = ["serde"] }
+strum = { version = "*", features = ["derive"] }
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"

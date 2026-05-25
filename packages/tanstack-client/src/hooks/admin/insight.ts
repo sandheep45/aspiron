@@ -1,6 +1,6 @@
 import {
   type AxiosConfigOptions,
-  adminInsightServive,
+  adminInsightService,
   type InsightsQueryParams,
   type InsightsResponse,
 } from '@aspiron/api-client'
@@ -23,7 +23,7 @@ export const useInsightQuery = (options?: UseInsightQueryOptions) => {
     ...options,
     queryKey: [queryKeys.admin.insights()],
     queryFn: () => {
-      return adminInsightServive.getInsightsc({
+      return adminInsightService.getInsights({
         options: { axiosConfig },
         args: options?.args,
       })

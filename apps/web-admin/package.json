@@ -6,7 +6,8 @@
     "dev": "vite dev --host --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@aspiron/api-client": "workspace:*",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@aspiron/test-utils": "workspace:*",
+    "@playwright/test": "^1.60.0",
     "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/react-query-devtools": "^5.91.3",
     "@tanstack/react-router-ssr-query": "^1.131.7",

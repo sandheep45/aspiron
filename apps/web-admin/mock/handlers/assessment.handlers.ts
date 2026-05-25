@@ -24,10 +24,12 @@ export const assessmentHandlers = [
     return HttpResponse.json(buildQuestionResponseList(5, { quiz_id: quizId }))
   }),
 
-  http.post('*/api/v1/attempts', () => {
-    return HttpResponse.json(buildAttemptResponse({ status: 'in_progress' }), {
-      status: 201,
-    })
+  http.post('*/api/v1/quizzes/:quizId/attempts', ({ params }) => {
+    const quizId = params.quizId as string
+    return HttpResponse.json(
+      buildAttemptResponse({ quiz_id: quizId, status: 'in_progress' }),
+      { status: 201 },
+    )
   }),
 
   http.post('*/api/v1/attempts/:attemptId/submit', ({ params }) => {

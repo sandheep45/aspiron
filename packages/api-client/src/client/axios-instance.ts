@@ -111,5 +111,8 @@ export const createApiClient = (config?: AxiosConfigOptions): AxiosInstance => {
   return createAxiosInstanceWithConfig(config)
 }
 
+export const getClient = (options?: ServiceOptions): AxiosInstance =>
+  options?.axiosConfig ? createApiClient(options.axiosConfig) : apiClient
+
 // Export the instance for consumers who want to customize it
 export { axios }

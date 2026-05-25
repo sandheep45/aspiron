@@ -13,14 +13,12 @@ After changing any package, run `just build-packages` which builds in order: con
 Location: `packages/api-client/src/services/<domain>/<name>.service.ts`
 
 ```typescript
-export const adminInsightServive = {
-  getInsights: async ({
+export const exampleService = {
+  getExample: async ({
     args,
     options,
   }: ServiceMethodArguments<PayloadType>): Promise<ResponseType> => {
-    const client = options?.axiosConfig
-      ? createApiClient(options.axiosConfig)
-      : apiClient
+    const client = getClient(options)
     const response = await client.get<ResponseType>('/path', {
       params: { ...args },
     })

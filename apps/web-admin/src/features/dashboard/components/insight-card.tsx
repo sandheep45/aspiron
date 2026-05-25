@@ -8,10 +8,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  IconContainer,
-  iconContainerVariants,
-} from '@/components/ui/icon-container'
+import { IconContainer, severityVariants } from '@/components/ui/icon-container'
 import { dashboardQuickActionRouteMapper } from '@/features/dashboard/utils'
 import { cn } from '@/lib/utils'
 
@@ -59,9 +56,7 @@ function SimpleActionButton({ insight }: { insight: Insight }) {
   const value = Object.values(metadata)[0]
 
   return (
-    <Button
-      className={cn(iconContainerVariants({ variant: insight.severity }))}
-    >
+    <Button className={cn(severityVariants({ severity: insight.severity }))}>
       {value}
     </Button>
   )
@@ -87,7 +82,7 @@ function TopicDifficultyActionButton({ insight }: { insight: Insight }) {
           }}
         />
       }
-      className={cn(iconContainerVariants({ variant: insight.severity }))}
+      className={cn(severityVariants({ severity: insight.severity }))}
     >
       {data?.name}
       <ArrowRight className='h-4 w-4 transition-transform group-hover/btn:translate-x-0.5' />

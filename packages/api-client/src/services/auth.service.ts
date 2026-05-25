@@ -3,18 +3,8 @@
  */
 
 import type { AxiosRequestConfig } from 'axios'
-import {
-  apiClient,
-  createApiClient,
-  type ServiceOptions,
-} from '@/client/axios-instance'
+import { getClient, type ServiceOptions } from '@/client/axios-instance'
 import type { ApiResponse, AuthResponse, LoginRequest } from '@/generated-types'
-
-/**
- * Get axios client
- */
-const getClient = (options?: ServiceOptions) =>
-  options?.axiosConfig ? createApiClient(options.axiosConfig) : apiClient
 
 /**
  * Generic request using axios.request()

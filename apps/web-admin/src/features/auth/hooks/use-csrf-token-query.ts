@@ -1,3 +1,4 @@
+import { apiClient } from '@aspiron/api-client'
 import { useQuery } from '@tanstack/react-query'
 
 export const useCsrfTokenQuery = () => {
@@ -5,11 +6,10 @@ export const useCsrfTokenQuery = () => {
     placeholderData: '',
     queryKey: ['get-csrf-token'],
     queryFn: async () => {
-      const csrfToken = await fetch('/api/auth/csrf')
-        .then((res) => res.json())
-        .then((data) => data.csrfToken)
-
-      return csrfToken
+      const { data } = await apiClient.get<{ csrfToken: string }>(
+        '/api/auth/csrf',
+      )
+      return data.csrfToken
     },
   })
 }

@@ -1,4 +1,4 @@
-import { apiClient, createApiClient } from '@/client/axios-instance'
+import { getClient } from '@/client/axios-instance'
 import type { TopicDto } from '@/generated-types'
 import type { ServiceMethodArguments } from '@/types'
 
@@ -7,10 +7,7 @@ export const contentTopicService = {
     args,
     options,
   }: ServiceMethodArguments<{ topicId: string }>): Promise<TopicDto> => {
-    const client = options?.axiosConfig
-      ? createApiClient(options.axiosConfig)
-      : apiClient
-
+    const client = getClient(options)
     const response = await client.get<TopicDto>(`/topics/${args?.topicId}`)
 
     return response.data

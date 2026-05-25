@@ -149,18 +149,6 @@ pub struct InsightsQueryParams {
 }
 
 impl InsightsQueryParams {
-    pub fn get_page(&self) -> u32 {
-        self.pagination.page.unwrap_or(1)
-    }
-
-    pub fn get_limit(&self) -> u32 {
-        self.pagination.limit.unwrap_or(20).min(100)
-    }
-
-    pub fn get_offset(&self) -> u32 {
-        (self.get_page() - 1) * self.get_limit()
-    }
-
     pub fn get_time_window(
         &self,
     ) -> (chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>) {
@@ -281,17 +269,5 @@ impl TopicPerformanceQueryParams {
 
     pub fn get_topic_id(&self) -> Option<Uuid> {
         self.topic_id.as_ref().and_then(|s| Uuid::parse_str(s).ok())
-    }
-
-    pub fn get_page(&self) -> u32 {
-        self.pagination.page.unwrap_or(1)
-    }
-
-    pub fn get_limit(&self) -> u32 {
-        self.pagination.limit.unwrap_or(20).min(100)
-    }
-
-    pub fn get_offset(&self) -> u32 {
-        (self.get_page() - 1) * self.get_limit()
     }
 }

@@ -18,6 +18,7 @@ use utoipa::ToSchema;
     Deserialize,
     TS,
     ToSchema,
+    strum::EnumString,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "resource_type")]
 #[ts(export, rename = "ResourceTypeEnum")]

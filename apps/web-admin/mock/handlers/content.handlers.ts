@@ -1,9 +1,12 @@
 import {
   buildChapterDtoList,
   buildChaptersResponse,
+  buildOfflineTokenResponse,
+  buildPlaybackTokenResponse,
   buildSubjectDtoList,
   buildTopicDto,
   buildTopicsResponse,
+  buildVideoDtoList,
 } from '@aspiron/test-utils/factories'
 import { HttpResponse, http } from 'msw'
 
@@ -41,7 +44,22 @@ export const contentHandlers = [
     return HttpResponse.json(buildTopicDto({ id: topicId }))
   }),
 
-  http.get('*/api/v1/topics/:topicId/videos', () => {
-    return HttpResponse.json([])
+  http.get('*/api/v1/topics/:topicId/videos', ({ params }) => {
+    const topicId = params.topicId as string
+    return HttpResponse.json(buildVideoDtoList(3, { topic_id: topicId }))
+  }),
+
+  http.get('*/api/v1/videos/:videoId/offline-token', ({ params }) => {
+    const videoId = params.videoId as string
+    return HttpResponse.json(
+      buildOfflineTokenResponse({ offline_token: `offline-${videoId}` }),
+    )
+  }),
+
+  http.get('*/api/v1/videos/:videoId/playback-token', ({ params }) => {
+    const videoId = params.videoId as string
+    return HttpResponse.json(
+      buildPlaybackTokenResponse({ playback_token: `playback-${videoId}` }),
+    )
   }),
 ]

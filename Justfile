@@ -116,6 +116,28 @@ ci:
     just check
     just validate-openapi
 
+# Fast lane (every PR) — target: < 3 minutes
+ci-fast:
+    cargo fmt --check
+    cargo clippy --all-targets --all-features -- -D warnings
+    cargo test -p backend --lib -- unit::
+    pnpm biome check .
+    pnpm --filter web-admin exec vitest run --reporter=dot
+    just build-packages
+    just generate-types
+    git diff --exit-code packages/api-client/src/generated-types/
+
+# Medium lane (PR merge / main branch) — target: < 10 minutes
+ci-medium:
+    cargo test -p backend --test integration
+    cargo test -p backend --test scenarios
+
+# Slow lane (nightly / full suite)
+ci-slow:
+    pnpm --filter web-admin exec vitest run
+    pnpm --filter web-admin run test:e2e
+    cargo test -p backend
+
 # ==================================================
 # Build / Test (Parallel + Cached)
 # ==================================================
@@ -297,6 +319,9 @@ generate-openapi:
 
 validate-openapi:
     apps/backend/scripts/validate-openapi.sh
+
+contract-coverage:
+    apps/backend/scripts/contract-coverage.sh
 
 # ==================================================
 # Rust → TypeScript Bindings (ts-rs)

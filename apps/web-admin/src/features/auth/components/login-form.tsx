@@ -12,39 +12,28 @@ export const LoginForm = () => {
   const loginAppForm = useAppForm({
     ...loginFormOption,
     onSubmit: async ({ value }) => {
-      try {
-        mutate(
-          {
-            ...value,
+      mutate(
+        { ...value },
+        {
+          onError(error) {
+            if (isAxiosError(error)) {
+              const message =
+                error.response?.data &&
+                typeof error.response.data === 'object' &&
+                'error' in error.response.data
+                  ? (error.response.data as { error: { message: string } })
+                      .error.message
+                  : error.message
+              toast.error(message)
+            } else {
+              toast.error(error.message)
+            }
           },
-          {
-            onError(error, variables, onMutateResult, context) {
-              if (isAxiosError(error)) {
-                console.log(
-                  error.response?.data,
-                  variables,
-                  onMutateResult,
-                  context,
-                )
-              }
-            },
-            onSuccess: () => {
-              navigate({
-                to: '/dashboard',
-              })
-            },
+          onSuccess: () => {
+            navigate({ to: '/dashboard' })
           },
-        )
-      } catch (error) {
-        if (error instanceof Error) {
-          const jsonMatch = error.message.match(/\{.*\}/)
-
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0])
-            toast.error(parsed.error.message)
-          }
-        }
-      }
+        },
+      )
     },
   })
 

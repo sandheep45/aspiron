@@ -32,8 +32,8 @@ pub async fn handler_get_insights(
         params.pagination.search.clone(),
         params.sort.sort_by,
         params.sort.sort_order,
-        params.get_page(),
-        params.get_limit(),
+        params.pagination.get_page(),
+        params.pagination.get_limit(),
         start,
         end,
     )
@@ -81,8 +81,8 @@ pub async fn handler_get_topic_performance(
         params.pagination.search.clone(),
         params.sort.sort_by,
         params.sort.sort_order,
-        params.get_page(),
-        params.get_limit(),
+        params.pagination.get_page(),
+        params.pagination.get_limit(),
     )
     .await?;
     Ok(Json(result))

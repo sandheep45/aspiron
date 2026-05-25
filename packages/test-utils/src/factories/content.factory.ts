@@ -4,6 +4,8 @@ import type {
   SubjectDto,
   TopicDto,
   TopicsResponse,
+  VideoDto,
+  VideosResponse,
 } from '@aspiron/api-client'
 
 let idCounter = 0
@@ -81,6 +83,36 @@ export const buildTopicsResponse = (
   overrides?: Partial<TopicsResponse>,
 ): TopicsResponse => ({
   topics: buildTopicDtoList(3),
+  pagination: null,
+  ...overrides,
+})
+
+export const buildVideoDto = (overrides?: Partial<VideoDto>): VideoDto => ({
+  id: nextId('video'),
+  topic_id: nextId('topic'),
+  title: 'Test Video',
+  duration_seconds: 600,
+  video_url: 'https://storage.example.com/videos/test.mp4',
+  transcript: null,
+  ...overrides,
+})
+
+export const buildVideoDtoList = (
+  count: number,
+  overrides?: Partial<VideoDto>,
+): VideoDto[] =>
+  Array.from({ length: count }, (_, i) =>
+    buildVideoDto({
+      id: `video-${i + 1}`,
+      title: `Video ${i + 1}`,
+      ...overrides,
+    }),
+  )
+
+export const buildVideosResponse = (
+  overrides?: Partial<VideosResponse>,
+): VideosResponse => ({
+  videos: buildVideoDtoList(3),
   pagination: null,
   ...overrides,
 })

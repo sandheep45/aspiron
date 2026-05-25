@@ -18,6 +18,7 @@ use utoipa::ToSchema;
     Deserialize,
     TS,
     ToSchema,
+    strum::EnumString,
 )]
 #[allow(non_camel_case_types)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "action_type")]

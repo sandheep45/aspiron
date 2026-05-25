@@ -30,6 +30,20 @@ pub struct PaginationPayload {
     pub search: Option<String>,
 }
 
+impl PaginationPayload {
+    pub fn get_page(&self) -> u32 {
+        self.page.unwrap_or(1)
+    }
+
+    pub fn get_limit(&self) -> u32 {
+        self.limit.unwrap_or(20).min(100)
+    }
+
+    pub fn get_offset(&self) -> u32 {
+        (self.get_page() - 1) * self.get_limit()
+    }
+}
+
 impl<'de> Deserialize<'de> for PaginationPayload {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

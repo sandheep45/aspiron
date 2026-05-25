@@ -5,15 +5,17 @@ export const Route = createFileRoute(
   '/_private-routes/content/_content-layout/topic/$id',
 )({
   component: RouteComponent,
-  loader: async ({ params }) => {
-    const { name } = await contentTopicService.getTopicById({
-      args: {
-        topicId: params.id,
-      },
+  loader: async ({ params, context: { queryClient } }) => {
+    const data = await queryClient.ensureQueryData({
+      queryKey: ['getTopicById', params.id],
+      queryFn: () =>
+        contentTopicService.getTopicById({
+          args: { topicId: params.id },
+        }),
     })
 
     return {
-      breadcrumb: name,
+      breadcrumb: data.name,
     }
   },
 })

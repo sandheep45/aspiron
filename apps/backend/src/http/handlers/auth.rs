@@ -46,44 +46,11 @@ fn parse_user_type(s: &str) -> UserTypeEnums {
 }
 
 fn parse_resource_type(s: &str) -> ResourceTypeEnum {
-    match s {
-        "USER" => ResourceTypeEnum::USER,
-        "CONTENT" => ResourceTypeEnum::CONTENT,
-        "ASSESSMENT" => ResourceTypeEnum::ASSESSMENT,
-        "COMMUNITY" => ResourceTypeEnum::COMMUNITY,
-        "SYSTEM" => ResourceTypeEnum::SYSTEM,
-        "SUBJECT" => ResourceTypeEnum::SUBJECT,
-        "CHAPTER" => ResourceTypeEnum::CHAPTER,
-        "TOPIC" => ResourceTypeEnum::TOPIC,
-        "VIDEO" => ResourceTypeEnum::VIDEO,
-        "QUIZ" => ResourceTypeEnum::QUIZ,
-        "QUESTION" => ResourceTypeEnum::QUESTION,
-        "THREAD" => ResourceTypeEnum::THREAD,
-        "POST" => ResourceTypeEnum::POST,
-        "NOTE" => ResourceTypeEnum::NOTE,
-        _ => ResourceTypeEnum::USER,
-    }
+    s.parse().unwrap_or(ResourceTypeEnum::USER)
 }
 
 fn parse_action_type(s: &str) -> ActionTypeEnum {
-    match s {
-        "CREATE" => ActionTypeEnum::CREATE,
-        "READ" => ActionTypeEnum::READ,
-        "UPDATE" => ActionTypeEnum::UPDATE,
-        "DELETE" => ActionTypeEnum::DELETE,
-        "MANAGE" => ActionTypeEnum::MANAGE,
-        "PUBLISH" => ActionTypeEnum::PUBLISH,
-        "MODERATE" => ActionTypeEnum::MODERATE,
-        "GRADE" => ActionTypeEnum::GRADE,
-        "TAKE" => ActionTypeEnum::TAKE,
-        "VIEW_RESULTS" => ActionTypeEnum::VIEW_RESULTS,
-        "VIEW_ANY_RESULTS" => ActionTypeEnum::VIEW_ANY_RESULTS,
-        "ASSIGN_ROLES" => ActionTypeEnum::ASSIGN_ROLES,
-        "VIEW_ANALYTICS" => ActionTypeEnum::VIEW_ANALYTICS,
-        "MANAGE_SETTINGS" => ActionTypeEnum::MANAGE_SETTINGS,
-        "AUDIT" => ActionTypeEnum::AUDIT,
-        _ => ActionTypeEnum::READ,
-    }
+    s.parse().unwrap_or(ActionTypeEnum::READ)
 }
 
 #[utoipa::path(
