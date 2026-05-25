@@ -8,11 +8,14 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { CommandPalette } from '@/components/command-palette'
+import { ShortcutCheatSheet } from '@/components/shortcut-cheat-sheet'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { fetchSession } from '@/lib/auth'
+import { KeyboardShortcutProvider } from '@/providers/keyboard-shortcuts'
 import appCss from '@/styles.css?url'
 
 interface RouterContext {
@@ -68,7 +71,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider defaultTheme='dark'>
           <TooltipProvider>
-            <SidebarProvider>{children}</SidebarProvider>
+            <SidebarProvider>
+              <KeyboardShortcutProvider>
+                {children}
+                <CommandPalette />
+                <ShortcutCheatSheet />
+              </KeyboardShortcutProvider>
+            </SidebarProvider>
             <Toaster richColors />
           </TooltipProvider>
         </ThemeProvider>
