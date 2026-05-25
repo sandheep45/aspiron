@@ -17,6 +17,7 @@ pub struct Insight {
 #[derive(Debug, Clone)]
 pub struct TopicPerformance {
     pub topic_id: Uuid,
+    pub subject_id: Uuid,
     pub topic_name: String,
     pub chapter_name: String,
     pub subject_name: String,

@@ -31,6 +31,9 @@ use crate::entries::entities::learning_recall_session::{
 use crate::entries::entities::live_session::{
     Column as LiveSessionColumn, Entity as LiveSessionEntity,
 };
+use crate::entries::entities::live_session_attendee::{
+    Column as AttendeeColumn, Entity as AttendeeEntity,
+};
 use crate::entries::entity_enums::learning_recall_question_type::LearningRecallQuestionTypeEnum;
 use crate::entries::entity_enums::learning_recall_session_status::LearningRecallSessionStatusEnum;
 use crate::setup::error::AppError;
@@ -118,10 +121,23 @@ impl InsightsRepository for SeaOrmInsightsRepository {
             return Ok(vec![]);
         }
 
+        let session_ids: Vec<Uuid> = sessions.iter().map(|s| s.id).collect();
+
+        let attendee_counts = AttendeeEntity::find()
+            .filter(AttendeeColumn::SessionId.is_in(session_ids.clone()))
+            .all(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
+
+        let mut count_map: std::collections::HashMap<Uuid, i64> = std::collections::HashMap::new();
+        for attendee in &attendee_counts {
+            *count_map.entry(attendee.session_id).or_insert(0) += 1;
+        }
+
         let mut insights = vec![];
 
         for session in sessions {
-            let attendee_count = session.topic_id.to_string().len() % 20;
+            let attendee_count = count_map.get(&session.id).copied().unwrap_or(0);
 
             let severity = if attendee_count == 0 {
                 Severity::Danger
@@ -144,7 +160,7 @@ impl InsightsRepository for SeaOrmInsightsRepository {
                 metadata: serde_json::to_value(LowAttendanceMetadata {
                     session_id: session.id,
                     topic_id: session.topic_id,
-                    attendee_count: attendee_count.try_into().unwrap(),
+                    attendee_count,
                 })
                 .unwrap(),
                 detected_at: Utc::now(),
@@ -405,6 +421,7 @@ impl InsightsRepository for SeaOrmInsightsRepository {
 
             performances.push(TopicPerformance {
                 topic_id,
+                subject_id: topic_subject_id.unwrap_or(topic_id),
                 topic_name: topic.name.clone(),
                 chapter_name,
                 subject_name,
@@ -420,7 +437,7 @@ impl InsightsRepository for SeaOrmInsightsRepository {
     }
 }
 
-fn calculate_mcq_strength(answers: &[RecallAnswerModel]) -> Option<f64> {
+pub fn calculate_mcq_strength(answers: &[RecallAnswerModel]) -> Option<f64> {
     let mcq_answers: Vec<_> = answers
         .iter()
         .filter(|a| a.question_type == LearningRecallQuestionTypeEnum::MCQ)
@@ -434,7 +451,7 @@ fn calculate_mcq_strength(answers: &[RecallAnswerModel]) -> Option<f64> {
     Some((correct_count / mcq_answers.len() as f64) * 100.0)
 }
 
-fn calculate_reflection_strength(answers: &[RecallAnswerModel]) -> Option<f64> {
+pub fn calculate_reflection_strength(answers: &[RecallAnswerModel]) -> Option<f64> {
     let reflection_answers: Vec<_> = answers
         .iter()
         .filter(|a| a.question_type == LearningRecallQuestionTypeEnum::REFLECTION)
@@ -454,7 +471,7 @@ fn calculate_reflection_strength(answers: &[RecallAnswerModel]) -> Option<f64> {
     Some((total_score as f64 / max_possible as f64) * 100.0)
 }
 
-fn calculate_combined_accuracy(answers: &[RecallAnswerModel]) -> f64 {
+pub fn calculate_combined_accuracy(answers: &[RecallAnswerModel]) -> f64 {
     if answers.is_empty() {
         return 0.0;
     }

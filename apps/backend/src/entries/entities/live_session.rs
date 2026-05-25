@@ -24,6 +24,8 @@ pub enum Relation {
     ContentTopic,
     #[sea_orm(has_many = "super::live_session_recording::Entity")]
     LiveSessionRecording,
+    #[sea_orm(has_many = "super::live_session_attendee::Entity")]
+    LiveSessionAttendee,
 }
 
 impl Related<super::content_topic::Entity> for Entity {
@@ -35,6 +37,12 @@ impl Related<super::content_topic::Entity> for Entity {
 impl Related<super::live_session_recording::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::LiveSessionRecording.def()
+    }
+}
+
+impl Related<super::live_session_attendee::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::LiveSessionAttendee.def()
     }
 }
 

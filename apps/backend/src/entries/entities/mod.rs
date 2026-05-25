@@ -15,6 +15,7 @@ pub mod learning_progress;
 pub mod learning_recall_answer;
 pub mod learning_recall_session;
 pub mod live_session;
+pub mod live_session_attendee;
 pub mod live_session_recording;
 pub mod notification_event;
 pub mod notification_log;

@@ -1,4 +1,5 @@
 export * from './admin'
 export * from './auth'
 export * from './content'
+export * from './live-class'
 export { useMergedAxiosConfig } from './use-merged-axios-config'

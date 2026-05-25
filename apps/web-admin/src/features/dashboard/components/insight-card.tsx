@@ -23,7 +23,11 @@ export function InsightCard({ insight }: InsightCardProps) {
   return (
     <Card variant={'elevated'}>
       <div className='flex items-start gap-5'>
-        <IconContainer variant={insight.severity}>
+        <IconContainer
+          variant={insight.severity}
+          aria-label={`Severity: ${insight.severity}`}
+          title={insight.severity}
+        >
           <InsightIcon />
         </IconContainer>
 

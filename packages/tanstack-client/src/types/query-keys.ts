@@ -10,6 +10,7 @@ export const queryKeys = {
 
   admin: {
     insights: () => ['insights'] as const,
+    topicPerformance: () => ['topicPerformance'] as const,
   },
 
   // Users
@@ -36,6 +37,11 @@ export const queryKeys = {
       [...queryKeys.courses.lists(), { page, limit }] as const,
     details: () => [...queryKeys.courses.all(), 'detail'] as const,
     detail: (id: string) => [...queryKeys.courses.details(), id] as const,
+  },
+
+  // Live classes
+  liveClass: {
+    upcoming: () => ['liveClass', 'upcoming'] as const,
   },
 
   // Assignments

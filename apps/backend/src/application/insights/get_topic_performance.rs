@@ -24,11 +24,7 @@ pub async fn execute_get_topic_performance(
         .await?;
 
     if let Some(ref subject_ids) = teacher_subject_ids {
-        performances.retain(|p| {
-            subject_ids
-                .iter()
-                .any(|sid| p.subject_name == sid.to_string())
-        });
+        performances.retain(|p| subject_ids.contains(&p.subject_id));
     }
 
     if let Some(ref search) = search {

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { ActionRequired } from '@/features/dashboard/components/action-required'
+import { SystemHealth } from '@/features/dashboard/components/system-health'
 
 const { mockUseInsightQuery } = vi.hoisted(() => ({
   mockUseInsightQuery: vi.fn(),
@@ -9,7 +9,6 @@ const { mockUseInsightQuery } = vi.hoisted(() => ({
 
 vi.mock('@aspiron/tanstack-client', () => ({
   useInsightQuery: mockUseInsightQuery,
-  useGetTopicByIdQuery: () => ({ data: null, isLoading: false }),
 }))
 
 const successData = {
@@ -59,12 +58,12 @@ const successData = {
   pagination: { page: 1, limit: 10, total: 3 },
 }
 
-describe('ActionRequired', () => {
+describe('SystemHealth', () => {
   afterEach(() => {
     vi.clearAllMocks()
   })
 
-  it('renders section heading in success state', () => {
+  it('renders section heading', () => {
     mockUseInsightQuery.mockReturnValue({
       data: successData,
       isLoading: false,
@@ -72,11 +71,11 @@ describe('ActionRequired', () => {
       error: null,
       refetch: vi.fn(),
     })
-    render(<ActionRequired />)
-    expect(screen.getByText('Action Required')).toBeInTheDocument()
+    render(<SystemHealth />)
+    expect(screen.getByText('System Health')).toBeInTheDocument()
   })
 
-  it('renders insight cards from mocked data', () => {
+  it('renders 4 metric cards with labels', () => {
     mockUseInsightQuery.mockReturnValue({
       data: successData,
       isLoading: false,
@@ -84,13 +83,14 @@ describe('ActionRequired', () => {
       error: null,
       refetch: vi.fn(),
     })
-    render(<ActionRequired />)
-    expect(screen.getByText('Quizzes Pending Review')).toBeInTheDocument()
-    expect(screen.getByText('Low Attendance')).toBeInTheDocument()
-    expect(screen.getByText('Low Engagement')).toBeInTheDocument()
+    render(<SystemHealth />)
+    expect(screen.getByText('Active Students')).toBeInTheDocument()
+    expect(screen.getByText('Tests Conducted')).toBeInTheDocument()
+    expect(screen.getByText('Content Published')).toBeInTheDocument()
+    expect(screen.getByText('Average Attendance')).toBeInTheDocument()
   })
 
-  it('renders insight descriptions', () => {
+  it('renders numeric values for each metric', () => {
     mockUseInsightQuery.mockReturnValue({
       data: successData,
       isLoading: false,
@@ -98,13 +98,9 @@ describe('ActionRequired', () => {
       error: null,
       refetch: vi.fn(),
     })
-    render(<ActionRequired />)
-    expect(
-      screen.getByText('5 quizzes need your attention'),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText('Class attendance dropped to 60%'),
-    ).toBeInTheDocument()
+    render(<SystemHealth />)
+    const values = screen.getAllByText(/^[0-9]+%?$/)
+    expect(values).toHaveLength(4)
   })
 
   it('renders skeleton while loading', () => {
@@ -115,43 +111,55 @@ describe('ActionRequired', () => {
       error: null,
       refetch: vi.fn(),
     })
-    const { container } = render(<ActionRequired />)
+    const { container } = render(<SystemHealth />)
     expect(container.querySelector('.animate-pulse')).toBeInTheDocument()
-    expect(screen.queryByText('Quizzes Pending Review')).not.toBeInTheDocument()
+    expect(screen.queryByText('Active Students')).not.toBeInTheDocument()
   })
 
-  it('renders empty state when no insights', () => {
+  it('renders error state with retry button', async () => {
+    const refetch = vi.fn()
+    const user = userEvent.setup()
     mockUseInsightQuery.mockReturnValue({
-      data: { ...successData, insights: [] },
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('Failed to load metrics'),
+      refetch,
+    })
+    render(<SystemHealth />)
+    expect(screen.getByTestId('module-error')).toBeInTheDocument()
+    expect(screen.getByText('Failed to load metrics')).toBeInTheDocument()
+    await user.click(screen.getByTestId('retry-button'))
+    expect(refetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders empty state when insights array is empty', () => {
+    mockUseInsightQuery.mockReturnValue({
+      data: {
+        ...successData,
+        insights: [],
+        summary: { ...successData.summary, total: 0 },
+      },
       isLoading: false,
       isError: false,
       error: null,
       refetch: vi.fn(),
     })
-    render(<ActionRequired />)
-    expect(
-      screen.getByText('No items need attention right now'),
-    ).toBeInTheDocument()
-    expect(screen.getByText('Everything looks healthy.')).toBeInTheDocument()
+    render(<SystemHealth />)
+    expect(screen.getByText('No metrics available')).toBeInTheDocument()
   })
 
-  it('renders error state with retry button', async () => {
-    const refetch = vi.fn()
+  it('sets data-dashboard-section attribute', () => {
     mockUseInsightQuery.mockReturnValue({
-      data: undefined,
+      data: successData,
       isLoading: false,
-      isError: true,
-      error: new Error('Failed to fetch insights'),
-      refetch,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
     })
-    const user = userEvent.setup()
-
-    render(<ActionRequired />)
-
-    expect(screen.getByTestId('module-error')).toBeInTheDocument()
-    expect(screen.getByText('Failed to fetch insights')).toBeInTheDocument()
-
-    await user.click(screen.getByTestId('retry-button'))
-    expect(refetch).toHaveBeenCalledTimes(1)
+    const { container } = render(<SystemHealth />)
+    expect(
+      container.querySelector('[data-dashboard-section="system-health"]'),
+    ).toBeInTheDocument()
   })
 })

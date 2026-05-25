@@ -16,3 +16,4 @@ pub mod m20260120_00014_create_resource_permissions_table;
 pub mod m20260120_00015_create_user_sessions_table;
 pub mod m20260120_00016_create_user_profiles_table;
 pub mod m20260327_000001_add_score_to_learning_recall_answers;
+pub mod m20260525_000001_create_live_session_attendees;

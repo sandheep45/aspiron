@@ -129,6 +129,7 @@ impl<'a> SeedRunner<'a> {
         self.seed_assessment_attempts(&txn).await?;
         self.seed_assessment_proctoring(&txn).await?;
         self.seed_live_sessions(&txn).await?;
+        self.seed_live_session_attendees(&txn).await?;
         self.seed_live_session_recordings(&txn).await?;
         self.seed_notification_events(&txn).await?;
         self.seed_notification_logs(&txn).await?;

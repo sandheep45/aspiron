@@ -21,3 +21,14 @@ pub enum LiveSessionLiveRecordingIdentifier {
     RecordingUrl,
     CreatedAt,
 }
+
+#[derive(Iden)]
+pub enum LiveSessionAttendeeIdentifier {
+    #[iden = "live_session_attendees"]
+    Table,
+    Id,
+    SessionId,
+    UserId,
+    JoinedAt,
+    LeftAt,
+}

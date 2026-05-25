@@ -196,6 +196,8 @@ pub struct TopicPerformanceResponse {
 pub struct TopicPerformance {
     #[schema(value_type = String)]
     pub topic_id: Uuid,
+    #[schema(value_type = String)]
+    pub subject_id: Uuid,
     pub topic_name: String,
     pub chapter_name: String,
     pub subject_name: String,
@@ -227,6 +229,7 @@ pub fn map_insights(insights: Vec<domain::Insight>) -> Vec<Insight> {
 pub fn map_topic_performance(tp: domain::TopicPerformance) -> TopicPerformance {
     TopicPerformance {
         topic_id: tp.topic_id,
+        subject_id: tp.subject_id,
         topic_name: tp.topic_name,
         chapter_name: tp.chapter_name,
         subject_name: tp.subject_name,

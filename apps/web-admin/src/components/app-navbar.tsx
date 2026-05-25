@@ -40,6 +40,7 @@ export function AppNavbar() {
             <BreadcrumbItem>
               <Link
                 to='/dashboard'
+                aria-label='Dashboard'
                 className='flex items-center gap-1 transition-colors hover:text-foreground'
               >
                 <HomeIcon className='h-4 w-4' />
@@ -69,7 +70,7 @@ export function AppNavbar() {
       </div>
 
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger aria-label='User menu'>
           {data?.user.avatar_url ? (
             <Avatar>
               <AvatarImage src={data?.user.avatar_url} alt={data.user.email} />

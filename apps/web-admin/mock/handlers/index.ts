@@ -8,6 +8,8 @@ import { learningHandlers } from './learning.handlers'
 import { liveSessionHandlers } from './live-session.handlers'
 import { notesHandlers } from './notes.handlers'
 import { notificationHandlers } from './notification.handlers'
+import { topicPerformanceHandlers } from './topic-performance.handlers'
+import { upcomingClassesHandlers } from './upcoming-classes.handlers'
 
 export const handlers = [
   ...assessmentHandlers,
@@ -20,4 +22,6 @@ export const handlers = [
   ...liveSessionHandlers,
   ...notesHandlers,
   ...notificationHandlers,
+  ...topicPerformanceHandlers,
+  ...upcomingClassesHandlers,
 ]

@@ -6,7 +6,12 @@ import { Sidebar } from '@/components/ui/sidebar'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar variant='floating' {...props}>
+    <Sidebar
+      variant='floating'
+      role='navigation'
+      aria-label='Main navigation'
+      {...props}
+    >
       <SidebarBrand />
       <Separator />
       <SidebarMenuList items={sidebarItems} />
