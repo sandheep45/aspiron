@@ -23,28 +23,42 @@ Aspiron is built around the belief that **systems beat motivation**. The platfor
 | **ORM** | SeaORM 1.1 |
 | **Database** | PostgreSQL 16+ |
 | **Migrations** | SeaORM Migrations |
+| **Authentication** | JWT (access + refresh tokens, cookie & bearer) |
+| **Password Hashing** | bcrypt |
 | **Seeding** | Custom CLI with progress tracking |
-| **Entity Models** | Comprehensive SeaORM entities |
 | **Async Runtime** | tokio |
 | **Logging** | tracing + telemetry |
-| **Configuration** | Environment variables |
-| **Error Handling** | thiserror + anyhow |
-| **Authentication** | JWT (planned) |
-| **API Documentation** | utoipa |
-| **Containerization** | Docker (planned) |
-| **CI/CD** | GitHub Actions (planned) |
+| **API Documentation** | utoipa (OpenAPI 3.0 + Swagger UI) |
+| **Type Generation** | ts-rs (Rust DTOs → TypeScript) |
+| **Search** | Meilisearch |
 
-### Frontend (SvelteKit + TypeScript)
+### Frontend — Web Admin (React + TypeScript)
 
 | Component | Technology |
 |-----------|------------|
-| **Framework** | SvelteKit 2 |
-| **Language** | TypeScript |
+| **Framework** | React 19 with React Start (SSR) |
+| **Routing** | TanStack Router (file-based, auto-generated route tree) |
+| **Server State** | TanStack Query (with SSR integration) |
+| **Forms** | TanStack React Form + Zod (runtime validation) |
+| **Styling** | Tailwind CSS v4 (`@import 'tailwindcss'`, `oklch()` colors, `@theme inline`) |
+| **UI Components** | shadcn/ui (`base-mira` style), Base UI, Radix UI |
+| **Icons** | lucide-react |
+| **Auth** | Auth.js with credentials provider + JWT cookies |
+| **Theme** | Dark/Light mode via next-themes |
+| **React Compiler** | Enabled via babel-plugin-react-compiler |
+| **Build Tool** | Vite 7 (rolldown-vite) |
+| **SSR** | TanStack React Start (`@tanstack/react-start`) |
+
+### Frontend — Documentation Site (SvelteKit)
+
+| Component | Technology |
+|-----------|------------|
+| **Framework** | SvelteKit 5 |
 | **Styling** | Tailwind CSS v4 |
 | **UI Components** | Skeleton UI |
-| **Markdown** | mdsvex |
-| **State Management** | TanStack Query |
-| **Theme** | Dark/Light mode support |
+| **Markdown** | mdsvex with Shiki syntax highlighting |
+| **Search** | Meilisearch + Fuse.js |
+| **Content** | 26 documentation pages |
 
 ### Mobile (React Native + Expo)
 
@@ -52,132 +66,89 @@ Aspiron is built around the belief that **systems beat motivation**. The platfor
 |-----------|------------|
 | **Framework** | Expo 54+ |
 | **Navigation** | Expo Router 6+ |
-| **Language** | TypeScript |
-| **UI Components** | Expo Vector Icons |
-| **Platform Support** | iOS, Android, Web |
+| **Styling** | NativeWind (Tailwind for React Native) |
+| **Platform** | iOS, Android, Web |
 | **Development** | Expo Go + Development Build |
+
+### Packages
+
+| Package | Purpose |
+|---------|---------|
+| `@aspiron/config` | Shared env config (type-safe via `@t3-oss/env-core` + Zod) |
+| `@aspiron/api-client` | Axios-based HTTP API client |
+| `@aspiron/tanstack-client` | TanStack Query hooks wrapping API client |
+| `@aspiron/test-utils` | Internal test factories and utilities |
 
 ## Project Structure
 
 ```
 aspiron/
-├── Cargo.toml                    # Rust workspace config
-├── package.json                  # Node.js workspace config
-├── pnpm-workspace.yaml           # pnpm monorepo config
-├── Justfile                      # Task runner commands
-├── .env.example                  # Environment template
-├── .github/
-│   └── workflows/                # CI/CD (future)
+├── Cargo.toml                      # Rust workspace (apps/backend, apps/migrations)
+├── package.json                    # pnpm workspace root
+├── pnpm-workspace.yaml             # pnpm monorepo config
+├── Justfile                        # Task runner (just)
+├── biome.json                      # Biome lint/format config
+├── docker-compose.yml              # PostgreSQL, Meilisearch, pgAdmin, LocalStack
+├── .env.example                    # Environment template
+├── AGENTS.md                       # Agent instructions
+├── IMPLEMENTATION_PLAN.md          # Detailed implementation plan
+├── IMROVEMENTS_PLAN.md             # Improvement tracking
+│
 ├── apps/
-│   ├── backend/                  # Rust API server
+│   ├── backend/                    # Rust API server (Axum)
 │   │   ├── src/
-│   │   │   ├── main.rs           # Entry point
-│   │   │   ├── lib.rs            # Library exports
-│   │   │   ├── entries/          # Core business logic modules
-│   │   │   │   ├── mod.rs        # Module exports
-│   │   │   │   ├── entities/     # SeaORM entity models
-│   │   │   │   │   ├── user.rs
-│   │   │   │   │   ├── content_subject.rs
-│   │   │   │   │   ├── content_chapter.rs
-│   │   │   │   │   ├── content_topic.rs
-│   │   │   │   │   ├── content_video.rs
-│   │   │   │   │   ├── learning_progress.rs
-│   │   │   │   │   ├── learning_notes.rs
-│   │   │   │   │   ├── assessment_quiz.rs
-│   │   │   │   │   ├── assessment_question.rs
-│   │   │   │   │   ├── assessment_attempt.rs
-│   │   │   │   │   ├── community_thread.rs
-│   │   │   │   │   ├── community_post.rs
-│   │   │   │   │   ├── live_session.rs
-│   │   │   │   │   ├── live_session_recording.rs
-│   │   │   │   │   ├── notification_event.rs
-│   │   │   │   │   └── notification_log.rs
-│   │   │   │   ├── entitiy_enums/ # Database enums
-│   │   │   │   │   ├── user_types.rs
-│   │   │   │   │   ├── exam_types.rs
-│   │   │   │   │   ├── content_owner_types.rs
-│   │   │   │   │   ├── notes_content_type.rs
-│   │   │   │   │   ├── learning_recall_question_type.rs
-│   │   │   │   │   ├── learning_recall_session_status.rs
-│   │   │   │   │   ├── trust_level.rs
-│   │   │   │   │   ├── notification_event_type.rs
-│   │   │   │   │   └── notification_logs_types.rs
-│   │   │   │   ├── dtos/         # Data transfer objects
-│   │   │   │   │   ├── payload/  # Request payloads
-│   │   │   │   │   └── response/ # Response models
-│   │   │   │   └── seeds/        # Database seeding system
-│   │   │   │       ├── main.rs   # CLI entry point
-│   │   │   │       ├── runner.rs # Seeding engine
-│   │   │   │       ├── config.rs # Seeding configuration
-│   │   │   │       └── entities/ # Entity-specific seeders
-│   │   │   ├── setup/            # Foundation modules
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── config.rs     # Config loading from env
-│   │   │   │   ├── error.rs      # Error types + IntoResponse
-│   │   │   │   ├── telemetry.rs  # Logging/tracing initialization
-│   │   │   │   ├── app.rs        # App struct, router setup, route registry
-│   │   │   │   └── openapi.rs    # OpenAPI spec
-│   │   │   ├── routes/           # HTTP handlers
-│   │   │   │   ├── mod.rs
-│   │   │   │   ├── health.rs     # Health check endpoint
-│   │   │   │   ├── auth.rs       # Placeholder for auth routes
-│   │   │   │   └── users.rs      # Placeholder for user routes
-│   │   │   ├── services/         # Business logic (placeholders)
-│   │   │   └── middleware/       # Auth middleware (placeholder)
+│   │   │   ├── main.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── setup/              # App config, error handling, telemetry, OpenAPI, CLI
+│   │   │   ├── http/               # Web layer
+│   │   │   │   ├── handlers/       # Axum handlers (auth, content, assessment, learning, ...)
+│   │   │   │   ├── routes/         # Route registration (api_v1_router)
+│   │   │   │   ├── payloads/       # Request DTOs
+│   │   │   │   ├── responses/      # Response DTOs
+│   │   │   │   └── middleware/     # Axum middleware (client-type validation)
+│   │   │   ├── application/        # Use cases / business orchestration (9 domains)
+│   │   │   ├── domain/             # Domain models and logic (9 domains)
+│   │   │   ├── infra/              # Infrastructure
+│   │   │   │   ├── auth/           # JWT service, password hashing, user auth
+│   │   │   │   └── db/repositories/ # SeaORM repositories (9 domains)
+│   │   │   ├── entries/            # SeaORM entities + database enums
+│   │   │   ├── middleware/         # Auth middleware (AuthUser extractor)
+│   │   │   ├── seeds/              # Database seeding CLI
+│   │   │   └── constants/          # App-wide constants
+│   │   ├── tests/
+│   │   │   ├── harness.rs          # TestApp with testcontainers Postgres
+│   │   │   ├── fixtures/           # Test helpers + scenario builder
+│   │   │   ├── unit/               # 33 unit tests (permissions, JWT, snapshots)
+│   │   │   ├── integration/        # 17 integration tests (auth, routes)
+│   │   │   └── scenarios/          # 9 scenario tests (onboarding, quizzes, content)
 │   │   └── Cargo.toml
-│   ├── migrations/               # SeaORM migrations
+│   │
+│   ├── migrations/                 # SeaORM database migrations
+│   │   └── src/entities/migration/ # 16 migration files (enums → user profiles)
+│   │
+│   ├── web-admin/                  # React admin dashboard (TanStack Router)
 │   │   ├── src/
-│   │   │   ├── lib.rs            # Migration exports
-│   │   │   ├── main.rs           # Migration runner
-│   │   │   ├── entities/
-│   │   │   │   ├── migration/    # Migration files
-│   │   │   │   │   ├── m20260120_00000_create_enums.rs
-│   │   │   │   │   ├── m20260120_00001_create_auth_tables.rs
-│   │   │   │   │   ├── m20260120_00002_create_content_tables.rs
-│   │   │   │   │   ├── m20260120_00003_create_learning_tables.rs
-│   │   │   │   │   ├── m20260120_00004_create_assessment_tables.rs
-│   │   │   │   │   ├── m20260120_00005_create_community_tables.rs
-│   │   │   │   │   ├── m20260120_00006_create_live_tables.rs
-│   │   │   │   │   └── m20260120_00007_create_notification_tables.rs
-│   │   │   │   └── identifiers/  # Table constant definitions
-│   │   │   │       ├── mod.rs
-│   │   │   │       ├── auth_table.rs
-│   │   │   │       ├── content_table.rs
-│   │   │   │       ├── learning_table.rs
-│   │   │   │       ├── assessment_table.rs
-│   │   │   │       ├── community_table.rs
-│   │   │   │       ├── live_table.rs
-│   │   │   │       └── notification_table.rs
+│   │   │   ├── routes/             # File-based routes (auth, dashboard, content, ...)
+│   │   │   ├── features/           # Feature modules (auth, dashboard)
+│   │   │   ├── components/ui/      # shadcn/ui components (45+ components)
+│   │   │   ├── components/forms/   # Form field components (TanStack React Form)
+│   │   │   ├── lib/                # Utilities (cn(), auth helpers)
+│   │   │   ├── hooks/              # Shared hooks
+│   │   │   └── styles.css          # Tailwind v4 + shadcn/ui theme
+│   │   ├── e2e/                    # Playwright E2E tests
 │   │   └── Cargo.toml
-│   ├── documentation/            # SvelteKit documentation site
-│   │   ├── src/
-│   │   │   ├── app.css           # Global styles with Tailwind v4
-│   │   │   ├── app.html          # HTML template
-│   │   │   ├── lib/
-│   │   │   │   ├── components/   # Reusable UI components
-│   │   │   │   │   ├── Header.svelte
-│   │   │   │   │   ├── Sidebar.svelte
-│   │   │   │   │   ├── Callout.svelte
-│   │   │   │   │   └── Search.svelte
-│   │   │   │   ├── docs/         # Documentation content
-│   │   │   │   │   ├── docs.ts   # Navigation configuration
-│   │   │   │   │   └── *.md      # Documentation pages (26 pages)
-│   │   │   │   └── utils/
-│   │   │   │       ├── types.ts
-│   │   │   │       └── search-index.ts
-│   │   │   └── routes/
-│   │   │       ├── +page.svelte         # Homepage
-│   │   │       └── docs/[...slug]/      # Documentation pages
-│   │   ├── static/               # Static assets
-│   │   ├── package.json
-│   │   └── svelte.config.js
-│   └── mobile-student/          # React Native mobile app
-│       ├── app/                  # Expo Router app directory
-│       ├── package.json
-│       ├── tsconfig.json
-│       └── expo.json (generated)
-├── README.md
-└── AGENTS.md                     # AI agent instructions
+│   │
+│   ├── documentation/              # SvelteKit documentation site
+│   │   └── src/lib/docs/           # 26 Markdown doc pages
+│   │
+│   └── mobile-student/             # React Native Expo mobile app
+│       └── app/                    # Expo Router app directory
+│
+└── packages/
+    ├── config/                     # @aspiron/config — shared env config
+    ├── api-client/                 # @aspiron/api-client — Axios API client
+    ├── tanstack-client/            # @aspiron/tanstack-client — TanStack Query hooks
+    └── test-utils/                 # @aspiron/test-utils — test factories
 ```
 
 ## Features
@@ -215,23 +186,23 @@ aspiron/
 
 ## Documentation
 
-The project includes comprehensive documentation at `/docs`:
+The project includes comprehensive documentation at `/docs` via the SvelteKit documentation app:
 
 ### Introduction
 
-- [Introduction](/docs/intro) - Platform overview, problem statement, core philosophy
-- [MVP Scope](/docs/mvp-scope) - What's included/excluded, 1-year roadmap
-- [Student Journey](/docs/student-journey) - Day 1 onboarding, daily flows, revision
-- [Design Philosophy](/docs/design-philosophy) - Student-first principles
-- [Roadmap](/docs/roadmap) - 5-phase plan (Now → Month 12)
+- [Introduction](/docs/intro) — Platform overview, problem statement, core philosophy
+- [MVP Scope](/docs/mvp-scope) — What's included/excluded, 1-year roadmap
+- [Student Journey](/docs/student-journey) — Day 1 onboarding, daily flows, revision
+- [Design Philosophy](/docs/design-philosophy) — Student-first principles
+- [Roadmap](/docs/roadmap) — 5-phase plan (Now → Month 12)
 
 ### Core Concepts
 
-- [Core Concepts](/docs/core-concepts) - Architecture overview
-- [Context Layer](/docs/context-layer) - Exam/subject/target year persistence
-- [Learning Structure](/docs/learning-structure) - Subject → Chapter → Topic hierarchy
-- [Notes System](/docs/notes-system) - Teacher/student notes architecture
-- [Progress Tracking](/docs/progress-tracking) - Student and teacher views
+- [Core Concepts](/docs/core-concepts) — Architecture overview
+- [Context Layer](/docs/context-layer) — Exam/subject/target year persistence
+- [Learning Structure](/docs/learning-structure) — Subject → Chapter → Topic hierarchy
+- [Notes System](/docs/notes-system) — Teacher/student notes architecture
+- [Progress Tracking](/docs/progress-tracking) — Student and teacher views
 
 ### Learning
 
@@ -268,349 +239,358 @@ The project includes comprehensive documentation at `/docs`:
 
 ### Prerequisites
 
-#### Required Tools
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Rust** | 1.75+ | Backend runtime |
+| **Node.js** | 20+ | Frontend toolchain |
+| **pnpm** | 9+ (use 10.28) | Package manager |
+| **Just** | — | Task runner |
+| **Docker & Docker Compose** | — | PostgreSQL, Meilisearch, pgAdmin, LocalStack |
 
-- **Rust 1.75+** - Backend runtime and compilation
-- **Node.js 20+** - Frontend and mobile development toolchain
-- **PostgreSQL 16+** - Primary database (or use Docker)
-- **pnpm 9+** - Monorepo package manager
-- **Just** - Task runner for common development commands
-
-#### Development Tools
-
-- **Docker & Docker Compose** (Recommended) - For easy database setup
-  ```bash
-  # Alternative to local PostgreSQL installation
-  docker-compose up -d postgres
-  ```
-
-#### Mobile Development
-
-- **Expo Go App** (iOS/Android) - For testing mobile app development
-  - Available on App Store and Google Play Store
-- **Expo CLI** (Optional) - For advanced mobile development features
-  ```bash
-  npm install -g @expo/cli
-  ```
-
-#### Version Verification
-
-Verify your setup with these commands:
-```bash
-# Rust toolchain
-rustc --version    # Should be 1.75+
-cargo --version
-
-# Node.js ecosystem
-node --version      # Should be 20+
-pnpm --version      # Should be 9+
-
-# Database
-psql --version      # Should be 16+  (if using local PostgreSQL)
-docker --version    # If using Docker
-
-# Task runner
-just --version
-
-# Optional mobile tools
-npx expo --version  # If Expo CLI installed
-```
-
-#### Installation Quick Reference
+#### Installation
 
 ```bash
-# Install Rust
+# Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Install Node.js (using fnm for version management)
+# Node.js (using fnm)
 curl -fsSL https://fnm.vercel.app/install | bash
-fnm install 20
-fnm use 20
+fnm install 20 && fnm use 20
 
-# Install pnpm
+# pnpm
 npm install -g pnpm@latest
 
-# Install Just (Ubuntu/Debian)
+# Just (Ubuntu/Debian)
 sudo apt install just
 
-# Install Just (macOS)
-brew install just
-
-# Install Docker & Docker Compose
-# Visit: https://docs.docker.com/get-docker/
+# Start Docker services
+docker compose up -d
 ```
 
 ### Setup
 
 ```bash
-# Option 1: Use the convenience command (recommended)
-# This generates SSL certificates, installs dependencies, and sets up the database
+# One-command setup (generates SSL certs, installs deps, migrates + seeds DB)
 just setup
 
-# Option 2: Manual setup
-# Install all dependencies (including mobile)
+# Or manually:
 pnpm install
-
-# Copy environment templates
 cp .env.example .env
-
-# Build all packages (config, api-client, tanstack-client)
-just build-packages
-
-# Set up database
-just migrate
-just seed  # Seed development data
+just build-packages    # Builds config → api-client → tanstack-client
+just migrate            # Run database migrations
+just seed               # Seed development data
 
 # Start development servers
-just run-rust backend
-just dev-js web-admin
+just dev                # Runs backend + documentation + mobile in parallel
+just dev-js web-admin   # Admin dashboard only (port 3000)
+just run-rust backend   # Rust backend only (port 8082)
 ```
 
-### Running Individual Apps
+### Key Commands
 
 ```bash
-# Rust backend
-just run-rust backend
+# Build everything
+just build
 
-# Documentation site
-just dev-js documentation
+# Run all tests
+just test
 
-# Mobile app (requires Expo Go)
-just dev-mobile
+# Type generation (Rust DTOs → TypeScript)
+just generate-types
 
-# Database Setup & Operations
+# OpenAPI spec
+just generate-openapi    # Generate
+just validate-openapi    # Validate against schema
 
-## Quick Start Commands
-```bash
-# Full setup: generates SSL certs, installs deps, sets up database
-just setup
+# Contract coverage (routes vs tests vs OpenAPI)
+just contract-coverage
 
-# To setup fresh database:
-just migrate
-just seed
+# Database
+just migrate             # Apply migrations
+just fresh-db            # Reset + migrate + seed
+just seed                # Seed all data
 
-# To reset database completely:
-just migrate -- reset
-just migrate
-just seed
+# Pre-commit CI (format → lint → build-all → check → validate-openapi)
+just ci
 
-# Or use the convenience workflow:
-just fresh-db  # Does all three commands above
-```
+# Tiered CI lanes
+just ci-fast             # < 3 min (format, lint, unit tests, typecheck)
+just ci-medium           # < 10 min (integration + scenario tests)
+just ci-slow             # Full suite (all tests + e2e)
 
-## Individual Commands
-```bash
-just migrate         # Run pending migrations (or any migration command)
-just seed            # Seed all development data
-just seed rbac       # Seed RBAC system (roles, permissions, assignments)
-just seed users       # Seed only users with role assignments
-just seed content     # Seed only content hierarchy (subjects/chapters/topics/videos)
-just seed assessments # Seed only quizzes and questions
-just seed community   # Seed only forum threads and posts
-```
-
-## Setup Workflows
-```bash
-just setup           # Full setup: SSL certs + install + migrate + seed
-just fresh-db        # Reset database (migrate reset + migrate + seed)
-just setup-dev       # Full development setup (install + migrate + seed)
-```
+# Package builds (in dependency order)
+just build-packages      # config → api-client → tanstack-client
 ```
 
 ### Running Tests
 
 ```bash
 # All tests
-pnpm test
+just test
 
-# Backend tests only
-cargo test --workspace
+# Backend (67 test functions across 10 files)
+cargo test -p backend --lib unit::          # Unit tests (33)
+cargo test -p backend --test integration    # Integration tests (17)
+cargo test -p backend --test scenarios      # Scenario tests (9)
 
-# Frontend tests only
-pnpm --filter documentation run test
+# Frontend (10 unit test files)
+pnpm --filter web-admin exec vitest run
+
+# E2E (requires dev server running)
+pnpm --filter web-admin exec playwright test
+
+# Frontend + backend in parallel
+just test
 ```
+
+### Generating TypeScript Types from Rust
+
+```bash
+just generate-types
+```
+
+This runs `cargo test` (which triggers ts-rs codegen), copies output from `apps/backend/bindings/` to `packages/api-client/src/generated-types/`, converts relative imports to absolute (`@/generated-types/`), generates a barrel `index.ts`, and formats.
 
 ## Database Architecture
 
+### Docker Services
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| **PostgreSQL** | `5432` | Primary database |
+| **Meilisearch** | `7700` | Full-text search engine |
+| **pgAdmin** | `8080` | Database admin UI |
+| **LocalStack** | `4566` | AWS service emulation (S3, SQS, etc.) |
+
 ### Entity System
 
-The platform uses a comprehensive SeaORM entity system organized into logical domains:
+Entities are organized into 7 logical domains:
 
-#### Core Entities
-- **User**: Student and teacher accounts with role-based access
+- **Auth**: Users, sessions, profiles
 - **Content**: Subject → Chapter → Topic → Video hierarchy
-- **Learning**: Progress tracking, notes, and recall sessions
-- **Assessment**: Quizzes, questions, and attempt tracking
-- **Community**: Threads, posts, and bot interactions
+- **Learning**: Progress tracking, notes, recall sessions
+- **Assessment**: Quizzes, questions, attempts
+- **Community**: Threads, posts, bot interactions
 - **Live**: Sessions and recordings
 - **Notifications**: Events and delivery logs
 
-#### Database Enums
-- **User Types**: Student, Teacher, Admin
-- **Exam Types**: PGT, JEE, NEET, etc.
-- **Content Owner Types**: System, Teacher, Student
-- **Learning Recall Types**: Multiple choice, Numerical, Short answer
-- **Notification Types**: System, Learning, Community, Assessment
+### Migration Files (16 total)
 
-### Migration System
-
-The database uses SeaORM migrations with a structured approach:
-
-```bash
-# Migration files (chronological order)
-m20260120_00000_create_enums.rs          # Database enums
-m20260120_00001_create_user_tables.rs   # Users and sessions
-m20260120_00002_create_content_tables.rs # Content hierarchy
-m20260120_00003_create_learning_tables.rs # Learning data
-m20260120_00004_create_assessment_tables.rs # Assessments
-m20260120_00005_create_community_tables.rs # Community features
-m20260120_00006_create_live_tables.rs     # Live sessions
-m20260120_00007_create_notification_tables.rs # Notifications
-m20260120_00008_create_rbac_enums.rs     # RBAC enums
-m20260120_00009_create_roles_table.rs     # Roles table
-m20260120_00010_create_permissions_table.rs # Permissions table
-m20260120_00011_create_role_permissions_table.rs # Role-permission assignments
-m20260120_00012_create_user_roles_table.rs # User-role assignments
-m20260120_00013_create_audit_logs_table.rs # Audit logging
-m20260120_00014_create_resource_permissions_table.rs # Resource-level permissions
-m20260120_00015_create_user_sessions_table.rs # User sessions
-m20260120_00016_create_user_profiles_table.rs # User profiles
+```
+m20260120_00000_create_enums.rs
+m20260120_00001_create_auth_tables.rs
+m20260120_00002_create_content_tables.rs
+m20260120_00003_create_learning_tables.rs
+m20260120_00004_create_assessment_tables.rs
+m20260120_00005_create_community_tables.rs
+m20260120_00006_create_live_tables.rs
+m20260120_00007_create_notification_tables.rs
+m20260120_00008_create_rbac_enums.rs
+m20260120_00009_create_roles_table.rs
+m20260120_00010_create_permissions_table.rs
+m20260120_00011_create_role_permissions_table.rs
+m20260120_00012_create_user_roles_table.rs
+m20260120_00013_create_audit_logs_table.rs
+m20260120_00014_create_resource_permissions_table.rs
+m20260120_00015_create_user_sessions_table.rs
+m20260120_00016_create_user_profiles_table.rs
 ```
 
-### Seeding System
+## Backend Architecture
 
-A comprehensive CLI-based seeding system for development data:
+### Clean Architecture (Domain-Driven)
 
-```bash
-# Seed all development data
-just seed
+Each backend domain follows a layered pattern:
 
-# Seed specific categories
-just seed rbac          # RBAC system (roles, permissions, assignments)
-just seed users         # User accounts with role assignments
-just seed content       # Content hierarchy (subjects/chapters/topics/videos)
-just seed assessments   # Quizzes and questions
-just seed community     # Forum threads and posts
-
-# Validate data integrity
-just seed validate --deep
+```
+http/handlers/    →  application/   →  infra/db/repositories/
+(Axum handlers)     (use cases)        (data access)
 ```
 
-**Seeding Features:**
-- RBAC system seeding with role-permission assignments
-- Automatic role assignment to users based on user type
-- Batch processing with configurable sizes
-- Progress indicators for large datasets
-- Data integrity validation
-- Transaction-based operations
-- Modular entity-specific seeders
+- **HTTP Layer** (`http/`): Axum route registration, request parsing, response serialization
+- **Application Layer** (`application/`): Business logic orchestration, no HTTP or DB dependencies
+- **Domain Layer** (`domain/`): Pure domain models and logic (no framework dependencies)
+- **Infrastructure Layer** (`infra/`): JWT service, password hashing, SeaORM repositories
 
-## Backend Documentation
+Route registration follows a merge pattern:
+
+```rust
+pub fn api_v1_router() -> Router<AppState> {
+    Router::new()
+        .merge(health::router())
+        .merge(auth::router())
+        .merge(users::router())
+        .merge(content::router())
+        .merge(assessment::router())
+        .merge(community::router())
+        .merge(learning::router())
+        .merge(live_session::router())
+        .merge(notification::router())
+        .merge(insights::router())
+}
+```
+
+All 42+ routes are manually tracked via `ROUTE_REGISTRY`.
 
 ### OpenAPI Documentation
 
 The backend uses [utoipa](https://github.com/juhaku/utoipa) to generate OpenAPI 3.0 specifications.
 
-**Available Endpoints:**
-
 | Endpoint | Description |
 |----------|-------------|
-| `/api-docs/openapi.json` | OpenAPI 3.0 specification in JSON format |
-| `/health` | Health check endpoint |
+| `/api-docs/openapi.json` | OpenAPI 3.0 specification |
+| `/swagger/index.html` | Swagger UI |
+
+### Authentication
+
+JWT-based with two token types:
+- **Access token** (default 24h): Stored in `jwt` HTTP-only cookie (web) or response body (mobile)
+- **Refresh token** (default 7d): Stored in `jwt_refresh` HTTP-only cookie
+
+Mobile clients are detected via `x-client-type: mobile` header and receive tokens in the response body.
 
 ### Environment Variables
 
 ```bash
 # Server
 APP_HOST=0.0.0.0
-APP_PORT=8080
+APP_PORT=8082
 APP_ENV=development
+
+# Auth
+AUTH_SECRET=your-secret-key-here-min-32-chars-long
+AUTH_URL=http://localhost:3000/api/auth
 
 # Database
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=password
-DATABASE_NAME=aspiron
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=mint_ts
+DATABASE_POOL_SIZE=10
 
-# JWT (future)
-JWT_SECRET=your-secret-key-min-32-chars
-JWT_EXPIRY_HOURS=24
+# JWT
+JWT_SECRET=your-secret-key-minimum-32-characters-long
+JWT_ACCESS_TOKEN_EXPIRY_SECONDS=86400
+JWT_REFRESH_TOKEN_EXPIRY_SECONDS=604800
+JWT_COOKIE_NAME=jwt
+
+# CORS
+CORS_ORIGINS=http://localhost:3000,http://local.aspiron.test:8082,...
+
+# Backend URL (used by frontend)
+PUBLIC_BACKEND_URL=https://local.aspiron.test:8443
+PUBLIC_ACTIVE_API_VERSION=/api/v1
+
+# Meilisearch
+MEILI_MASTER_KEY=your-secret-master-key-minimum-16-characters
+MEILI_HOST=http://localhost:7700
+MEILI_INDEX_ENABLED=false
 
 # Logging
-LOG_LEVEL=info       # debug, info, warn, error
-LOG_FORMAT=pretty    # pretty (human-readable) or json
+LOG_LEVEL=info,sea_orm::query=debug,sqlx::query=debug
+LOG_FORMAT=pretty
+
+# Seeding
+SEED_PASSWORD_STRATEGY=fixed
+```
+
+## CI
+
+Pre-commit checks run automatically via **husky** + **lint-staged** (`just ci`):
+
+```
+format (cargo fmt + biome lint --write --unsafe)
+→ lint (cargo clippy -D warnings + biome lint)
+→ build (cargo build + pnpm build)
+→ check (cargo check + biome check)
+→ validate-openapi
+```
+
+Three-tier CI lanes for different cadences:
+
+| Lane | Command | Target | What runs |
+|------|---------|--------|-----------|
+| Fast | `just ci-fast` | < 3 min | fmt check, clippy, unit tests, biome check, vitest, type generation diff |
+| Medium | `just ci-medium` | < 10 min | Integration tests, scenario tests |
+| Slow | `just ci-slow` | Nightly | Full vitest, Playwright E2E, all cargo tests |
+
+Contract coverage metrics to track route vs test vs OpenAPI alignment:
+```bash
+just contract-coverage
 ```
 
 ## Code Style
 
 ### Backend (Rust)
-
-- **Linting**: Clippy
+- **Linting**: Clippy with strict denies (`unwrap_used`, `expect_used`, `panic`, `todo`, `dbg_macro`, `print_stdout`, `print_stderr`)
 - **Formatting**: rustfmt
-- **Panics**: Denied in lints
-- **Debug**: `dbg!` macro denied in production code
 
-### Frontend
-
-- **Linting**: Biome
-- **Formatting**: Prettier
+### Frontend (web-admin)
+- **Linting + Formatting**: Biome (single quotes, trailing commas, 80 char width)
 - **TypeScript**: Strict mode enabled
+- **Import rule**: All local imports must use `@/` absolute paths (no relative imports in hand-authored code)
+
+### Frontend (documentation)
+- **Linting**: Svelte-Check
+- **Formatting**: Prettier
+
+### Mobile (mobile-student)
+- **Formatting**: Prettier with Tailwind plugin
 
 ## Implementation Status
 
-### ✅ Phase 1: Foundation (Complete)
-- [x] Project structure setup
-- [x] Workspace configuration (Rust + Node.js)
-- [x] Backend foundation (config, errors, telemetry)
-- [x] Health check endpoint
-- [x] Route registry
-- [x] OpenAPI integration
-- [x] Documentation site with 26 pages
-- [x] Categorized navigation
+### Phase A: Test Infrastructure — ✅ Complete
+- [x] Backend test harness with testcontainers Postgres
+- [x] Integration test framework (tower `ServiceExt::oneshot`)
+- [x] Scenario builder (fluent API for multi-step workflows)
+- [x] Frontend vitest setup (jsdom, 10 test files)
+- [x] MSW handler infrastructure
+- [x] OpenAPI contract enforcement + snapshot testing (insta)
 
-### ✅ Phase 2: Database (Complete)
-- [x] Complete SeaORM entity system (15+ entities)
-- [x] Database enums (8+ enum types)
-- [x] Migration files (8 comprehensive migrations)
-- [x] Entity sharing between crates
-- [x] Comprehensive seeding system with CLI
-- [x] Data integrity validation
-- [x] Batch processing and progress tracking
-- [x] Table identifiers and relationships
+### Phase B: Scenario & Unit Tests — ✅ Complete
+- [x] Permission parsing (17 unit tests)
+- [x] JWT round-trip (10 unit tests)
+- [x] Error response shape snapshots (5 insta snapshots)
+- [x] OpenAPI spec snapshot (1582 lines)
+- [x] Integration tests: auth, routes, pagination (17 tests)
+- [x] Scenario tests: onboarding, quiz lifecycle, content upload (9 tests)
+- [ ] 4 scenario tests blocked on real handler implementations (daily revision, recall session, note sharing, permission evolution)
 
-### ⏳ Phase 3: Authentication (Next)
-- [ ] JWT token creation/verification
-- [ ] Bcrypt password hashing
-- [ ] Auth routes (register, login, logout)
-- [ ] Auth middleware
+### Phase C: Backend Clean Architecture — ✅ Complete
+- [x] All 9 domains migrated: auth, assessment, content, learning, community, notification, insights, live_session, users
+- [x] Old `services/` directory fully removed
+- [x] Layered pattern: `http/handlers/` → `application/` → `domain/` → `infra/db/repositories/`
+- [x] DRY/SOLID cleanup: Permission FromStr derive, PaginationPayload dedup, encode_token consolidation
+- [x] Clippy-clean with strict denies
 
-### ⏳ Phase 4: Core Routes
-- [ ] User CRUD endpoints
-- [ ] Exam/Subject/Topic routes
-- [ ] Video/Notes routes
-- [ ] Quiz/Test routes
+### Phase D: Frontend Architecture — ✅ Complete
+- [x] Feature-based reorg (auth, dashboard)
+- [x] Zod adapter layer for runtime validation
+- [x] MSW handlers for 40+ endpoints
+- [x] TanStack React Form integration
+- [x] Component tests (10 files, 60 tests)
+- [x] Sidebar split (727 lines → 6 focused files)
+- [x] Field extraction, action-required registry, barrel exports
 
-### ⏳ Phase 5: AI Integration
-- [ ] Context-aware chat service
-- [ ] Recall check algorithm
-- [ ] Test analysis generation
-- [ ] Community bot
+### Phase E: CI Architecture — ✅ Partial
+- [x] `just ci` with husky + lint-staged (pre-commit)
+- [x] Tiered CI lanes: `ci-fast`, `ci-medium`, `ci-slow`
+- [x] Playwright E2E installed + 3 critical tests
+- [x] Contract coverage metrics script
+- [ ] 10-15 Playwright E2E flows — deferred (waiting on real dashboard/content pages)
+- [ ] GitHub Actions workflow — deferred
 
-### ⏳ Phase 6: Testing & CI/CD
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] GitHub Actions workflow
-- [ ] Docker build/push
-- [ ] VPS deployment
+### Phases 1-3: Frontend Dashboard & Core Routes — ⏳ Not Started
+- Dashboard modules (Pain Points, Upcoming Classes, System Health, Notifications)
+- Content, Quiz, Live Class, Community, Analytics, Settings pages
+- Search, filtering, mobile, accessibility, keyboard shortcuts
 
-### 🚀 Phase 7: Mobile App (Started)
-- [x] Expo React Native setup
-- [x] TypeScript configuration
-- [x] Navigation structure
-- [ ] Student-specific features
-- [ ] API integration
-- [ ] Offline capabilities
+### AI Features — ⏳ Not Started
+- Context-aware chat service
+- Recall check algorithm
+- Test analysis generation
+- Community bot
 
 ## License
 
