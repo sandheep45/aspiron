@@ -473,3 +473,38 @@ dev-backend-frontend:
 
     # Wait for both processes
     wait $RUST_PID $DOC_PID
+
+# ==================================================
+# E2E Testing
+# ==================================================
+
+# Boot services for real API E2E tests
+e2e-start:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Starting E2E test environment…"
+    docker compose up -d postgres
+    echo "Waiting for PostgreSQL…"
+    until pg_isready -h localhost -p 5432; do sleep 1; done
+    echo "Running migrations…"
+    just migrate
+    echo "Starting backend…"
+    cargo run -p backend &
+    echo "Starting frontend (SSR)…"
+    pnpm --filter web-admin dev &
+    echo "E2E environment ready"
+    wait
+
+# Stop E2E services
+e2e-stop:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Stopping E2E environment…"
+    pkill -f "cargo run -p backend" || true
+    pkill -f "pnpm.*web-admin dev" || true
+    docker compose stop postgres
+    echo "E2E environment stopped"
+
+# Run real API E2E tests (requires e2e-start first)
+e2e-test:
+    pnpm --filter web-admin exec playwright test --project=real-api

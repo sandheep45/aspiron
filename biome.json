@@ -19,7 +19,9 @@
       "!**/.opencode/skills",
       "!**/generated_passwords.json",
       "!**/openapi.json",
-      "!**/bindings"
+      "!**/bindings",
+      "!**/test-results",
+      "!**/.e2e-run-data.json"
     ],
     "ignoreUnknown": true
   },
