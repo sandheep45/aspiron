@@ -11,6 +11,12 @@ vi.mock('@aspiron/tanstack-client', () => ({
   useTopicPerformanceQuery: mockUseTopicPerformanceQuery,
 }))
 
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
+}))
+
 const baseTopic = {
   topic_id: '1',
   topic_name: 'Quadratic Equations',

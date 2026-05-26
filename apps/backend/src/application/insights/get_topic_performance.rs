@@ -27,6 +27,8 @@ pub async fn execute_get_topic_performance(
         performances.retain(|p| subject_ids.contains(&p.subject_id));
     }
 
+    performances.retain(|p| p.total_students > 0);
+
     if let Some(ref search) = search {
         let search_lower = search.to_lowercase();
         performances.retain(|p| {

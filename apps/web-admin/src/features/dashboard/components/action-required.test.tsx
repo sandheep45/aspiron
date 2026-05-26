@@ -12,6 +12,12 @@ vi.mock('@aspiron/tanstack-client', () => ({
   useGetTopicByIdQuery: () => ({ data: null, isLoading: false }),
 }))
 
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
+}))
+
 const successData = {
   time_window: {
     start: '2025-01-01T00:00:00Z',

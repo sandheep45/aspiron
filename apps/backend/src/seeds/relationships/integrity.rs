@@ -40,8 +40,8 @@ impl<'a> SeedRunner<'a> {
             .map(|v| v.len())
             .sum();
 
-        if total_users != 43 {
-            return Err(anyhow::anyhow!("Expected 43 users, found {}", total_users));
+        if total_users != 44 {
+            return Err(anyhow::anyhow!("Expected 44 users, found {}", total_users));
         }
 
         if total_subjects != 15 {

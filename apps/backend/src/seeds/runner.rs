@@ -19,6 +19,7 @@ pub struct RelationshipMap {
     pub quiz_map: HashMap<Uuid, Vec<Uuid>>,    // topic_id -> quiz_ids
     pub question_map: HashMap<Uuid, Vec<Uuid>>, // quiz_id -> question_ids
     pub session_ids: Vec<Uuid>,                // recall session IDs
+    pub active_topic_ids: Vec<Uuid>,           // topics with learning progress + recall data
     pub thread_ids: Vec<Uuid>,                 // community thread IDs
     pub attempt_ids: Vec<Uuid>,                // assessment attempt IDs
     pub notification_event_ids: Vec<Uuid>,     // notification event IDs

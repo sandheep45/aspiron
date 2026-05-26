@@ -627,7 +627,17 @@
         "operationId": "handler_get_upcoming_classes",
         "responses": {
           "200": {
-            "description": "Fetch upcoming live classes"
+            "description": "Fetch upcoming live classes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LiveClassResponse"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1568,6 +1578,38 @@
           "version": {
             "type": "string",
             "example": "0.1.0"
+          }
+        }
+      },
+      "LiveClassResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "topic_id",
+          "scheduled_at",
+          "duration_min",
+          "provider",
+          "join_url"
+        ],
+        "properties": {
+          "duration_min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string"
+          },
+          "join_url": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "scheduled_at": {
+            "type": "string"
+          },
+          "topic_id": {
+            "type": "string"
           }
         }
       },

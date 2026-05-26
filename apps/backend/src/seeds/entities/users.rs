@@ -59,6 +59,47 @@ impl<'a> SeedRunner<'a> {
         self.assign_roles_to_users(txn, &student_ids, UserTypeEnums::STUDENT)
             .await?;
 
+        // Seed E2E test student
+        let e2e_student_id = Uuid::new_v4();
+        {
+            let password_hash = hash_password("student123")?;
+            let user_model = user::ActiveModel {
+                id: Set(e2e_student_id),
+                email: Set("e2e.student@aspiron.test".to_string()),
+                password_hash: Set(password_hash),
+                is_active: Set(true),
+                created_at: Set(chrono::Utc::now().into()),
+                updated_at: Set(chrono::Utc::now().into()),
+            };
+            user_model.insert(txn).await?;
+
+            let avatar_url = "https://api.dicebear.com/7.x/initials/svg?seed=E2E+Student&backgroundColor=6366f1&textColor=ffffff".to_string();
+            let user_profile_model = user_profile::ActiveModel {
+                user_id: Set(e2e_student_id),
+                first_name: Set(Some("E2E".to_string())),
+                last_name: Set(Some("Student".to_string())),
+                avatar_url: Set(Some(avatar_url)),
+                phone: Set(Some("(212) 555-0000".to_string())),
+                timezone: Set(Some("UTC".to_string())),
+                language: Set(Some("en".to_string())),
+                preferences: Set(None),
+                last_login: Set(None),
+                login_count: Set(Some(0)),
+                account_locked_until: Set(None),
+                failed_login_attempts: Set(Some(0)),
+                mfa_enabled: Set(Some(false)),
+                mfa_secret_encrypted: Set(None),
+            };
+            user_profile_model.insert(txn).await?;
+        }
+
+        // Assign student role to E2E user
+        self.assign_roles_to_users(txn, &[e2e_student_id], UserTypeEnums::STUDENT)
+            .await?;
+
+        let mut all_student_ids = student_ids.clone();
+        all_student_ids.push(e2e_student_id);
+
         // Store in relationship map
         self.relationship_map
             .user_ids
@@ -68,7 +109,7 @@ impl<'a> SeedRunner<'a> {
             .insert(UserTypeEnums::TEACHER, teacher_ids);
         self.relationship_map
             .user_ids
-            .insert(UserTypeEnums::STUDENT, student_ids);
+            .insert(UserTypeEnums::STUDENT, all_student_ids);
 
         if self.config.show_progress {
             println!(

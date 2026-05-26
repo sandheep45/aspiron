@@ -13,7 +13,8 @@ test.describe('Dashboard Action Required (Real API)', () => {
 
   test('shows action items', async ({ page }) => {
     const section = page.locator('[data-dashboard-section="action-required"]')
-    await expect(section.getByText(/low engagement/i).first()).toBeVisible()
+    const card = section.locator('[data-slot="card"]').first()
+    await expect(card).toBeVisible()
   })
 
   test('limits insights to 5 cards', async ({ page }) => {

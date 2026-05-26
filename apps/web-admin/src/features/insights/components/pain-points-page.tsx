@@ -4,26 +4,14 @@ import type {
 } from '@aspiron/api-client'
 import { useTopicPerformanceQuery } from '@aspiron/tanstack-client'
 import { Link } from '@tanstack/react-router'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { DataTable } from '@/components/ui/data-table'
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 
 function getStatusBadge(accuracy: number) {
   if (accuracy < 0.4) {
@@ -39,11 +27,73 @@ function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`
 }
 
-const sortOptions: { value: string; label: string }[] = [
-  { value: 'practice_accuracy', label: 'Accuracy' },
-  { value: 'topic_name', label: 'Topic Name' },
-  { value: 'recall_strength_mcq', label: 'Recall Strength' },
-  { value: 'students_affected', label: 'Students Affected' },
+const columns: ColumnDef<TopicPerformance>[] = [
+  {
+    accessorKey: 'topic_name',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Topic Name' />
+    ),
+    cell: ({ row }) => {
+      const topic = row.original
+      return (
+        <div>
+          <p className='font-medium text-white'>{topic.topic_name}</p>
+          <p className='text-slate-400 text-sm'>
+            {topic.chapter_name} &middot; {topic.subject_name}
+          </p>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'recall_strength_mcq',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Recall' />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue<number | null>('recall_strength_mcq')
+      return (
+        <span className='text-slate-400'>
+          {value != null ? formatPercent(value) : '—'}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: 'practice_accuracy',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Accuracy' />
+    ),
+    cell: ({ row }) => (
+      <span className='text-slate-400'>
+        {formatPercent(row.getValue<number>('practice_accuracy'))}
+      </span>
+    ),
+  },
+  {
+    accessorKey: 'students_affected',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Students' />
+    ),
+    cell: ({ row }) => {
+      const topic = row.original
+      return (
+        <span className='text-slate-400'>
+          {String(topic.students_affected)}/{String(topic.total_students)}
+        </span>
+      )
+    },
+  },
+  {
+    id: 'status',
+    accessorKey: 'practice_accuracy',
+    header: 'Status',
+    cell: ({ row }) => {
+      const badge = getStatusBadge(row.getValue<number>('practice_accuracy'))
+      return <Badge variant={badge.variant}>{badge.label}</Badge>
+    },
+    enableSorting: false,
+  },
 ]
 
 function PainPointsTableSkeleton() {
@@ -62,25 +112,39 @@ function PainPointsTableSkeleton() {
   )
 }
 
+const sortFieldMap: Record<string, TopicPerformanceSortBy> = {
+  topic_name: 'topic_name',
+  recall_strength_mcq: 'recall_strength_mcq',
+  practice_accuracy: 'practice_accuracy',
+  students_affected: 'students_affected',
+}
+
 export function PainPointsPage() {
   const [page, setPage] = useState(1)
   const [limit] = useState(20)
-  const [sortBy, setSortBy] =
-    useState<TopicPerformanceSortBy>('practice_accuracy')
+
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'practice_accuracy', desc: false },
+  ])
+
+  const sortBy = sortFieldMap[sorting[0]?.id] ?? 'practice_accuracy'
+  const sortOrder = sorting[0]?.desc ? 'desc' : 'asc'
 
   const queryArgs = {
     page,
     limit,
     sort_by: sortBy,
-    sort_order: 'asc' as const,
+    sort_order: sortOrder,
   }
 
-  const { data, isLoading, isError, error } = useTopicPerformanceQuery({
-    args: queryArgs,
-  })
+  const { data, isLoading, isError, error, refetch } = useTopicPerformanceQuery(
+    {
+      args: queryArgs,
+    },
+  )
 
-  const handleSortChange = useCallback((value: string) => {
-    setSortBy(value as TopicPerformanceSortBy)
+  const handleSortingChange = useCallback((newSorting: SortingState) => {
+    setSorting(newSorting)
     setPage(1)
   }, [])
 
@@ -104,23 +168,6 @@ export function PainPointsPage() {
         </div>
       </div>
 
-      <div className='flex items-center gap-3'>
-        <div className='w-40'>
-          <Select value={sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger>
-              <SelectValue placeholder='Sort by' />
-            </SelectTrigger>
-            <SelectContent>
-              {sortOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       {isLoading ? (
         <PainPointsTableSkeleton />
       ) : isError ? (
@@ -128,7 +175,7 @@ export function PainPointsPage() {
           <p className='text-red-300 text-sm'>
             {error?.message || 'Failed to load topic data'}
           </p>
-          <Button variant='outline' size='sm'>
+          <Button variant='outline' size='sm' onClick={() => refetch()}>
             Retry
           </Button>
         </div>
@@ -141,49 +188,12 @@ export function PainPointsPage() {
         </div>
       ) : (
         <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className='w-64'>Topic Name</TableHead>
-                <TableHead className='w-28'>Recall</TableHead>
-                <TableHead className='w-28'>Accuracy</TableHead>
-                <TableHead className='w-24'>Students</TableHead>
-                <TableHead className='w-20'>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.topics.map((topic: TopicPerformance) => {
-                const badge = getStatusBadge(topic.practice_accuracy)
-                return (
-                  <TableRow key={topic.topic_id}>
-                    <TableCell>
-                      <p className='font-medium text-white'>
-                        {topic.topic_name}
-                      </p>
-                      <p className='text-slate-400 text-sm'>
-                        {topic.chapter_name} &middot; {topic.subject_name}
-                      </p>
-                    </TableCell>
-                    <TableCell className='text-slate-400'>
-                      {topic.recall_strength_mcq != null
-                        ? formatPercent(topic.recall_strength_mcq)
-                        : '—'}
-                    </TableCell>
-                    <TableCell className='text-slate-400'>
-                      {formatPercent(topic.practice_accuracy)}
-                    </TableCell>
-                    <TableCell className='text-slate-400'>
-                      {String(topic.students_affected)}/
-                      {String(topic.total_students)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={columns}
+            data={data.topics}
+            sorting={sorting}
+            onSortingChange={handleSortingChange}
+          />
 
           <div className='flex items-center justify-between pt-2'>
             <p className='text-slate-400 text-sm'>

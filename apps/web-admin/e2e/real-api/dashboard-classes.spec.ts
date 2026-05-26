@@ -11,8 +11,10 @@ test.describe('Dashboard Classes Section (Real API)', () => {
     await expect(section).toBeVisible()
   })
 
-  test('shows error state when classes API fails', async ({ page }) => {
+  test('shows upcoming class cards', async ({ page }) => {
     const section = page.locator('[data-dashboard-section="upcoming-classes"]')
-    await expect(section.getByText(/error|retry/i).first()).toBeVisible()
+    await expect(
+      section.locator('[data-testid="class-card"]').first(),
+    ).toBeVisible()
   })
 })

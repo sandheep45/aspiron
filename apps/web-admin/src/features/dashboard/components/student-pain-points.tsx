@@ -1,16 +1,11 @@
+import type { TopicPerformance } from '@aspiron/api-client'
 import { useTopicPerformanceQuery } from '@aspiron/tanstack-client'
 import { Link } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 import { ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable } from '@/components/ui/data-table'
 import { DashboardModule } from '@/features/dashboard/components/dashboard-module'
 import { TableSkeleton } from '@/features/dashboard/components/dashboard-skeletons'
 import { cn } from '@/lib/utils'
@@ -48,6 +43,64 @@ function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`
 }
 
+const columns: ColumnDef<TopicPerformance>[] = [
+  {
+    accessorKey: 'topic_name',
+    header: 'Topic',
+    cell: ({ row }) => {
+      const topic = row.original
+      return (
+        <div>
+          <p className='truncate font-medium text-sm text-white'>
+            {topic.topic_name}
+          </p>
+          <p className='truncate text-slate-400 text-xs'>
+            {topic.chapter_name} &middot; {topic.subject_name}
+          </p>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'recall_strength_mcq',
+    header: 'Recall Strength',
+    cell: ({ row }) => {
+      const badge = getRecallBadge(
+        row.getValue<number | null>('recall_strength_mcq'),
+      )
+      return (
+        <Badge
+          variant={badge.variant}
+          className={cn(badge.className, 'shrink-0')}
+        >
+          {badge.label}
+        </Badge>
+      )
+    },
+  },
+  {
+    accessorKey: 'practice_accuracy',
+    header: 'Accuracy',
+    cell: ({ row }) => (
+      <span className='text-slate-200 text-sm tabular-nums'>
+        {formatPercent(row.getValue<number>('practice_accuracy'))}
+      </span>
+    ),
+  },
+  {
+    accessorKey: 'students_affected',
+    header: 'Students',
+    cell: ({ row }) => {
+      const topic = row.original
+      return (
+        <span className='text-slate-400 text-sm tabular-nums'>
+          {String(topic.students_affected)}/{String(topic.total_students)}
+        </span>
+      )
+    },
+  },
+]
+
 export function StudentPainPoints() {
   const topicQuery = useTopicPerformanceQuery({
     args: { sort_by: 'practice_accuracy', sort_order: 'asc', limit: 5 },
@@ -76,53 +129,15 @@ export function StudentPainPoints() {
       }}
       isEmpty={(data) => data.topics.length === 0}
       render={(data) => (
-        <div
-          data-testid='pain-point-table'
-          className='overflow-hidden rounded-lg border border-slate-800'
-        >
-          <Table>
-            <TableHeader>
-              <TableRow className='border-slate-700/50 border-b hover:bg-transparent'>
-                <TableHead className='w-60'>Topic</TableHead>
-                <TableHead>Recall Strength</TableHead>
-                <TableHead className='text-right'>Accuracy</TableHead>
-                <TableHead className='text-right'>Students</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.topics.map((topic) => {
-                const badge = getRecallBadge(topic.recall_strength_mcq)
-                return (
-                  <TableRow key={topic.topic_id} data-testid='pain-point-row'>
-                    <TableCell>
-                      <p className='truncate font-medium text-sm text-white'>
-                        {topic.topic_name}
-                      </p>
-                      <p className='truncate text-slate-400 text-xs'>
-                        {topic.chapter_name} &middot; {topic.subject_name}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={badge.variant}
-                        className={cn(badge.className, 'shrink-0')}
-                      >
-                        {badge.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className='text-right text-slate-200 text-sm tabular-nums'>
-                      {formatPercent(topic.practice_accuracy)}
-                    </TableCell>
-                    <TableCell className='text-right text-slate-400 text-sm tabular-nums'>
-                      {String(topic.students_affected)}/
-                      {String(topic.total_students)}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={data.topics}
+          getRowProps={() =>
+            ({
+              'data-testid': 'pain-point-row',
+            }) as React.HTMLAttributes<HTMLElement>
+          }
+        />
       )}
     />
   )
