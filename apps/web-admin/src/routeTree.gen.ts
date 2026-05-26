@@ -15,7 +15,9 @@ import { Route as AuthAuthLayoutRouteImport } from './routes/auth/_auth-layout'
 import { Route as AuthAuthLayoutIndexRouteImport } from './routes/auth/_auth-layout/index'
 import { Route as PrivateRoutesSettingsIndexRouteImport } from './routes/_private-routes/settings/index'
 import { Route as PrivateRoutesQuizzesIndexRouteImport } from './routes/_private-routes/quizzes/index'
+import { Route as PrivateRoutesPainPointsIndexRouteImport } from './routes/_private-routes/pain-points/index'
 import { Route as PrivateRoutesLiveClassesIndexRouteImport } from './routes/_private-routes/live-classes/index'
+import { Route as PrivateRoutesInsightsIndexRouteImport } from './routes/_private-routes/insights/index'
 import { Route as PrivateRoutesDashboardIndexRouteImport } from './routes/_private-routes/dashboard/index'
 import { Route as PrivateRoutesCommunityIndexRouteImport } from './routes/_private-routes/community/index'
 import { Route as PrivateRoutesAnalyticsIndexRouteImport } from './routes/_private-routes/analytics/index'
@@ -57,10 +59,22 @@ const PrivateRoutesQuizzesIndexRoute =
     path: '/quizzes/',
     getParentRoute: () => PrivateRoutesRoute,
   } as any)
+const PrivateRoutesPainPointsIndexRoute =
+  PrivateRoutesPainPointsIndexRouteImport.update({
+    id: '/pain-points/',
+    path: '/pain-points/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
 const PrivateRoutesLiveClassesIndexRoute =
   PrivateRoutesLiveClassesIndexRouteImport.update({
     id: '/live-classes/',
     path: '/live-classes/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
+const PrivateRoutesInsightsIndexRoute =
+  PrivateRoutesInsightsIndexRouteImport.update({
+    id: '/insights/',
+    path: '/insights/',
     getParentRoute: () => PrivateRoutesRoute,
   } as any)
 const PrivateRoutesDashboardIndexRoute =
@@ -126,7 +140,9 @@ export interface FileRoutesByFullPath {
   '/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
   '/community/': typeof PrivateRoutesCommunityIndexRoute
   '/dashboard/': typeof PrivateRoutesDashboardIndexRoute
+  '/insights/': typeof PrivateRoutesInsightsIndexRoute
   '/live-classes/': typeof PrivateRoutesLiveClassesIndexRoute
+  '/pain-points/': typeof PrivateRoutesPainPointsIndexRoute
   '/quizzes/': typeof PrivateRoutesQuizzesIndexRoute
   '/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/': typeof AuthAuthLayoutIndexRoute
@@ -141,7 +157,9 @@ export interface FileRoutesByTo {
   '/analytics': typeof PrivateRoutesAnalyticsIndexRoute
   '/community': typeof PrivateRoutesCommunityIndexRoute
   '/dashboard': typeof PrivateRoutesDashboardIndexRoute
+  '/insights': typeof PrivateRoutesInsightsIndexRoute
   '/live-classes': typeof PrivateRoutesLiveClassesIndexRoute
+  '/pain-points': typeof PrivateRoutesPainPointsIndexRoute
   '/quizzes': typeof PrivateRoutesQuizzesIndexRoute
   '/settings': typeof PrivateRoutesSettingsIndexRoute
   '/auth': typeof AuthAuthLayoutIndexRoute
@@ -160,7 +178,9 @@ export interface FileRoutesById {
   '/_private-routes/analytics/': typeof PrivateRoutesAnalyticsIndexRoute
   '/_private-routes/community/': typeof PrivateRoutesCommunityIndexRoute
   '/_private-routes/dashboard/': typeof PrivateRoutesDashboardIndexRoute
+  '/_private-routes/insights/': typeof PrivateRoutesInsightsIndexRoute
   '/_private-routes/live-classes/': typeof PrivateRoutesLiveClassesIndexRoute
+  '/_private-routes/pain-points/': typeof PrivateRoutesPainPointsIndexRoute
   '/_private-routes/quizzes/': typeof PrivateRoutesQuizzesIndexRoute
   '/_private-routes/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/_auth-layout/': typeof AuthAuthLayoutIndexRoute
@@ -179,7 +199,9 @@ export interface FileRouteTypes {
     | '/analytics/'
     | '/community/'
     | '/dashboard/'
+    | '/insights/'
     | '/live-classes/'
+    | '/pain-points/'
     | '/quizzes/'
     | '/settings/'
     | '/auth/'
@@ -194,7 +216,9 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/community'
     | '/dashboard'
+    | '/insights'
     | '/live-classes'
+    | '/pain-points'
     | '/quizzes'
     | '/settings'
     | '/auth'
@@ -212,7 +236,9 @@ export interface FileRouteTypes {
     | '/_private-routes/analytics/'
     | '/_private-routes/community/'
     | '/_private-routes/dashboard/'
+    | '/_private-routes/insights/'
     | '/_private-routes/live-classes/'
+    | '/_private-routes/pain-points/'
     | '/_private-routes/quizzes/'
     | '/_private-routes/settings/'
     | '/auth/_auth-layout/'
@@ -270,11 +296,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesQuizzesIndexRouteImport
       parentRoute: typeof PrivateRoutesRoute
     }
+    '/_private-routes/pain-points/': {
+      id: '/_private-routes/pain-points/'
+      path: '/pain-points'
+      fullPath: '/pain-points/'
+      preLoaderRoute: typeof PrivateRoutesPainPointsIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
     '/_private-routes/live-classes/': {
       id: '/_private-routes/live-classes/'
       path: '/live-classes'
       fullPath: '/live-classes/'
       preLoaderRoute: typeof PrivateRoutesLiveClassesIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
+    '/_private-routes/insights/': {
+      id: '/_private-routes/insights/'
+      path: '/insights'
+      fullPath: '/insights/'
+      preLoaderRoute: typeof PrivateRoutesInsightsIndexRouteImport
       parentRoute: typeof PrivateRoutesRoute
     }
     '/_private-routes/dashboard/': {
@@ -367,7 +407,9 @@ interface PrivateRoutesRouteChildren {
   PrivateRoutesAnalyticsIndexRoute: typeof PrivateRoutesAnalyticsIndexRoute
   PrivateRoutesCommunityIndexRoute: typeof PrivateRoutesCommunityIndexRoute
   PrivateRoutesDashboardIndexRoute: typeof PrivateRoutesDashboardIndexRoute
+  PrivateRoutesInsightsIndexRoute: typeof PrivateRoutesInsightsIndexRoute
   PrivateRoutesLiveClassesIndexRoute: typeof PrivateRoutesLiveClassesIndexRoute
+  PrivateRoutesPainPointsIndexRoute: typeof PrivateRoutesPainPointsIndexRoute
   PrivateRoutesQuizzesIndexRoute: typeof PrivateRoutesQuizzesIndexRoute
   PrivateRoutesSettingsIndexRoute: typeof PrivateRoutesSettingsIndexRoute
 }
@@ -379,7 +421,9 @@ const PrivateRoutesRouteChildren: PrivateRoutesRouteChildren = {
   PrivateRoutesAnalyticsIndexRoute: PrivateRoutesAnalyticsIndexRoute,
   PrivateRoutesCommunityIndexRoute: PrivateRoutesCommunityIndexRoute,
   PrivateRoutesDashboardIndexRoute: PrivateRoutesDashboardIndexRoute,
+  PrivateRoutesInsightsIndexRoute: PrivateRoutesInsightsIndexRoute,
   PrivateRoutesLiveClassesIndexRoute: PrivateRoutesLiveClassesIndexRoute,
+  PrivateRoutesPainPointsIndexRoute: PrivateRoutesPainPointsIndexRoute,
   PrivateRoutesQuizzesIndexRoute: PrivateRoutesQuizzesIndexRoute,
   PrivateRoutesSettingsIndexRoute: PrivateRoutesSettingsIndexRoute,
 }

@@ -115,7 +115,7 @@ describe('StudentPainPoints', () => {
     )
   })
 
-  it('renders status badges with correct labels', () => {
+  it('renders recall strength badges', () => {
     mockUseTopicPerformanceQuery.mockReturnValue({
       data: successData,
       isLoading: false,
@@ -126,8 +126,9 @@ describe('StudentPainPoints', () => {
     render(<StudentPainPoints />)
     const badges = screen.getAllByText(/Weak|Medium|Strong/)
     expect(badges).toHaveLength(5)
-    expect(badges[0]).toHaveTextContent('Weak')
-    expect(badges[4]).toHaveTextContent('Strong')
+    badges.forEach((b) => {
+      expect(b).toHaveTextContent('Medium')
+    })
   })
 
   it('renders accuracy percentages', () => {

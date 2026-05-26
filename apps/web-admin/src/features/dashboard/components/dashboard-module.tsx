@@ -15,6 +15,7 @@ interface DashboardEmpty {
 interface DashboardModuleProps<T> {
   title: string
   sectionId: string
+  headerAction?: ReactNode
   query: {
     isLoading: boolean
     isError: boolean
@@ -31,6 +32,7 @@ interface DashboardModuleProps<T> {
 function DashboardModuleInner<T>({
   title,
   sectionId,
+  headerAction,
   query,
   skeleton,
   empty,
@@ -40,7 +42,10 @@ function DashboardModuleInner<T>({
   if (query.isLoading) {
     return (
       <section data-dashboard-section={sectionId}>
-        <h2 className='mb-4 font-semibold text-white text-xl'>{title}</h2>
+        <div className='mb-4 flex items-center justify-between'>
+          <h2 className='font-semibold text-white text-xl'>{title}</h2>
+          {headerAction}
+        </div>
         {skeleton}
       </section>
     )
@@ -49,7 +54,10 @@ function DashboardModuleInner<T>({
   if (query.isError) {
     return (
       <section data-dashboard-section={sectionId}>
-        <h2 className='mb-4 font-semibold text-white text-xl'>{title}</h2>
+        <div className='mb-4 flex items-center justify-between'>
+          <h2 className='font-semibold text-white text-xl'>{title}</h2>
+          {headerAction}
+        </div>
         <div
           data-testid='module-error'
           className='flex flex-col items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-6 text-center'
@@ -82,7 +90,10 @@ function DashboardModuleInner<T>({
   if (isDataEmpty) {
     return (
       <section data-dashboard-section={sectionId}>
-        <h2 className='mb-4 font-semibold text-white text-xl'>{title}</h2>
+        <div className='mb-4 flex items-center justify-between'>
+          <h2 className='font-semibold text-white text-xl'>{title}</h2>
+          {headerAction}
+        </div>
         <div className='flex flex-col items-center gap-2 rounded-lg border border-slate-700 border-dashed p-8 text-center'>
           <p className='font-medium text-slate-300'>{empty.title}</p>
           <p className='text-slate-500 text-sm'>{empty.description}</p>
@@ -103,7 +114,10 @@ function DashboardModuleInner<T>({
 
   return (
     <section data-dashboard-section={sectionId}>
-      <h2 className='mb-4 font-semibold text-white text-xl'>{title}</h2>
+      <div className='mb-4 flex items-center justify-between'>
+        <h2 className='font-semibold text-white text-xl'>{title}</h2>
+        {headerAction}
+      </div>
       {render(safeData)}
     </section>
   )

@@ -1,16 +1,47 @@
 import { useTopicPerformanceQuery } from '@aspiron/tanstack-client'
+import { Link } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { DashboardModule } from '@/features/dashboard/components/dashboard-module'
 import { TableSkeleton } from '@/features/dashboard/components/dashboard-skeletons'
+import { cn } from '@/lib/utils'
 
-function getStatusBadge(accuracy: number) {
-  if (accuracy < 0.4) {
-    return { label: 'Weak', variant: 'destructive' as const }
+function getRecallBadge(strength: number | null | undefined) {
+  if (strength == null) {
+    return {
+      label: '—',
+      variant: 'outline' as const,
+      className: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+    }
   }
-  if (accuracy < 0.7) {
-    return { label: 'Medium', variant: 'secondary' as const }
+  if (strength < 0.4) {
+    return {
+      label: 'Weak',
+      variant: 'destructive' as const,
+      className: '',
+    }
   }
-  return { label: 'Strong', variant: 'default' as const }
+  if (strength < 0.7) {
+    return {
+      label: 'Medium',
+      variant: 'outline' as const,
+      className: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    }
+  }
+  return {
+    label: 'Strong',
+    variant: 'outline' as const,
+    className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  }
 }
 
 function formatPercent(value: number) {
@@ -19,13 +50,24 @@ function formatPercent(value: number) {
 
 export function StudentPainPoints() {
   const topicQuery = useTopicPerformanceQuery({
-    args: { sort_by: 'practice_accuracy', sort_order: 'asc', limit: 10 },
+    args: { sort_by: 'practice_accuracy', sort_order: 'asc', limit: 5 },
   })
 
   return (
     <DashboardModule
       title='Student Pain Points'
       sectionId='pain-points'
+      headerAction={
+        <Button
+          variant='ghost'
+          className='h-8 gap-1.5 px-3 font-medium text-indigo-400 text-sm hover:text-indigo-300'
+          nativeButton={false}
+          render={<Link to='/pain-points' />}
+        >
+          View All
+          <ArrowRight className='size-4' />
+        </Button>
+      }
       query={topicQuery}
       skeleton={<TableSkeleton />}
       empty={{
@@ -34,53 +76,52 @@ export function StudentPainPoints() {
       }}
       isEmpty={(data) => data.topics.length === 0}
       render={(data) => (
-        <div data-testid='pain-point-table' className='space-y-2'>
-          {data.topics.map((topic) => {
-            const badge = getStatusBadge(topic.practice_accuracy)
-            return (
-              <div
-                key={topic.topic_id}
-                className='flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/30 p-4'
-              >
-                <div className='flex min-w-0 flex-1 items-center gap-4'>
-                  <div className='min-w-0 flex-1'>
-                    <p className='truncate font-medium text-white'>
-                      {topic.topic_name}
-                    </p>
-                    <p className='truncate text-slate-400 text-sm'>
-                      {topic.chapter_name} &middot; {topic.subject_name}
-                    </p>
-                  </div>
-                  <div className='hidden items-center gap-4 text-right md:flex'>
-                    <div className='w-16'>
-                      <p className='text-slate-500 text-sm'>Recall</p>
-                      <p className='font-medium text-slate-200'>
-                        {topic.recall_strength_mcq != null
-                          ? formatPercent(topic.recall_strength_mcq)
-                          : '—'}
+        <div
+          data-testid='pain-point-table'
+          className='overflow-hidden rounded-lg border border-slate-800'
+        >
+          <Table>
+            <TableHeader>
+              <TableRow className='border-slate-700/50 border-b hover:bg-transparent'>
+                <TableHead className='w-60'>Topic</TableHead>
+                <TableHead>Recall Strength</TableHead>
+                <TableHead className='text-right'>Accuracy</TableHead>
+                <TableHead className='text-right'>Students</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.topics.map((topic) => {
+                const badge = getRecallBadge(topic.recall_strength_mcq)
+                return (
+                  <TableRow key={topic.topic_id} data-testid='pain-point-row'>
+                    <TableCell>
+                      <p className='truncate font-medium text-sm text-white'>
+                        {topic.topic_name}
                       </p>
-                    </div>
-                    <div className='w-16'>
-                      <p className='text-slate-500 text-sm'>Accuracy</p>
-                      <p className='font-medium text-slate-200'>
-                        {formatPercent(topic.practice_accuracy)}
+                      <p className='truncate text-slate-400 text-xs'>
+                        {topic.chapter_name} &middot; {topic.subject_name}
                       </p>
-                    </div>
-                    <div className='w-20'>
-                      <p className='text-slate-500 text-sm'>Students</p>
-                      <p className='font-medium text-slate-200'>
-                        {String(topic.students_affected)}/
-                        {String(topic.total_students)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <Badge variant={badge.variant} className='ml-3 shrink-0'>
-                  {badge.label}
-                </Badge>
-              </div>
-            )
-          })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={badge.variant}
+                        className={cn(badge.className, 'shrink-0')}
+                      >
+                        {badge.label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className='text-right text-slate-200 text-sm tabular-nums'>
+                      {formatPercent(topic.practice_accuracy)}
+                    </TableCell>
+                    <TableCell className='text-right text-slate-400 text-sm tabular-nums'>
+                      {String(topic.students_affected)}/
+                      {String(topic.total_students)}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
         </div>
       )}
     />

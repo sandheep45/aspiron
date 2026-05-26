@@ -21,7 +21,7 @@ export const useInsightQuery = (options?: UseInsightQueryOptions) => {
   const axiosConfig = useMergedAxiosConfig(options)
   return useQuery({
     ...options,
-    queryKey: [queryKeys.admin.insights()],
+    queryKey: [queryKeys.admin.insights(), options?.args ?? {}],
     queryFn: () => {
       return adminInsightService.getInsights({
         options: { axiosConfig },

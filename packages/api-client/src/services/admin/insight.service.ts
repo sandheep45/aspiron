@@ -10,6 +10,12 @@ export const adminInsightService = {
     const client = getClient(options)
     const response = await client.get<InsightsResponse>('/admin/insights', {
       params: {
+        ...(args?.page && { page: args.page }),
+        ...(args?.limit && { limit: args.limit }),
+        ...(args?.sort_by && { sort_by: args.sort_by }),
+        ...(args?.sort_order && { sort_order: args.sort_order }),
+        ...(args?.severity && { severity: args.severity }),
+        ...(args?.insight_type && { insight_type: args.insight_type }),
         ...(args?.start && { start: args.start.toString() }),
         ...(args?.end && { end: args.end.toString() }),
       },

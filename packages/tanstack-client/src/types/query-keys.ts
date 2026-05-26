@@ -10,6 +10,9 @@ export const queryKeys = {
 
   admin: {
     insights: () => ['insights'] as const,
+    lists: () => [...queryKeys.admin.insights(), 'list'] as const,
+    list: (page: number, limit: number) =>
+      [...queryKeys.admin.lists(), { page, limit }] as const,
     topicPerformance: () => ['topicPerformance'] as const,
   },
 

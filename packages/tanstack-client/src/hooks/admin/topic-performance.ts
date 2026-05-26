@@ -23,7 +23,7 @@ export const useTopicPerformanceQuery = (
   const axiosConfig = useMergedAxiosConfig(options)
   return useQuery({
     ...options,
-    queryKey: [queryKeys.admin.topicPerformance()],
+    queryKey: [queryKeys.admin.topicPerformance(), options?.args ?? {}],
     queryFn: () => {
       return adminTopicPerformanceService.getTopicPerformance({
         options: { axiosConfig },
