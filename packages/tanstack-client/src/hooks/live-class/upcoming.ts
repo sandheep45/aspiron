@@ -1,6 +1,7 @@
 import {
   type AxiosConfigOptions,
-  type LiveClassResponse,
+  type GetUpcomingClassesArgs,
+  type LiveClassesResponse,
   liveClassService,
 } from '@aspiron/api-client'
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
@@ -9,10 +10,11 @@ import { queryKeys } from '@/types/query-keys'
 
 export interface UseUpcomingClassesQueryOptions
   extends Omit<
-    UseQueryOptions<LiveClassResponse[], Error>,
+    UseQueryOptions<LiveClassesResponse, Error>,
     'queryFn' | 'queryKey'
   > {
   axiosConfig?: AxiosConfigOptions
+  args?: GetUpcomingClassesArgs
 }
 
 export const useUpcomingClassesQuery = (
@@ -21,11 +23,16 @@ export const useUpcomingClassesQuery = (
   const axiosConfig = useMergedAxiosConfig(options)
   return useQuery({
     ...options,
-    queryKey: [queryKeys.liveClass.upcoming()],
+    queryKey: [
+      queryKeys.liveClass.list(
+        options?.args?.page ?? 1,
+        options?.args?.limit ?? 10,
+      ),
+    ],
     queryFn: () => {
       return liveClassService.getUpcomingClasses({
         options: { axiosConfig },
-        args: {},
+        args: options?.args,
       })
     },
   })

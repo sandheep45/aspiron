@@ -4,6 +4,8 @@ use ts_rs::TS;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
+use crate::http::responses::common::PaginationResponse;
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "LiveSessionResponse")]
 pub struct LiveSessionResponse {
@@ -29,6 +31,13 @@ pub struct LiveClassResponse {
     pub duration_min: i32,
     pub provider: String,
     pub join_url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "LiveClassesResponse")]
+pub struct LiveClassesResponse {
+    pub classes: Vec<LiveClassResponse>,
+    pub pagination: PaginationResponse,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]

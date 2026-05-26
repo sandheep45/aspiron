@@ -11,6 +11,12 @@ vi.mock('@aspiron/tanstack-client', () => ({
   useUpcomingClassesQuery: mockUseUpcomingClassesQuery,
 }))
 
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
+}))
+
 function makeDate(daysOffset: number, hoursOffset = 0, minsOffset = 0) {
   const d = new Date()
   d.setDate(d.getDate() + daysOffset)
@@ -28,32 +34,35 @@ const baseClass = {
   join_url: 'https://zoom.us/j/101',
 }
 
-const successData = [
-  {
-    ...baseClass,
-    id: '1',
-    provider: 'Quadratic Equations Review',
-    scheduled_at: makeDate(0, 0, -20),
-    duration_min: 60,
-    join_url: 'https://zoom.us/j/101',
-  },
-  {
-    ...baseClass,
-    id: '2',
-    provider: 'Photosynthesis Deep Dive',
-    scheduled_at: makeDate(0, 0, 90),
-    duration_min: 45,
-    join_url: 'https://zoom.us/j/102',
-  },
-  {
-    ...baseClass,
-    id: '3',
-    provider: "Newton's Laws Workshop",
-    scheduled_at: makeDate(1, 0, 0),
-    duration_min: 30,
-    join_url: 'https://zoom.us/j/103',
-  },
-]
+const successData = {
+  classes: [
+    {
+      ...baseClass,
+      id: '1',
+      provider: 'Quadratic Equations Review',
+      scheduled_at: makeDate(0, 0, -20),
+      duration_min: 60,
+      join_url: 'https://zoom.us/j/101',
+    },
+    {
+      ...baseClass,
+      id: '2',
+      provider: 'Photosynthesis Deep Dive',
+      scheduled_at: makeDate(0, 0, 90),
+      duration_min: 45,
+      join_url: 'https://zoom.us/j/102',
+    },
+    {
+      ...baseClass,
+      id: '3',
+      provider: "Newton's Laws Workshop",
+      scheduled_at: makeDate(1, 0, 0),
+      duration_min: 30,
+      join_url: 'https://zoom.us/j/103',
+    },
+  ],
+  pagination: { page: 1, limit: 5, total: 3, total_pages: 1 },
+}
 
 describe('UpcomingClasses', () => {
   afterEach(() => {
@@ -131,7 +140,10 @@ describe('UpcomingClasses', () => {
 
   it('renders empty state when no classes', () => {
     mockUseUpcomingClassesQuery.mockReturnValue({
-      data: [],
+      data: {
+        classes: [],
+        pagination: { page: 1, limit: 5, total: 0, total_pages: 0 },
+      },
       isLoading: false,
       isError: false,
       error: null,

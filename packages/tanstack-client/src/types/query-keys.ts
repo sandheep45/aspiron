@@ -44,7 +44,10 @@ export const queryKeys = {
 
   // Live classes
   liveClass: {
-    upcoming: () => ['liveClass', 'upcoming'] as const,
+    all: () => ['liveClass'] as const,
+    lists: () => [...queryKeys.liveClass.all(), 'list'] as const,
+    list: (page: number, limit: number) =>
+      [...queryKeys.liveClass.lists(), { page, limit }] as const,
   },
 
   // Assignments

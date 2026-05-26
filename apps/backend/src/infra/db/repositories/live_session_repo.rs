@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{
+    ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, QuerySelect,
+};
 use uuid::Uuid;
 
 use crate::application::live_session::ports::LiveSessionRepository;
@@ -26,17 +28,32 @@ impl SeaOrmLiveSessionRepository {
 
 #[async_trait]
 impl LiveSessionRepository for SeaOrmLiveSessionRepository {
-    async fn get_upcoming_classes(&self) -> Result<Vec<LiveSession>, AppError> {
+    async fn get_upcoming_classes(
+        &self,
+        page: u32,
+        limit: u32,
+    ) -> Result<(Vec<LiveSession>, u64), AppError> {
+        let total = LiveSessionEntity::find()
+            .filter(LiveSessionColumn::ScheduledAt.gt(chrono::Utc::now()))
+            .count(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
+
         let sessions = LiveSessionEntity::find()
             .filter(LiveSessionColumn::ScheduledAt.gt(chrono::Utc::now()))
+            .offset(((page.saturating_sub(1)) * limit) as u64)
+            .limit(limit as u64)
             .all(&*self.db)
             .await
             .map_err(AppError::Database)?;
 
-        Ok(sessions
-            .into_iter()
-            .map(map_session_orm_to_domain)
-            .collect())
+        Ok((
+            sessions
+                .into_iter()
+                .map(map_session_orm_to_domain)
+                .collect(),
+            total,
+        ))
     }
 
     async fn join_class(&self, _user_id: Uuid, _class_id: Uuid) -> Result<LiveSession, AppError> {

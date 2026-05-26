@@ -1,16 +1,21 @@
 import { getClient } from '@/client/axios-instance'
-import type { LiveClassResponse } from '@/generated-types'
+import type { LiveClassesResponse } from '@/generated-types'
 import type { ServiceMethodArguments } from '@/types'
 
-type EmptyArgs = Record<string, never>
+export interface GetUpcomingClassesArgs {
+  page?: number
+  limit?: number
+}
 
 export const liveClassService = {
   getUpcomingClasses: async ({
     options,
-  }: ServiceMethodArguments<EmptyArgs>): Promise<LiveClassResponse[]> => {
+    args,
+  }: ServiceMethodArguments<GetUpcomingClassesArgs>): Promise<LiveClassesResponse> => {
     const client = getClient(options)
-    const response = await client.get<LiveClassResponse[]>(
+    const response = await client.get<LiveClassesResponse>(
       '/live/classes/upcoming',
+      { params: { page: args?.page, limit: args?.limit } },
     )
     return response.data
   },

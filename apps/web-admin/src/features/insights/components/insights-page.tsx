@@ -1,6 +1,5 @@
 import type { Insight, InsightSeverity, InsightType } from '@aspiron/api-client'
 import { useInsightQuery } from '@aspiron/tanstack-client'
-import { Link } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -118,20 +117,8 @@ export function InsightsPage() {
 
   return (
     <div className='flex w-full flex-col gap-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <Button
-            variant='ghost'
-            size='sm'
-            nativeButton={false}
-            render={<Link to='/dashboard' />}
-            className='mb-1 text-slate-400'
-          >
-            <ChevronLeft className='mr-1 h-4 w-4' />
-            Back to Dashboard
-          </Button>
-          <h1 className='font-semibold text-2xl text-white'>All Insights</h1>
-        </div>
+      <div>
+        <h1 className='font-semibold text-2xl text-white'>All Insights</h1>
       </div>
 
       <div className='flex items-center gap-3'>

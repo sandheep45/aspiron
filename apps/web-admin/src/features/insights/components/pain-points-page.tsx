@@ -3,7 +3,6 @@ import type {
   TopicPerformanceSortBy,
 } from '@aspiron/api-client'
 import { useTopicPerformanceQuery } from '@aspiron/tanstack-client'
-import { Link } from '@tanstack/react-router'
 import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -150,22 +149,10 @@ export function PainPointsPage() {
 
   return (
     <div className='flex w-full flex-col gap-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <Button
-            variant='ghost'
-            size='sm'
-            nativeButton={false}
-            render={<Link to='/dashboard' />}
-            className='mb-1 text-slate-400'
-          >
-            <ChevronLeft className='mr-1 h-4 w-4' />
-            Back to Dashboard
-          </Button>
-          <h1 className='font-semibold text-2xl text-white'>
-            Student Pain Points
-          </h1>
-        </div>
+      <div>
+        <h1 className='font-semibold text-2xl text-white'>
+          Student Pain Points
+        </h1>
       </div>
 
       {isLoading ? (

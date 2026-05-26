@@ -1,4 +1,6 @@
 import { useUpcomingClassesQuery } from '@aspiron/tanstack-client'
+import { Link } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { DashboardModule } from '@/features/dashboard/components/dashboard-module'
@@ -55,12 +57,23 @@ const statusConfig: Record<
 }
 
 export function UpcomingClasses() {
-  const classQuery = useUpcomingClassesQuery()
+  const classQuery = useUpcomingClassesQuery({ args: { page: 1, limit: 5 } })
 
   return (
     <DashboardModule
       title='Upcoming Classes'
       sectionId='upcoming-classes'
+      headerAction={
+        <Button
+          variant='ghost'
+          className='h-8 gap-1.5 px-3 font-medium text-indigo-400 text-sm hover:text-indigo-300'
+          nativeButton={false}
+          render={<Link to='/live-classes' />}
+        >
+          View All
+          <ArrowRight className='size-4' />
+        </Button>
+      }
       query={classQuery}
       skeleton={<CardSkeleton />}
       empty={{
@@ -71,10 +84,10 @@ export function UpcomingClasses() {
           onClick: () => {},
         },
       }}
-      isEmpty={(data) => data.length === 0}
+      isEmpty={(data) => !data?.classes?.length}
       render={(data) => (
         <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-          {data.map((classItem) => {
+          {data.classes.map((classItem) => {
             const status = getClassStatus(
               classItem.scheduled_at,
               classItem.duration_min,

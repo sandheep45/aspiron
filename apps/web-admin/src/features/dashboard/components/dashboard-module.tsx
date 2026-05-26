@@ -82,10 +82,17 @@ function DashboardModuleInner<T>({
 
   const safeData = query.data as NonNullable<T> | undefined
 
+  let isEmptyResult = false
+  try {
+    isEmptyResult = isEmpty?.(safeData) ?? false
+  } catch {
+    /* ignore — stale cache shape can cause isEmpty to throw */
+  }
+
   const isDataEmpty =
     !safeData ||
     (Array.isArray(safeData) && safeData.length === 0) ||
-    isEmpty?.(safeData)
+    isEmptyResult
 
   if (isDataEmpty) {
     return (

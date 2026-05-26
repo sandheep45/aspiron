@@ -624,16 +624,41 @@ expression: openapi
           "Live Session"
         ],
         "operationId": "handler_get_upcoming_classes",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int32",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int32",
+              "minimum": 0
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Fetch upcoming live classes",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LiveClassResponse"
-                  }
+                  "$ref": "#/components/schemas/LiveClassesResponse"
                 }
               }
             }
@@ -1612,6 +1637,24 @@ expression: openapi
           }
         }
       },
+      "LiveClassesResponse": {
+        "type": "object",
+        "required": [
+          "classes",
+          "pagination"
+        ],
+        "properties": {
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LiveClassResponse"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationResponse"
+          }
+        }
+      },
       "LoginRequest": {
         "type": "object",
         "required": [
@@ -1650,6 +1693,43 @@ expression: openapi
           },
           "token_type": {
             "type": "string"
+          }
+        }
+      },
+      "PaginationResponse": {
+        "type": "object",
+        "required": [
+          "page",
+          "limit",
+          "total",
+          "filtered_total",
+          "total_pages"
+        ],
+        "properties": {
+          "filtered_total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
           }
         }
       },

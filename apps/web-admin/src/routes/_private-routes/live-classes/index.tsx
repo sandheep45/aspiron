@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { LiveClassesPage } from '@/features/live-classes'
 
 export const Route = createFileRoute('/_private-routes/live-classes/')({
   component: RouteComponent,
@@ -8,5 +9,5 @@ export const Route = createFileRoute('/_private-routes/live-classes/')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/_private-routes/live-classes/"!</div>
+  return <LiveClassesPage />
 }
