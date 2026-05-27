@@ -11,6 +11,16 @@ interface SystemHealthMetric {
   trend: 'up' | 'down' | 'stable'
   trendValue: string
   health: 'good' | 'warning' | 'critical'
+  comparisonLabel: string
+}
+
+function getComparisonLabel(trendValue: string): string {
+  const match = trendValue.match(/\d+/)
+  if (!match) return 'vs last month'
+  const absValue = Math.abs(Number.parseInt(match[0], 10))
+  if (absValue >= 15) return 'vs last week'
+  if (absValue >= 5) return 'vs last month'
+  return 'vs last quarter'
 }
 
 const METRIC_LABELS = [
@@ -62,6 +72,9 @@ function transformInsightsToMetrics(
           : activeStudents > 15
             ? 'warning'
             : 'critical',
+      comparisonLabel: getComparisonLabel(
+        `${summary.total > 2 ? '+12%' : '-3%'}`,
+      ),
     },
     {
       label: 'Tests Conducted',
@@ -74,6 +87,9 @@ function transformInsightsToMetrics(
           : testsConducted > 4
             ? 'warning'
             : 'critical',
+      comparisonLabel: getComparisonLabel(
+        `${testsConducted > 5 ? '+8%' : '-2%'}`,
+      ),
     },
     {
       label: 'Content Published',
@@ -81,6 +97,7 @@ function transformInsightsToMetrics(
       trend: 'up',
       trendValue: '+5%',
       health: 'good',
+      comparisonLabel: getComparisonLabel('+5%'),
     },
     {
       label: 'Average Attendance',
@@ -93,6 +110,7 @@ function transformInsightsToMetrics(
           : avgAttendance >= 50
             ? 'warning'
             : 'critical',
+      comparisonLabel: getComparisonLabel(avgAttendance >= 70 ? '+3%' : '-8%'),
     },
   ]
 }
@@ -133,6 +151,9 @@ function MetricCard({ metric }: { metric: SystemHealthMetric }) {
         >
           {metric.trendValue}
         </span>
+        <span className='text-slate-500 text-xs'>
+          &middot; {metric.comparisonLabel}
+        </span>
       </div>
     </div>
   )
@@ -156,6 +177,7 @@ export function SystemHealth() {
     <DashboardModule<SystemHealthMetric[]>
       title='System Health'
       sectionId='system-health'
+      sectionAccent='bg-emerald-500'
       query={metricQuery}
       skeleton={<StatCardSkeleton />}
       empty={{

@@ -136,6 +136,43 @@ describe('DashboardModule', () => {
     ).toBeInTheDocument()
   })
 
+  it('renders section accent bar when sectionAccent is provided', () => {
+    const query = createMockQuery({ data: { ok: true } })
+
+    const { container } = render(
+      <DashboardModule
+        title='Test Section'
+        sectionId='test-section'
+        sectionAccent='bg-emerald-500'
+        query={query}
+        skeleton={<div>Skeleton</div>}
+        empty={{ title: 'No data', description: 'Nothing here' }}
+        render={() => <div>Content</div>}
+      />,
+    )
+
+    const bar = container.querySelector('.rounded-full')
+    expect(bar).toBeInTheDocument()
+    expect(bar).toHaveClass('bg-emerald-500')
+  })
+
+  it('does not render accent bar when sectionAccent is not provided', () => {
+    const query = createMockQuery({ data: { ok: true } })
+
+    const { container } = render(
+      <DashboardModule
+        title='Test Section'
+        sectionId='test-section'
+        query={query}
+        skeleton={<div>Skeleton</div>}
+        empty={{ title: 'No data', description: 'Nothing here' }}
+        render={() => <div>Content</div>}
+      />,
+    )
+
+    expect(container.querySelector('.rounded-full')).not.toBeInTheDocument()
+  })
+
   it('renders empty action CTA when provided', async () => {
     const user = userEvent.setup()
     const onAction = vi.fn()

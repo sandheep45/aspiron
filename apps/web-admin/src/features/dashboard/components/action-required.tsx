@@ -15,6 +15,7 @@ export function ActionRequired() {
     <DashboardModule
       title='Action Required'
       sectionId='action-required'
+      sectionAccent='bg-amber-500'
       headerAction={
         <Button
           variant='ghost'

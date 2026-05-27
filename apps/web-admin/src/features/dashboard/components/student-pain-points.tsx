@@ -15,27 +15,30 @@ function getRecallBadge(strength: number | null | undefined) {
     return {
       label: '—',
       variant: 'outline' as const,
-      className: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+      className:
+        'rounded-md bg-slate-500/15 text-slate-400 border-slate-500/30',
     }
   }
   if (strength < 0.4) {
     return {
       label: 'Weak',
       variant: 'destructive' as const,
-      className: '',
+      className: 'rounded-md',
     }
   }
   if (strength < 0.7) {
     return {
       label: 'Medium',
       variant: 'outline' as const,
-      className: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      className:
+        'rounded-md bg-amber-500/15 text-amber-400 border-amber-500/30',
     }
   }
   return {
     label: 'Strong',
     variant: 'outline' as const,
-    className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    className:
+      'rounded-md bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   }
 }
 
@@ -63,39 +66,45 @@ const columns: ColumnDef<TopicPerformance>[] = [
   },
   {
     accessorKey: 'recall_strength_mcq',
-    header: 'Recall Strength',
+    header: () => <div className='text-center'>Recall Strength</div>,
     cell: ({ row }) => {
       const badge = getRecallBadge(
         row.getValue<number | null>('recall_strength_mcq'),
       )
       return (
-        <Badge
-          variant={badge.variant}
-          className={cn(badge.className, 'shrink-0')}
-        >
-          {badge.label}
-        </Badge>
+        <div className='flex justify-center'>
+          <Badge
+            variant={badge.variant}
+            className={cn(badge.className, 'shrink-0')}
+          >
+            {badge.label}
+          </Badge>
+        </div>
       )
     },
   },
   {
     accessorKey: 'practice_accuracy',
-    header: 'Accuracy',
+    header: () => <div className='text-center'>Accuracy</div>,
     cell: ({ row }) => (
-      <span className='text-slate-200 text-sm tabular-nums'>
-        {formatPercent(row.getValue<number>('practice_accuracy'))}
-      </span>
+      <div className='flex justify-center'>
+        <span className='text-slate-200 text-sm tabular-nums'>
+          {formatPercent(row.getValue<number>('practice_accuracy'))}
+        </span>
+      </div>
     ),
   },
   {
     accessorKey: 'students_affected',
-    header: 'Students',
+    header: () => <div className='text-center'>Students</div>,
     cell: ({ row }) => {
       const topic = row.original
       return (
-        <span className='text-slate-400 text-sm tabular-nums'>
-          {String(topic.students_affected)}/{String(topic.total_students)}
-        </span>
+        <div className='flex justify-center'>
+          <span className='text-slate-400 text-sm tabular-nums'>
+            {String(topic.students_affected)}/{String(topic.total_students)}
+          </span>
+        </div>
       )
     },
   },
@@ -110,6 +119,7 @@ export function StudentPainPoints() {
     <DashboardModule
       title='Student Pain Points'
       sectionId='pain-points'
+      sectionAccent='bg-rose-500'
       headerAction={
         <Button
           variant='ghost'

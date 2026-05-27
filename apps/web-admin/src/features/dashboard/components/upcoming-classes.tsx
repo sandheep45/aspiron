@@ -63,6 +63,7 @@ export function UpcomingClasses() {
     <DashboardModule
       title='Upcoming Classes'
       sectionId='upcoming-classes'
+      sectionAccent='bg-sky-500'
       headerAction={
         <div className='flex items-center gap-2'>
           <Button
