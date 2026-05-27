@@ -26,7 +26,7 @@
 
 - `@/*` for local imports (maps to `apps/web-admin/src/*`)
 - All local imports must use `@/` absolute paths. No relative imports (`./`, `../`) in hand-authored code.
-- Exception: `routeTree.gen.ts` is auto-generated and may use relative paths.
+- Exceptions: `routeTree.gen.ts` is auto-generated and may use relative paths. Barrel files (`index.ts`) re-exporting sibling modules may use relative imports.
 - `@aspiron/api-client` / `@aspiron/tanstack-client` for workspace packages
 - `lucide-react` for icons
 

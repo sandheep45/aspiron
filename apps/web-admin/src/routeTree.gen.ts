@@ -25,6 +25,7 @@ import { Route as AuthAuthLayoutLoginRouteImport } from './routes/auth/_auth-lay
 import { Route as AuthAuthLayoutForgotPasswordRouteImport } from './routes/auth/_auth-layout/forgot-password'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as PrivateRoutesContentContentLayoutRouteImport } from './routes/_private-routes/content/_content-layout'
+import { Route as PrivateRoutesLiveClassesCreateIndexRouteImport } from './routes/_private-routes/live-classes/create/index'
 import { Route as PrivateRoutesContentContentLayoutIndexRouteImport } from './routes/_private-routes/content/_content-layout/index'
 import { Route as PrivateRoutesContentContentLayoutTopicIdRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id'
 
@@ -117,6 +118,12 @@ const PrivateRoutesContentContentLayoutRoute =
     path: '/content',
     getParentRoute: () => PrivateRoutesRoute,
   } as any)
+const PrivateRoutesLiveClassesCreateIndexRoute =
+  PrivateRoutesLiveClassesCreateIndexRouteImport.update({
+    id: '/live-classes/create/',
+    path: '/live-classes/create/',
+    getParentRoute: () => PrivateRoutesRoute,
+  } as any)
 const PrivateRoutesContentContentLayoutIndexRoute =
   PrivateRoutesContentContentLayoutIndexRouteImport.update({
     id: '/',
@@ -147,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/': typeof AuthAuthLayoutIndexRoute
   '/content/': typeof PrivateRoutesContentContentLayoutIndexRoute
+  '/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
 }
 export interface FileRoutesByTo {
@@ -164,6 +172,7 @@ export interface FileRoutesByTo {
   '/settings': typeof PrivateRoutesSettingsIndexRoute
   '/auth': typeof AuthAuthLayoutIndexRoute
   '/content': typeof PrivateRoutesContentContentLayoutIndexRoute
+  '/live-classes/create': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
 }
 export interface FileRoutesById {
@@ -185,6 +194,7 @@ export interface FileRoutesById {
   '/_private-routes/settings/': typeof PrivateRoutesSettingsIndexRoute
   '/auth/_auth-layout/': typeof AuthAuthLayoutIndexRoute
   '/_private-routes/content/_content-layout/': typeof PrivateRoutesContentContentLayoutIndexRoute
+  '/_private-routes/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/_private-routes/content/_content-layout/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
 }
 export interface FileRouteTypes {
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/auth/'
     | '/content/'
+    | '/live-classes/create/'
     | '/content/topic/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/auth'
     | '/content'
+    | '/live-classes/create'
     | '/content/topic/$id'
   id:
     | '__root__'
@@ -243,6 +255,7 @@ export interface FileRouteTypes {
     | '/_private-routes/settings/'
     | '/auth/_auth-layout/'
     | '/_private-routes/content/_content-layout/'
+    | '/_private-routes/live-classes/create/'
     | '/_private-routes/content/_content-layout/topic/$id'
   fileRoutesById: FileRoutesById
 }
@@ -366,6 +379,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesContentContentLayoutRouteImport
       parentRoute: typeof PrivateRoutesRoute
     }
+    '/_private-routes/live-classes/create/': {
+      id: '/_private-routes/live-classes/create/'
+      path: '/live-classes/create'
+      fullPath: '/live-classes/create/'
+      preLoaderRoute: typeof PrivateRoutesLiveClassesCreateIndexRouteImport
+      parentRoute: typeof PrivateRoutesRoute
+    }
     '/_private-routes/content/_content-layout/': {
       id: '/_private-routes/content/_content-layout/'
       path: '/'
@@ -412,6 +432,7 @@ interface PrivateRoutesRouteChildren {
   PrivateRoutesPainPointsIndexRoute: typeof PrivateRoutesPainPointsIndexRoute
   PrivateRoutesQuizzesIndexRoute: typeof PrivateRoutesQuizzesIndexRoute
   PrivateRoutesSettingsIndexRoute: typeof PrivateRoutesSettingsIndexRoute
+  PrivateRoutesLiveClassesCreateIndexRoute: typeof PrivateRoutesLiveClassesCreateIndexRoute
 }
 
 const PrivateRoutesRouteChildren: PrivateRoutesRouteChildren = {
@@ -426,6 +447,8 @@ const PrivateRoutesRouteChildren: PrivateRoutesRouteChildren = {
   PrivateRoutesPainPointsIndexRoute: PrivateRoutesPainPointsIndexRoute,
   PrivateRoutesQuizzesIndexRoute: PrivateRoutesQuizzesIndexRoute,
   PrivateRoutesSettingsIndexRoute: PrivateRoutesSettingsIndexRoute,
+  PrivateRoutesLiveClassesCreateIndexRoute:
+    PrivateRoutesLiveClassesCreateIndexRoute,
 }
 
 const PrivateRoutesRouteWithChildren = PrivateRoutesRoute._addFileChildren(
