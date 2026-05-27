@@ -132,6 +132,7 @@ export function StudentPainPoints() {
         <DataTable
           columns={columns}
           data={data.topics}
+          className='bg-card ring-1 ring-foreground/10'
           getRowProps={() =>
             ({
               'data-testid': 'pain-point-row',

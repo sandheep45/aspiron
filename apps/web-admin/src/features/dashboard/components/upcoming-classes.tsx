@@ -1,6 +1,6 @@
 import { useUpcomingClassesQuery } from '@aspiron/tanstack-client'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight } from 'lucide-react'
+import { CalendarPlus, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { DashboardModule } from '@/features/dashboard/components/dashboard-module'
@@ -64,15 +64,27 @@ export function UpcomingClasses() {
       title='Upcoming Classes'
       sectionId='upcoming-classes'
       headerAction={
-        <Button
-          variant='ghost'
-          className='h-8 gap-1.5 px-3 font-medium text-indigo-400 text-sm hover:text-indigo-300'
-          nativeButton={false}
-          render={<Link to='/live-classes' />}
-        >
-          View All
-          <ArrowRight className='size-4' />
-        </Button>
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='ghost'
+            className='h-8 gap-1.5 px-3 font-medium text-indigo-400 text-sm hover:text-indigo-300'
+            nativeButton={false}
+            render={<Link to='/live-classes' />}
+          >
+            View Schedule
+            <CalendarPlus className='size-4' />
+          </Button>
+          <Button
+            variant='brand'
+            size='sm'
+            className='h-8 gap-1.5 px-3 font-medium text-sm'
+            nativeButton={false}
+            render={<Link to='/live-classes/create' />}
+          >
+            <Plus className='size-4' />
+            Create Class
+          </Button>
+        </div>
       }
       query={classQuery}
       skeleton={<CardSkeleton />}

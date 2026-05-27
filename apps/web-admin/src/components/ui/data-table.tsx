@@ -15,10 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
   data: TData[]
+  className?: string
   sorting?: SortingState
   onSortingChange?: (sorting: SortingState) => void
   getRowProps?: (row: Row<TData>) => HTMLAttributes<HTMLElement>
@@ -27,6 +29,7 @@ interface DataTableProps<TData> {
 export function DataTable<TData>({
   columns,
   data,
+  className,
   sorting: externalSorting,
   onSortingChange,
   getRowProps,
@@ -56,7 +59,12 @@ export function DataTable<TData>({
   })
 
   return (
-    <div className='overflow-hidden rounded-lg border border-slate-800'>
+    <div
+      className={cn(
+        'overflow-hidden rounded-lg border border-slate-800',
+        className,
+      )}
+    >
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

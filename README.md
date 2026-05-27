@@ -328,12 +328,12 @@ just build-packages      # config → api-client → tanstack-client
 # All tests
 just test
 
-# Backend (67 test functions across 10 files)
-cargo test -p backend --lib unit::          # Unit tests (33)
-cargo test -p backend --test integration    # Integration tests (17)
-cargo test -p backend --test scenarios      # Scenario tests (9)
+# Backend
+cargo test -p backend --lib unit::          # Unit tests
+cargo test -p backend --test integration    # Integration tests
+cargo test -p backend --test scenarios      # Scenario tests
 
-# Frontend (10 unit test files)
+# Frontend
 pnpm --filter web-admin exec vitest run
 
 # E2E (requires dev server running)
@@ -342,6 +342,71 @@ pnpm --filter web-admin exec playwright test
 # Frontend + backend in parallel
 just test
 ```
+
+## Testing Infrastructure
+
+### Rust Tests (`apps/backend/`)
+
+| Kind | Framework | What |
+|------|-----------|------|
+| **Unit** | `#[test]` / `#[tokio::test]` | Pure logic: JWT encoding/decoding, permission name parsing, scoring calculations |
+| **Snapshot** | `insta` (`assert_json_snapshot!`) | Validates full OpenAPI spec and error response shapes against committed snapshots |
+| **Integration** | `TestApp` harness + testcontainers | Full HTTP requests through Axum router against ephemeral Postgres: auth middleware, route responses, client-type enforcement |
+| **Scenario** | `ScenarioBuilder` fluent builder | Multi-step user journeys: student onboarding, teacher content upload, quiz lifecycle |
+| **Type generation** | `ts-rs` derive | Side-effect of `cargo test` — generates `.ts` bindings from Rust DTOs |
+| **Contract** | Shell script | Validates OpenAPI spec is up-to-date, checks `ROUTE_REGISTRY` for coverage gaps |
+
+**Harness:** `TestApp` — spins a real Postgres via testcontainers, runs SeaORM migrations, builds full Axum router per test. Auto-rollback via transactions.
+
+### JS/TS Vitest Tests
+
+| Kind | Framework | What |
+|------|-----------|------|
+| **Component (render)** | `@testing-library/react` + `vitest` | UI components with mocked TanStack hooks. Tests loading/error/empty/success states per component. Mocks `@aspiron/tanstack-client` hooks and `@tanstack/react-router` |
+| **Component (interaction)** | `userEvent` + `vitest` | Click retry, navigate via Link, fill forms (limited) |
+| **Keyboard shortcut** | `userEvent.keyboard` + `vitest` | `g+d` → dashboard, `Ctrl+K` opens palette, `?` toggles cheat sheet |
+| **Utility** | `vitest` | `cn()` class merging, `formatRelativeTime()`, `formatPercentage()` |
+| **Factory/DTO** | `vitest` | Test-utils factories: `buildQuizResponse`, `buildSubjectDto`, etc. — verifies defaults + overrides |
+| **MSW verification** | `vitest` + MSW | Confirms MSW intercepts all API endpoints and handlers reset correctly between tests |
+
+**Mocking layers:**
+- **Hook-level:** `vi.mock('@aspiron/tanstack-client')` — return controlled `{ data, isLoading, isError }` states
+- **API-level:** MSW (Mock Service Worker) — 12 handler files covering all API domains, auto-started in setup
+
+### Playwright E2E Tests
+
+| Kind | Project | What |
+|------|---------|------|
+| **MSW-mocked E2E** | `unit-msw` | Dashboard sections, runtime states (skeleton/error/retry), mobile layout — no backend needed |
+| **Real API E2E** | `real-api` | Full stack against real backend + Postgres. Seeds deterministic test data. Tests login, dashboard widgets, content navigation, visual regression (screenshot diff < 5%) |
+| **Visual regression** | `real-api` | Screenshot comparison of full dashboard |
+
+**Infrastructure:** Playwright `globalSetup` seeds Postgres via raw SQL, `globalTeardown` cleans up. `loginAsE2eStudent()` helper handles real auth flow.
+
+### Test Data Generation
+
+| Layer | Tools |
+|-------|-------|
+| **Rust fixtures** | `helpers.rs` (8 functions), `ScenarioBuilder` fluent builder, direct SeaORM inserts |
+| **JS factories** | `@aspiron/test-utils` package — `build<Type>Dto(overrides?)` with auto-incrementing IDs, covers content/quiz/student/community/live/notes/notification domains |
+| **MSW handlers** | 12 handler files returning factory-generated mock responses |
+| **E2E seed** | Raw SQL inserts with deterministic UUIDs (1 user, 3 topics, 3 live sessions, 2 quizzes, etc.) |
+
+### Testing Tools (all installed)
+
+| Tool | Status |
+|------|--------|
+| `cargo test` | Active |
+| `insta` (snapshots) | Active — 6 snapshots |
+| `testcontainers` | Active — Postgres per test |
+| `vitest` | Active — 18 files, ~137 tests |
+| `@testing-library/react` | Active |
+| `@testing-library/user-event` | Active |
+| `msw` | Active — 12 handler files |
+| `@playwright/test` | Active — 14 spec files |
+| `wiremock` | Installed, unused |
+| `rstest` | Installed, unused |
+| `bcryptjs` + `pg` | Active — E2E seed |
 
 ### Generating TypeScript Types from Rust
 
