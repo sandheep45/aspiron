@@ -69,9 +69,10 @@ export const fetchSession = createServerFn({ method: 'GET' }).handler(
   async () => {
     const cookies = getCookies()
 
+    const jwtAccessCookie = cookies.jwt
     const jwtRefreshCookie = cookies.jwt_refresh
 
-    if (jwtRefreshCookie)
+    if (jwtAccessCookie && jwtRefreshCookie)
       return {
         isAuthenticated: true,
       }
