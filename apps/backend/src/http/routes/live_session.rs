@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::{Router, routing::get, routing::post};
+use axum::{Router, middleware, routing::get, routing::post};
 
 use crate::application::live_session::LiveSessionApplicationState;
 use crate::application::live_session::ports::LiveSessionRepository;
@@ -8,6 +8,7 @@ use crate::http::handlers::live_session::{
     handler_get_recorded_sessions, handler_get_upcoming_classes, handler_join_class,
 };
 use crate::infra::db::repositories::live_session_repo::SeaOrmLiveSessionRepository;
+use crate::middleware::auth::require_auth;
 use crate::setup::app::AppState;
 
 pub fn router(app_state: &AppState) -> Router<AppState> {
@@ -23,4 +24,5 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
             get(handler_get_recorded_sessions),
         )
         .layer(axum::Extension(live_session_state))
+        .layer(middleware::from_fn(require_auth))
 }
