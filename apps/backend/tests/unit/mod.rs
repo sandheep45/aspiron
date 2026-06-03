@@ -1,6 +1,9 @@
 mod error_snapshot;
 mod jwt;
+mod notification_rules;
 mod openapi_snapshot;
 mod pain_points;
 mod permissions;
+mod progression;
+mod recall_algorithm;
 mod scoring;
