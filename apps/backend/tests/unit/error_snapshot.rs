@@ -71,3 +71,29 @@ fn internal_error() {
     };
     insta::assert_json_snapshot!("internal-error", error_json(err));
 }
+
+#[test]
+fn unauthorized_error() {
+    let err = ErrorResponse {
+        error: ErrorDetails {
+            code: "UNAUTHORIZED".into(),
+            message: "Missing VIEW_ANALYTICS permission".into(),
+            details: None,
+        },
+        request_id: None,
+    };
+    insta::assert_json_snapshot!("unauthorized-error", error_json(err));
+}
+
+#[test]
+fn not_found_topic_error() {
+    let err = ErrorResponse {
+        error: ErrorDetails {
+            code: "NOT_FOUND".into(),
+            message: "Topic not found".into(),
+            details: None,
+        },
+        request_id: None,
+    };
+    insta::assert_json_snapshot!("not-found-topic-error", error_json(err));
+}

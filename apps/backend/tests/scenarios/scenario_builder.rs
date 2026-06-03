@@ -4,8 +4,10 @@ use backend::entries::entity_enums::exam_types::ExamTypeEnums;
 use backend::entries::entity_enums::learning_recall_question_type::LearningRecallQuestionTypeEnum;
 use backend::entries::entity_enums::user_types::UserTypeEnums;
 
-use crate::fixtures::context::ScenarioContext;
+use super::helpers as scenario_helpers;
 use crate::fixtures::helpers;
+
+use super::context::ScenarioContext;
 
 pub struct ScenarioBuilder<'db> {
     db: &'db DatabaseConnection,
@@ -112,10 +114,11 @@ impl<'db> ScenarioBuilder<'db> {
 
                     if let Some(quiz_title) = &self.quiz {
                         let test_quiz =
-                            helpers::create_test_quiz(self.db, test_topic.id, quiz_title).await;
+                            scenario_helpers::create_test_quiz(self.db, test_topic.id, quiz_title)
+                                .await;
 
                         if self.question_count > 0 {
-                            helpers::create_test_questions(
+                            scenario_helpers::create_test_questions(
                                 self.db,
                                 test_quiz.id,
                                 self.question_count,
@@ -129,9 +132,12 @@ impl<'db> ScenarioBuilder<'db> {
                     if self.has_recall_session
                         && let Some(student) = ctx.users.get(&UserTypeEnums::STUDENT)
                     {
-                        let session =
-                            helpers::create_test_recall_session(self.db, student.id, test_topic.id)
-                                .await;
+                        let session = scenario_helpers::create_test_recall_session(
+                            self.db,
+                            student.id,
+                            test_topic.id,
+                        )
+                        .await;
                         ctx.recall_session = Some(session);
                     }
 

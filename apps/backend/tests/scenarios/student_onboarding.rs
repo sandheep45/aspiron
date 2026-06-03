@@ -5,8 +5,8 @@ use axum::{body::Body, body::to_bytes, http::StatusCode};
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
 use backend::entries::entity_enums::user_types::UserTypeEnums;
 
-use crate::fixtures::scenario_builder::ScenarioBuilder;
 use crate::harness::{TestApp, extract_jwt_cookie};
+use crate::scenarios::scenario_builder::ScenarioBuilder;
 
 fn extract_cookies(response: &axum::http::Response<Body>) -> HashMap<String, String> {
     let mut cookies = HashMap::new();

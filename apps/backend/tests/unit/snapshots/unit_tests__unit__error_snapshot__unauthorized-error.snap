@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/error_snapshot.rs
+expression: error_json(err)
+---
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Missing VIEW_ANALYTICS permission"
+  }
+}

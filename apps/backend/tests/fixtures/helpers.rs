@@ -2,17 +2,17 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Qu
 use uuid::Uuid;
 
 use backend::entries::entities::{
-    assessment_question, assessment_quiz, content_chapter, content_subject, content_topic,
-    learning_recall_answer, learning_recall_session, role, user, user_profile, user_role,
+    content_chapter, content_subject, content_topic, learning_progress, learning_recall_answer,
+    learning_recall_session, permission, role, user, user_profile, user_role,
 };
+use backend::entries::entity_enums::action_types::ActionTypeEnum;
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
 use backend::entries::entity_enums::learning_recall_question_type::LearningRecallQuestionTypeEnum;
 use backend::entries::entity_enums::learning_recall_session_status::LearningRecallSessionStatusEnum;
+use backend::entries::entity_enums::resource_types::ResourceTypeEnum;
 use backend::entries::entity_enums::user_types::UserTypeEnums;
 
-use crate::fixtures::context::{
-    TestChapter, TestQuiz, TestRecallSession, TestSubject, TestTopic, TestUser,
-};
+use crate::fixtures::context::{TestChapter, TestRecallSession, TestSubject, TestTopic, TestUser};
 
 /// Ensure a role exists in the roles table. Creates it if missing.
 /// Returns the role ID.
@@ -103,8 +103,6 @@ pub async fn create_test_user(
     TestUser {
         id,
         email: email.to_string(),
-        password: password.to_string(),
-        role: role_type,
     }
 }
 
@@ -126,11 +124,7 @@ pub async fn create_test_subject(
     };
     model.insert(db).await.expect("insert subject");
 
-    TestSubject {
-        id,
-        name: name.to_string(),
-        exam_type,
-    }
+    TestSubject { id }
 }
 
 /// Create a test chapter.
@@ -150,10 +144,7 @@ pub async fn create_test_chapter(
     };
     model.insert(db).await.expect("insert chapter");
 
-    TestChapter {
-        id,
-        name: name.to_string(),
-    }
+    TestChapter { id }
 }
 
 /// Create a test topic.
@@ -173,52 +164,11 @@ pub async fn create_test_topic(
     };
     model.insert(db).await.expect("insert topic");
 
-    TestTopic {
-        id,
-        name: name.to_string(),
-    }
+    TestTopic { id }
 }
 
-/// Create a test quiz.
-pub async fn create_test_quiz(db: &DatabaseConnection, topic_id: Uuid, title: &str) -> TestQuiz {
-    let id = Uuid::new_v4();
-
-    let model = assessment_quiz::ActiveModel {
-        id: Set(id),
-        topic_id: Set(topic_id),
-        title: Set(title.to_string()),
-    };
-    model.insert(db).await.expect("insert quiz");
-
-    TestQuiz {
-        id,
-        title: title.to_string(),
-    }
-}
-
-/// Create N test questions for a quiz with dummy MCQ data.
-pub async fn create_test_questions(db: &DatabaseConnection, quiz_id: Uuid, count: usize) {
-    for i in 0..count {
-        let id = Uuid::new_v4();
-
-        let model = assessment_question::ActiveModel {
-            id: Set(id),
-            question: Set(format!("Test question {}", i + 1)),
-            correct_answer: Set("A".to_string()),
-            options: Set(serde_json::json!({
-                "A": "Option A",
-                "B": "Option B",
-                "C": "Option C",
-                "D": "Option D",
-            })),
-            quiz_id: Set(quiz_id),
-        };
-        model.insert(db).await.expect("insert question");
-    }
-}
-
-/// Create a pending recall session for a user and topic.
-pub async fn create_test_recall_session(
+/// Create a completed recall session for a user and topic.
+pub async fn create_test_completed_recall_session(
     db: &DatabaseConnection,
     user_id: Uuid,
     topic_id: Uuid,
@@ -230,31 +180,90 @@ pub async fn create_test_recall_session(
         id: Set(id),
         user_id: Set(user_id),
         topic_id: Set(topic_id),
-        status: Set(LearningRecallSessionStatusEnum::PENDING),
+        status: Set(LearningRecallSessionStatusEnum::COMPLETED),
         started_at: Set(now),
-        completed_at: Set(None),
+        completed_at: Set(Some(now)),
     };
-    model.insert(db).await.expect("insert recall session");
+    model
+        .insert(db)
+        .await
+        .expect("insert completed recall session");
 
     TestRecallSession { id }
 }
 
-/// Create a recall answer for a recall session.
-pub async fn create_test_recall_answer(
+/// Create a recall answer with configurable question type, correctness, and score.
+pub async fn create_test_recall_answer_variant(
     db: &DatabaseConnection,
     session_id: Uuid,
+    question_type: LearningRecallQuestionTypeEnum,
     is_correct: bool,
-) {
+    score: Option<i32>,
+) -> Uuid {
     let id = Uuid::new_v4();
 
     let model = learning_recall_answer::ActiveModel {
         id: Set(id),
         session_id: Set(session_id),
-        question_type: Set(LearningRecallQuestionTypeEnum::MCQ),
-        question: Set("Test recall question".to_string()),
-        answer: Set("Test answer".to_string()),
+        question_type: Set(question_type),
+        question: Set(String::new()),
+        answer: Set(String::new()),
         is_correct: Set(is_correct),
-        score: Set(if is_correct { Some(1) } else { Some(0) }),
+        score: Set(score),
     };
-    model.insert(db).await.expect("insert recall answer");
+    model
+        .insert(db)
+        .await
+        .expect("insert recall answer variant");
+    id
+}
+
+/// Create a learning progress record for a user and topic.
+pub async fn create_test_learning_progress(
+    db: &DatabaseConnection,
+    user_id: Uuid,
+    topic_id: Uuid,
+    progress_percent: i32,
+) -> Uuid {
+    let id = Uuid::new_v4();
+    let now: sea_orm::prelude::DateTimeWithTimeZone = chrono::Utc::now().into();
+
+    let model = learning_progress::ActiveModel {
+        id: Set(id),
+        user_id: Set(user_id),
+        topic_id: Set(topic_id),
+        progress_percent: Set(progress_percent),
+        last_accessed_at: Set(now),
+    };
+    model.insert(db).await.expect("insert learning progress");
+    id
+}
+
+/// Ensure the analytics permission exists, creating it if needed.
+pub async fn ensure_analytics_permission(db: &DatabaseConnection) -> Uuid {
+    let permission_name = "analytics:read";
+    let existing = permission::Entity::find()
+        .filter(permission::Column::Name.eq(permission_name))
+        .one(db)
+        .await
+        .expect("failed to query permission");
+
+    if let Some(p) = existing {
+        return p.id;
+    }
+
+    let id = Uuid::new_v4();
+    let now: sea_orm::prelude::DateTimeWithTimeZone = chrono::Utc::now().into();
+
+    let model = permission::ActiveModel {
+        id: Set(id),
+        name: Set(permission_name.to_string()),
+        resource_type: Set(ResourceTypeEnum::SYSTEM),
+        action: Set(ActionTypeEnum::READ),
+        description: Set(Some("View analytics and insights".to_string())),
+        created_at: Set(now),
+        updated_at: Set(now),
+    };
+    model.insert(db).await.expect("insert permission");
+    id
 }

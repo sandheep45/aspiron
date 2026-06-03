@@ -10,7 +10,7 @@ use crate::http::responses::insights::{
 };
 use crate::setup::error::AppError;
 
-fn classify_recall_strength(accuracy: f64) -> RecallStrength {
+pub fn classify_recall_strength(accuracy: f64) -> RecallStrength {
     if accuracy < 40.0 {
         RecallStrength::Weak
     } else if accuracy < 70.0 {
@@ -20,7 +20,7 @@ fn classify_recall_strength(accuracy: f64) -> RecallStrength {
     }
 }
 
-fn classify_severity(accuracy: f64, students: i64) -> IssueSeverity {
+pub fn classify_severity(accuracy: f64, students: i64) -> IssueSeverity {
     if accuracy < 25.0 && students >= 5 {
         IssueSeverity::Critical
     } else if accuracy < 40.0 {
@@ -32,7 +32,7 @@ fn classify_severity(accuracy: f64, students: i64) -> IssueSeverity {
     }
 }
 
-fn classify_status(accuracy: f64) -> StatusTrend {
+pub fn classify_status(accuracy: f64) -> StatusTrend {
     if accuracy < 30.0 {
         StatusTrend::Degrading
     } else if accuracy < 60.0 {

@@ -74,6 +74,37 @@ function parseSetCookie(setCookieHeader: string) {
   })
 }
 
+async function loginAs(
+  page: Page,
+  context: BrowserContext,
+  email: string,
+  password: string,
+) {
+  const loginResp = await page.request.post(`${BACKEND_URL}/auth/login`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-client-type': 'BROWSER',
+    },
+    data: { email, password },
+  })
+
+  const setCookie = loginResp.headers()['set-cookie']
+  if (!setCookie) {
+    throw new Error(`No Set-Cookie header in login response for ${email}`)
+  }
+
+  const cookies = parseSetCookie(setCookie)
+  await context.addCookies(cookies)
+}
+
+export async function loginAsPPAdmin(page: Page, context: BrowserContext) {
+  await loginAs(page, context, 'pp.admin@aspiron.test', 'admin123')
+}
+
+export async function loginAsPPEmpty(page: Page, context: BrowserContext) {
+  await loginAs(page, context, 'pp.empty@aspiron.test', 'admin123')
+}
+
 export async function seedUser(context: BrowserContext, page: Page) {
   await loginAsE2eStudent(page, context)
   await page.goto('/dashboard')

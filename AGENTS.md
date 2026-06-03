@@ -62,12 +62,13 @@
 
 - Test harness: `apps/backend/tests/harness.rs` — `TestApp` with testcontainers Postgres + SeaORM migrator + `tower::ServiceExt::oneshot`
 - Scenario builder: `apps/backend/tests/fixtures/scenario_builder.rs` — fluent API for multi-user, content hierarchy, quiz, recall session
-- 8 helper functions in `tests/fixtures/helpers.rs` — `create_test_user`, `create_test_subject/chapter/topic/quiz/questions/recall_session/recall_answer`
+- 11 helper functions in `tests/fixtures/helpers.rs` — `create_test_user`, `create_test_subject/chapter/topic/quiz/questions/recall_session/recall_answer`, plus `create_test_learning_progress`, `create_test_completed_recall_session`, `create_test_recall_answer_variant`, `ensure_analytics_permission`
 - `ensure_role_exists()` in helpers auto-creates Student/Teacher/Admin roles if missing
 - `extract_jwt_cookie()` and `extract_cookies()` in harness for cookie-based auth tests
-- Snapshot testing via `insta` (v1.47+): 6 snapshots in `tests/unit/snapshots/` — OpenAPI spec (1582 lines) + 5 error response shapes (VALIDATION, AUTH, ACCESS_TOKEN_EXPIRED, NOT_FOUND, INTERNAL). Run `cargo insta review` or `cargo insta accept` after intentional API changes.
+- Snapshot testing via `insta` (v1.47+): 7 snapshots in `tests/unit/snapshots/` — OpenAPI spec (1582 lines) + 7 error response shapes (VALIDATION, AUTH, ACCESS_TOKEN_EXPIRED, NOT_FOUND, INTERNAL, UNAUTHORIZED, NOT_FOUND_TOPIC). Run `cargo insta review` or `cargo insta accept` after intentional API changes.
 - `request_id` field stripped from error snapshots via redaction (non-deterministic UUID)
-- All 190 tests pass (107 ts-rs bindings + 8 harness + 25 integration + 17 scenarios/mod + 33 unit), clippy clean
+- All 214 backend tests pass (107 ts-rs bindings + 8 harness + 38 integration + 18 scenarios/mod + 43 unit), clippy clean
+- All 202 frontend tests pass (26 test files, 4 new student-pain-points test files with 36 tests), biome clean
 
 ### Phase B.3 unit tests completed
 
@@ -76,7 +77,7 @@
 | `tests/unit/permissions.rs` | 17 | Permission name parsing (all resources, actions, ownership), error handling |
 | `tests/unit/jwt.rs` | 10 | Token round-trip, expiry, invalid tokens, wrong secret, expired tokens |
 | `tests/unit/openapi_snapshot.rs` | 1 | OpenAPI spec snapshot (1582 lines) — catches unintended API contract changes |
-| `tests/unit/error_snapshot.rs` | 5 | Error response shape snapshots (VALIDATION, AUTH, ACCESS_TOKEN_EXPIRED, NOT_FOUND, INTERNAL) |
+| `tests/unit/error_snapshot.rs` | 7 | Error response shape snapshots (VALIDATION, AUTH, ACCESS_TOKEN_EXPIRED, NOT_FOUND, INTERNAL, UNAUTHORIZED, NOT_FOUND_TOPIC) |
 
 ### Blocked unit tests (waiting on real implementations)
 
@@ -114,6 +115,15 @@ All domains migrated from legacy `services/` → `domain/` + `application/` + `i
 | users | Done | Old files deleted |
 
 `services/` directory fully removed from `lib.rs`. Legacy `entries/dtos/response/` still has `assessment`, `auth`, `common`, `content`, `learning` — still referenced by application layer and HTTP handlers. `entries/dtos/payload/` has `assessment`, `auth`, `content`, `insights`, `learning`.
+
+## MSW Mock Infrastructure
+
+- Factories: `apps/web-admin/mock/factories/` — builder functions per domain with `build*` pattern (e.g., `buildCriticalIssue`, `buildCriticalIssuesResponse`)
+- Handlers: `apps/web-admin/mock/handlers/` — MSW `http.get/post` handlers, registered in `handlers/index.ts`
+- Pain points handlers: `pain-points.handlers.ts` — 4 endpoints (critical issues, paginated list, pattern insights, topic detail)
+- Pain points factory: `pain-points.factory.ts` — counter-based ID generation via `uid()`, `resetIdCounter()`, builder functions for all 5 response types (CriticalIssuesResponse, PainPointsResponse, PatternInsightsResponse, TopicDetailResponse, plus individual entities)
+- Query parameters supported: `page`, `limit`, `search`, `severity`, `status` for pain points list
+- 404: topic detail returns 404 for `id === 'unknown'`
 
 ## Generated code (do not edit)
 

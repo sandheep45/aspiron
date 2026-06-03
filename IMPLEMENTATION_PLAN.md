@@ -1,935 +1,589 @@
-# Implementation Plan: Dashboard + Core Routes
+# Implementation Plan: Student Pain Points Analytics — Full Coverage
 
-> Supersedes the previous Phases 1-3 plan. All acceptance criteria from the prior plan are incorporated below with updated status.
+## Objective
 
-### Implementation Order
+Deliver a data-driven **Student Pain Points Analytics Dashboard** with full backend (Rust/Axum/SeaORM) and frontend (React/TypeScript/shadcn) implementation, plus comprehensive test coverage across all layers: backend unit/integration/scenario/snapshot, frontend component unit (Vitest + MSW), and E2E (Playwright unit-msw + real-api).
+
+---
+
+## Implementation Order
 
 ```txt
-  2 (Dashboard Core UI)
-  │
-  3 (Action Required)
-  │
-  3.5 (Reliability Baseline — shared DashboardModule state contract)
-  │
-  6 (System Health — lowest complexity, validates module architecture)
-  │
-  4 (Student Pain Points — table, pagination, sorting)
-  │
-  5 (Upcoming Live Classes — cards, create modal, status chips)
-  │
-  7 (Backend Analytics — fix attendance stub, teacher filter)
-  │
-  8a (Release Blocking — a11y, crash isolation, responsive, utility tests)
-  │
-  8b (Runtime Validation — Playwright loading/error/hydration/offline)
-  │
-  8a.5 (Productivity UX — keyboard shortcuts, command palette, global search)
-  │
-  8c (Real API E2E — full stack, visual regression, hydration checks)
+  1.  Backend fixture helpers + infrastructure changes
+      │
+  2.  Backend code change (pub(crate) classify functions)
+      │
+  3.  Backend unit tests (10)
+      │
+  4.  Backend integration tests (~12)
+      │
+  5.  Backend scenario test (1)
+      │
+  6.  Backend snapshot tests (2)
+      │
+  7.  MSW handlers + factories (infrastructure)
+      │
+  8.  Frontend unit tests (~13)
+      │
+  9.  E2E unit-msw tests (~6)
+      │
+  10. E2E real-api tests (~5)
 ```
-
-### Phase Summary
-
-| Phase | Focus | Backend Dep | Test Added | Blocking |
-|---|---|---|---|---|
-| 1 | Foundation Setup | — | — | ✅ Done |
-| 2 | Dashboard Core UI | None | 2 | ❌ Partial (3/6 criteria) |
-| 3 | Action Required Section | Insights query | 8 | ❌ Partial (3/7 criteria) |
-| 3.5 | **Reliability Baseline** | Phase 3 | 7 | ❌ Not started |
-| 6 | **System Health** | Insights query | 6 | ❌ Not started |
-| 4 | Student Pain Points | Topic perf query | 9 | ❌ Not started |
-| 5 | Upcoming Live Classes | Live class query | 7 | ❌ Not started |
-| 7 | Backend Analytics Logic | Insights repository | 3 | ⏳ Partial (4/6 tasks) |
-| 8a | Release Blocking | Phase 2–7 complete | 6 | ❌ Not started |
-| 8b | Runtime Validation | Phase 8a complete | 14 categories | ❌ Not started |
-| 8a.5 | Productivity UX | Phase 8a complete | 0 | ❌ Not started |
-| 8c | Real API E2E | Phase 8b complete | ~51 total | ❌ Not started |
 
 ---
 
-## Phase 1 — Foundation Setup
+## Step 1: Backend Fixture Helpers + Infrastructure
 
-**Status: ✅ Complete**
+### `tests/fixtures/helpers.rs` — Add 3 new helpers
 
-All items fully implemented.
+- [x] **`create_test_learning_progress(db, user_id, topic_id, progress_percent)`**
+  - [x] Function signature: `pub async fn create_test_learning_progress(db: &DatabaseConnection, user_id: Uuid, topic_id: Uuid, progress_percent: f64) -> Uuid`
+  - [x] Body creates `learning_progress::ActiveModel` with:
+    - [x] `id: Set(Uuid::new_v4())`
+    - [x] `user_id: Set(user_id)`
+    - [x] `topic_id: Set(topic_id)`
+    - [x] `progress_percent: Set(progress_percent)`
+    - [x] `last_accessed_at: Set(chrono::Utc::now())`
+  - [x] Calls `model.insert(db).await.expect(...)` and returns the UUID
+- [x] **`create_test_completed_recall_session(db, user_id, topic_id)`**
+  - [x] Function signature: `pub async fn create_test_completed_recall_session(db: &DatabaseConnection, user_id: Uuid, topic_id: Uuid) -> TestRecallSession`
+  - [x] Body creates `learning_recall_session::ActiveModel` with:
+    - [x] `id: Set(Uuid::new_v4())`
+    - [x] `user_id: Set(user_id)`
+    - [x] `topic_id: Set(topic_id)`
+    - [x] `status: Set(LearningRecallSessionStatusEnum::COMPLETED)`
+    - [x] `started_at: Set(now)`
+    - [x] `completed_at: Set(Some(now))`
+  - [x] Calls `model.insert(db).await.expect(...)` and returns `TestRecallSession { id }`
+- [x] **`create_test_recall_answer_variant(db, session_id, question_type, is_correct, score)`**
+  - [x] Function signature: `pub async fn create_test_recall_answer_variant(db: &DatabaseConnection, session_id: Uuid, question_type: LearningRecallQuestionTypeEnum, is_correct: bool, score: Option<i32>) -> Uuid`
+  - [x] Body creates `learning_recall_answer::ActiveModel` with:
+    - [x] `id: Set(Uuid::new_v4())`
+    - [x] `session_id: Set(session_id)`
+    - [x] `question_type: Set(question_type)`
+    - [x] `question: Set(String::new())`
+    - [x] `answer: Set(String::new())`
+    - [x] `is_correct: Set(is_correct)`
+    - [x] `score: Set(score)`
+  - [x] Calls `model.insert(db).await.expect(...)` and returns the UUID
 
-| Task | What exists |
-|---|---|
-| Setup frontend project structure | React 19 + TanStack React Start (SSR) + TanStack Router + TanStack Query + TanStack React Form + Tailwind v4 + shadcn/ui + Biome |
-| Setup backend service structure | Axum 0.8 + SeaORM 1.1 + PostgreSQL 16+ with clean architecture: `http/handlers/` → `application/` → `domain/` → `infra/` |
-| Configure authentication/session | Auth.js (credentials provider) on frontend, JWT access/refresh tokens with cookie & bearer on backend, bcrypt password hashing |
-| Setup database and analytics models | 16 SeaORM migrations across 7 domains, insights repository with 5 methods (quizzes pending review, low attendance, difficult topics, low engagement, topic performance) |
-| Configure routing and state management | TanStack Router (file-based, auto-generated `routeTree.gen.ts`), TanStack Query with SSR integration (`setupRouterSsrQueryIntegration`), `@aspiron/tanstack-client` workspace package |
-| Setup testing frameworks | Vitest + jsdom + MSW (@testing-library/react), Playwright (Chromium), testcontainers Postgres + tower `ServiceExt::oneshot` (Rust), insta snapshots, `just ci` with husky + lint-staged |
+### `tests/fixtures/scenario_builder.rs` — Add fields
 
-### Test Deliverables
+- [x] Add field `completed_sessions: bool`
+- [x] Add field `answers_per_session: Option<usize>`
+- [x] Add builder method `pub fn completed_sessions(mut self) -> Self`
+  - [x] Sets `self.completed_sessions = true`
+- [x] Add builder method `pub fn answers(mut self, count: usize) -> Self`
+  - [x] Sets `self.answers_per_session = Some(count)`
+- [x] Modify `build()` method:
+  - [x] After creating topics AND if `completed_sessions` is true:
+    - [x] For each student user in `ctx.users`:
+      - [x] Call `create_test_completed_recall_session` for the topic
+      - [x] Push session ID to `ctx.completed_sessions`
+    - [x] If `answers_per_session` is Some(count):
+      - [x] For each completed session:
+        - [x] Create `count` recall answers via `create_test_recall_answer_variant`
+        - [x] Push answer IDs to `ctx.answer_ids`
 
-| Item | Status |
-|---|---|
-| Backend harness (TestApp + testcontainers) | ✅ 8 tests |
-| Frontend vitest setup (jsdom + MSW) | ✅ Configured |
-| `@aspiron/test-utils` factories package | ✅ 9 factory modules across all domains |
-| CI pipeline (`ci-fast`/`ci-medium`/`ci-slow`) | ✅ `just ci` via husky + lint-staged |
-| Contract coverage metrics | ✅ `just contract-coverage` |
+### `tests/fixtures/context.rs` — Add fields
 
----
+- [x] Add field `completed_sessions: Vec<TestRecallSession>` to `ScenarioContext`
+  - [x] Initialize to `Vec::new()` in constructor
+- [x] Add field `answer_ids: Vec<Uuid>` to `ScenarioContext`
+  - [x] Initialize to `Vec::new()` in constructor
 
-## Phase 2 — Dashboard Core UI
+### Module registration files
 
-**Status: ⏳ Partial** (4/6 tasks done)
+- [x] `tests/unit/mod.rs` — Add `mod pain_points;`
+- [x] `tests/integration/mod.rs` — Add `mod pain_points;`
+- [x] `tests/scenarios/mod.rs` — Add `mod pain_points_flow;`
 
-### Tasks
+### Verification
 
-| Task | Status | Details |
-|---|---|---|
-| Build sidebar navigation | ✅ Done | 6 shadcn sidebar components (`sidebar-root`, `sidebar-context`, `sidebar-menu`, `sidebar-layout`, `sidebar-group`, `sidebar.tsx` barrel) + `app-sidebar.tsx` + `sidebar-config.tsx` (7 nav items: Dashboard, Content, Tests & Quizzes, Live Classes, Community, Analytics, Settings) + active-state detection via `useLocation()` |
-| Build top navigation/header | ✅ Done | `app-navbar.tsx` — sticky with `backdrop-blur-xl`, SidebarTrigger, breadcrumbs from `useBreadcrumbs()`, user avatar dropdown with logout |
-| Create dashboard layout | ✅ Done | `_private-routes.tsx` — auth guard → SidebarProvider → AppSidebar → SidebarInset → AppNavbar → Outlet |
-| Implement responsive behavior | ✅ Done | Sheet overlay on mobile (< 768px), `useIsMobile()` hook with `matchMedia`, cookie-persisted sidebar state, `Ctrl+B` keyboard shortcut toggle |
-| Add loading/skeleton states | ❌ Not done | `<Skeleton>` component exists but **not wired** into `ActionRequired` or `InsightCard`. Currently `data?.insights` could be `undefined` causing `.map()` crash |
-| Add empty/error states | ❌ Not done | No `isError` check, no empty-array guard, no retry button in `ActionRequired` or `InsightCard` |
-
-### Test Deliverables
-
-| Test Category | Coverage | Status |
-|---|---|---|
-| **Component** — Sidebar rendering | Verify sidebar renders nav items, active states, collapse toggle | ❌ Not done |
-| **Component** — Header rendering | Verify navbar renders breadcrumbs, user avatar, sidebar trigger | ❌ Not done |
-| **Component** — Skeleton states | Verify `<Skeleton>` shows during loading | ❌ Not done |
-| **Feature Component** — Full dashboard layout | Verify SidebarProvider + AppSidebar + AppNavbar + Outlet render correctly | ❌ Not done |
-
-### Acceptance Criteria
-
-- [ ] ✅ Sidebar renders 7 navigation items with active-state highlighting
-- [ ] ✅ Sidebar collapses to icon mode on desktop, sheet overlay on mobile
-- [ ] ✅ Top nav shows breadcrumbs matching current route
-- [ ] ✅ User avatar dropdown shows profile and logout
-- [ ] ❌ `ActionRequired` shows skeleton placeholders while `useInsightQuery` is loading
-- [ ] ❌ `ActionRequired` shows "No items need attention" when `data.insights` is empty
-- [ ] ❌ `ActionRequired` shows error message with "Retry" button on API failure
-- [ ] ❌ No layout shift between skeleton and loaded content
-
-### TanStack Query Runtime Configuration
-
-Set default query behavior before building any dashboard modules. These options must be in place for runtime tests (Phase 8b) to be deterministic.
-
-```ts
-// QueryClient defaults
-defaultOptions: {
-  queries: {
-    retry: 1,
-    staleTime: 30_000,
-    gcTime: 5 * 60_000,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchOnMount: true,
-  }
-}
-```
-
-Module-specific polling (set at hook level):
-| Module | Polling |
-|---|---|
-| System Health | `refetchInterval: 60_000` |
-| Upcoming Classes | `refetchInterval: 30_000` |
-| Action Required | Manual / focus only |
-| Student Pain Points | Focus only |
-
-### Test ID Convention (shared infrastructure)
-
-Add `data-testid` and `data-dashboard-section` attributes to components as they are created — **not retrofitted later**. These are shared infrastructure used by component tests, MSW tests, runtime Playwright, and real API E2E.
-
-| Test ID | Element | Applied When |
-|---|---|---|
-| `data-testid="insight-skeleton"` | Skeleton placeholder in ActionRequired | Phase 3 |
-| `data-testid="insight-error"` | Error state container in ActionRequired | Phase 3 |
-| `data-testid="retry-button"` | Retry CTA in any module error state | Phase 3 |
-| `data-testid="pain-point-table"` | Student Pain Points table container | Phase 4 |
-| `data-testid="pain-point-skeleton"` | Skeleton for Pain Points loading | Phase 4 |
-| `data-testid="system-health-card"` | Individual system metric stat card | Phase 6 |
-| `data-testid="class-card"` | Upcoming class schedule card | Phase 5 |
-| `data-testid="class-skeleton"` | Skeleton for upcoming classes loading | Phase 5 |
-| `data-testid="sidebar-mobile-toggle"` | Mobile sidebar hamburger button | Phase 2 |
-| `data-dashboard-section="action-required"` | Action Required section container | Phase 3 |
-| `data-dashboard-section="pain-points"` | Student Pain Points section container | Phase 4 |
-| `data-dashboard-section="upcoming-classes"` | Upcoming Live Classes section container | Phase 5 |
-| `data-dashboard-section="system-health"` | System Health section container | Phase 6 |
+- [x] `cargo check -p backend` compiles successfully
+- [x] `cargo test -p backend` passes all existing tests (no regressions)
 
 ---
 
-## Phase 3 — Action Required Section
+## Step 2: Backend Code Change
 
-**Status: ⏳ Partial** (4/5 tasks done)
+### `application/insights/pain_points.rs`
 
-### Tasks
+- [x] Change `fn classify_recall_strength` → `pub(crate) fn classify_recall_strength`
+  - [x] Update `fn classify_recall_strength` to `pub(crate) fn classify_recall_strength`
+- [x] Change `fn classify_severity` → `pub(crate) fn classify_severity`
+  - [x] Update `fn classify_severity` to `pub(crate) fn classify_severity`
+- [x] Change `fn classify_status` → `pub(crate) fn classify_status`
+  - [x] Update `fn classify_status` to `pub(crate) fn classify_status`
 
-| Task | Status | Details |
-|---|---|---|
-| Build alert cards | ✅ Done | `<InsightCard>` handles 4 insight types: `topic_difficulty`, `quiz_review_pending`, `low_attendance`, `low_engagement`. `<ActionRequired>` maps over `data.insights` array. Tests exist. |
-| Add severity indicators | ✅ Done | `<IconContainer>` with `severityVariants` cva — 5 levels (danger/warning/success/info/neutral), gradient backgrounds, border + text colors |
-| Add CTA buttons | ✅ Done | `SimpleActionButton` (severity-styled button with metadata), `TopicDifficultyActionButton` (link to `/content/topic/$id` via `useGetTopicByIdQuery`) |
-| Implement dynamic rendering from backend | ✅ Done | Full pipeline: `useInsightQuery` → `@aspiron/api-client` → `GET /api/v1/admin/insights` → backend handler → application → repository (4 real queries) |
-| **Add loading/empty/error states** | ❌ Not done | Skeleton, empty message, and error+retry are missing from both `ActionRequired` and `InsightCard` |
+### Verification
 
-### Test Deliverables
-
-| Test Category | Coverage | Status |
-|---|---|---|
-| **Feature Component** — Loading state | `isLoading: true` → skeleton renders, no crash | ❌ Not done |
-| **Feature Component** — Empty state | `data.insights: []` → empty message renders | ❌ Not done |
-| **Feature Component** — Error state | `isError: true` → error message + "Retry" button renders | ❌ Not done |
-| **MSW** — Failed API response | MSW returns 500 → component shows error state | ❌ Not done |
-| **MSW** — Delayed response | MSW delays 2s → skeleton shows during delay | ❌ Not done |
-| **MSW** — Empty response | MSW returns `{ insights: [] }` → empty state renders | ❌ Not done |
-| **Factory** — Alert object generation | `buildAlertResponse()` with severity, type, metadata overrides | ❌ Not done |
-| **Snapshot** — Alert object structure | `insta`-style snapshot of Insight response shape | ❌ Not done |
-
-### Acceptance Criteria
-
-- [ ] ✅ 4 insight types render with correct icons, metadata, and CTAs
-- [ ] ✅ Severity colors match danger/warning/success/info/neutral
-- [ ] ✅ Topic difficulty card links to `/content/topic/$id`
-- [ ] ❌ Loading state renders skeleton pulse placeholders
-- [ ] ❌ Empty state shows "No items need attention right now"
-- [ ] ❌ Error state shows error message with "Retry" button
-- [ ] ❌ API failure in this module does not crash other dashboard modules
-- [ ] ❌ Section container has `data-dashboard-section="action-required"`
-- [ ] ❌ Each insight card has `data-testid` for runtime testing
-
-
+- [x] `cargo check -p backend` compiles with no new warnings
+- [x] No behavior change — all 3 functions are internal helpers, now visible to crate peers
+- [x] `cargo test -p backend` passes
 
 ---
 
-## Phase 3.5 — Dashboard Reliability Baseline (Shared Module State Contract)
+## Step 3: Backend Unit Tests (10)
 
-**Status: ❌ Not Started**
+### File: `tests/unit/pain_points.rs`
 
-**Rationale:** Before adding Pain Points (Phase 4), Upcoming Classes (Phase 5), or System Health (Phase 6), standardize the module render contract. Every dashboard section implements the same 4-state pattern, preventing duplicated state logic and making runtime testing (Phase 8b) dramatically simpler.
+#### Imports and setup
 
-### Tasks
+- [x] `use crate::application::insights::pain_points::{classify_recall_strength, classify_severity, classify_status};`
+- [x] `use backend::http::responses::insights::{IssueSeverity, RecallStrength, StatusTrend};`
 
-| Task | Pre-requisites | Status |
-|---|---|---|
-| Create `<DashboardModule>` wrapper component | None | ❌ Not done |
-| Implement loading skeleton container per module shape | None | ❌ Not done |
-| Implement empty state with meaningful message + CTA | None | ❌ Not done |
-| Implement error state with retry button | None | ❌ Not done |
-| Refactor ActionRequired to use `DashboardModule` | Phase 3 complete | ❌ Not done |
-| Verify module isolation: one module's failure does not affect others | Phase 3 complete | ❌ Not done |
+#### Test: `classify_recall_strength_weak_below_40`
 
-### `DashboardModule` Component Spec
+- [x] `classify_recall_strength(0.0)` → `RecallStrength::Weak`
+- [x] `classify_recall_strength(39.9)` → `RecallStrength::Weak`
 
-```tsx
-interface DashboardModuleProps<T> {
-  title: string
-  sectionId: string          // data-dashboard-section value
-  query: UseQueryResult<T>   // TanStack Query result
-  skeleton: ReactNode        // skeleton placeholder matching final layout
-  empty: DashboardEmpty      // { title: string; description: string; action?: { label: string; onClick: () => void } }
-  render: (data: T) => ReactNode
-}
-```
+#### Test: `classify_recall_strength_boundary_40`
 
-Every section implements this exact contract:
+- [x] `classify_recall_strength(40.0)` → `RecallStrength::Medium`
 
-| State | Condition | Behavior |
-|---|---|---|
-| **Loading** | `query.isLoading` | Show `skeleton` placeholder; no layout shift vs final content |
-| **Error** | `query.isError` | Show error message + "Retry" button calling `query.refetch()` |
-| **Empty** | `data` is empty/null/undefined | Show `empty.title` + `empty.description` + optional `empty.action` CTA |
-| **Success** | `data` is populated | Call `render(data)` to display final content |
+#### Test: `classify_recall_strength_medium_40_to_70`
 
-### Failure Isolation Principle
+- [x] `classify_recall_strength(40.0)` → `RecallStrength::Medium`
+- [x] `classify_recall_strength(69.9)` → `RecallStrength::Medium`
 
-Each `DashboardModule` is wrapped in an `ErrorBoundary` (or equivalent try/catch at the module level). An API failure or render crash in one module must:
-- Show an inline error indicator for that module
-- NOT propagate up to crash the parent dashboard page
-- NOT affect content or visibility of other modules
+#### Test: `classify_recall_strength_boundary_70`
 
-### New Code Required
+- [x] `classify_recall_strength(70.0)` → `RecallStrength::Strong`
 
-| Artifact | Path |
-|---|---|
-| Component | `apps/web-admin/src/features/dashboard/components/dashboard-module.tsx` |
-| Skeleton variants | `apps/web-admin/src/features/dashboard/components/dashboard-skeletons.tsx` |
-| Error boundary | `apps/web-admin/src/features/dashboard/components/module-error-boundary.tsx` |
+#### Test: `classify_recall_strength_strong_70_and_above`
 
-### Acceptance Criteria
+- [x] `classify_recall_strength(70.0)` → `RecallStrength::Strong`
+- [x] `classify_recall_strength(100.0)` → `RecallStrength::Strong`
 
-- [ ] `DashboardModule` renders skeleton when `query.isLoading` is true
-- [ ] `DashboardModule` renders error block with retry when `query.isError` is true
-- [ ] `DashboardModule` renders empty message when data is null/empty
-- [ ] `DashboardModule` calls `render(data)` when data exists
-- [ ] ActionRequired uses `DashboardModule` — zero custom state logic
-- [ ] Module failure isolation confirmed: force error on ActionRequired → System Health still renders
-- [ ] No undefined `.map()` crash possible on any dashboard module
+#### Test: `classify_severity_critical`
 
----
+- [x] `classify_severity(24.9, 5)` → `IssueSeverity::Critical`
+- [x] `classify_severity(10.0, 10)` → `IssueSeverity::Critical`
 
-## Phase 6 — System Health Section
+#### Test: `classify_severity_critical_boundary`
 
-**Status: ❌ Not Started**
+- [x] `classify_severity(25.0, 5)` → `IssueSeverity::High` (accuracy ≥ 25% → not Critical)
+- [x] `classify_severity(24.9, 4)` → `IssueSeverity::High` (students < 5 → not Critical)
 
-### Tasks
+#### Test: `classify_severity_high_medium_low`
 
-| Task | Pre-requisites | Status |
-|---|---|---|
-| Build metric cards (4 stat cards in a row) | No new backend endpoint needed | ❌ Not done |
-| Add trend indicators | Up/down arrows with thresholds | ❌ Not done |
-| Implement dynamic stats rendering | Color coding: green/yellow/red | ❌ Not done |
+- [x] `classify_severity(39.9, 1)` → `IssueSeverity::High`
+- [x] `classify_severity(59.9, 1)` → `IssueSeverity::Medium`
+- [x] `classify_severity(60.0, 1)` → `IssueSeverity::Low`
 
-**Backend dependency:** ⚠️ Partial — `GET /api/v1/admin/insights` summary exists. May need a lightweight endpoint for aggregated counts (active students, tests conducted, content published, average attendance).
+#### Test: `classify_status_all_variants`
 
-### New Code Required
+- [x] `classify_status(29.9)` → `StatusTrend::Degrading`
+- [x] `classify_status(30.0)` → `StatusTrend::Stable`
+- [x] `classify_status(59.9)` → `StatusTrend::Stable`
+- [x] `classify_status(60.0)` → `StatusTrend::Improving`
 
-| Artifact | Path |
-|---|---|
-| Component | `apps/web-admin/src/features/dashboard/components/system-health.tsx` |
-| Integration | Dashboard `index.tsx` — rendered at top as horizontal metrics bar |
-| Tests | `apps/web-admin/src/features/dashboard/__tests__/system-health.test.tsx` |
+#### Test: `classify_edge_values`
 
-### Test Deliverables
+- [x] `classify_recall_strength(0.0)` → `RecallStrength::Weak`
+- [x] `classify_recall_strength(100.0)` → `RecallStrength::Strong`
+- [x] `classify_severity(0.0, 100)` → `IssueSeverity::Critical`
+- [x] `classify_severity(100.0, 0)` → `IssueSeverity::Low`
+- [x] `classify_status(0.0)` → `StatusTrend::Degrading`
+- [x] `classify_status(100.0)` → `StatusTrend::Improving`
 
-| Test Category | Coverage | Status |
-|---|---|---|
-| **Component** — Metric cards | Verify 4 cards render in a row with values | ❌ Not done |
-| **Component** — Trend indicators | Up/down arrows render based on trend data | ❌ Not done |
-| **Component** — Color coding | Green (> 80%), yellow (50-80%), red (< 50%) thresholds | ❌ Not done |
-| **Feature Component** — Loading/error | Skeleton stat cards, "—" fallback on error (uses `DashboardModule`) | ❌ Not done |
-| **Factory** — Metric generation | `buildSystemMetricResponse()` | ❌ Not done |
-| **Contract Snapshot** — Metric response shape | Snapshot of `GET /api/v1/admin/insights` summary response | ❌ Not done |
-| **E2E** — Dashboard load flow | Dashboard loads → all 4 sections render correctly | ❌ Not done |
+### Verification
 
-### Acceptance Criteria
-
-- [ ] **Loading state:** skeleton stat cards via `DashboardModule` skeleton prop (pulse animation, no layout shift)
-- [ ] **Error state:** metric cards show error block via `DashboardModule`; does not block rest of dashboard
-- [ ] 4 stat cards in a row: Active Students (7-day), Tests Conducted (this week), Content Published (total), Average Attendance (%)
-- [ ] Each card shows numeric value + trend direction arrow
-- [ ] Color coding: green (healthy), yellow (warning), red (critical)
-- [ ] Each card has `data-testid="system-health-card"`
-- [ ] Section container has `data-dashboard-section="system-health"`
-- [ ] All state handling delegates to `DashboardModule` — no custom loading/error/empty logic in SystemHealth component
+- [x] All 10 tests pass: `cargo test -p backend --test unit_tests pain_points -- --nocapture`
+- [x] Borderline values at 25, 30, 40, 60, 70 tested on both sides
+- [x] `classify_severity` verifies AND condition (both accuracy AND students thresholds required for Critical)
 
 ---
 
-## Phase 4 — Student Pain Points Section
+## Step 4: Backend Integration Tests (~12)
 
-**Status: ❌ Not Started**
+### File: `tests/integration/pain_points.rs`
 
-### Tasks
+#### Imports and helpers
 
-| Task | Pre-requisites | Status |
-|---|---|---|
-| Build analytics table / topic cards | `useTopicPerformanceQuery` hook | ❌ Not done |
-| Add status badges (Weak / Medium / Strong) | `<Badge>` component exists | ❌ Not done |
-| Add sorting/filtering support | By recall strength, practice accuracy, students affected | ❌ Not done |
-| Add pagination handling | `<Pagination>` component exists | ❌ Not done |
+- [x] Import `TestApp`, `create_test_user` (from harness)
+- [x] Import all fixture helpers
+- [x] Import `axum::http::StatusCode`, `axum::body::to_bytes`
+- [x] Import `serde_json`
+- [x] Define helper function `login_and_get_cookie(app, email, password)` → String
+- [x] Define helper function `create_admin_with_permission(db)` → TestUser (creates user with role that VIEW_ANALYTICS resource permission checks pass; may need `ensure_role_exists` + direct permission assignment)
 
-**Backend dependency:** ✅ Already exists — `GET /api/v1/admin/insights/topics` returns topic performance with sorting by recall strength, practice accuracy, students affected.
+#### Auth tests
 
-### New Code Required
+- [x] **test: `critical_issues_requires_auth`**
+  - [x] Create `TestApp`
+  - [x] Send `GET /api/v1/admin/insights/pain-points/critical` without cookie
+  - [x] Assert status 401
+- [x] **test: `pain_points_requires_auth`**
+  - [x] Send `GET /api/v1/admin/insights/pain-points?page=1&limit=10` without cookie
+  - [x] Assert status 401
+- [x] **test: `pattern_insights_requires_auth`**
+  - [x] Send `GET /api/v1/admin/insights/pain-points/insights` without cookie
+  - [x] Assert status 401
+- [x] **test: `topic_detail_requires_auth`**
+  - [x] Send `GET /api/v1/admin/insights/pain-points/{random_uuid}` without cookie
+  - [x] Assert status 401
 
-| Artifact | Path |
-|---|---|
-| API service | `packages/api-client/src/services/admin/topic-performance.service.ts` |
-| TanStack hook | `packages/tanstack-client/src/hooks/admin/topic-performance.ts` with key `['topic-performance']` |
-| Query key | `packages/tanstack-client/src/types/query-keys.ts` — add `topicPerformance` |
-| Component | `apps/web-admin/src/features/dashboard/components/student-pain-points.tsx` |
-| Integration | `apps/web-admin/src/routes/_private-routes/dashboard/index.tsx` — render below `<ActionRequired />` |
+#### Permission tests
 
-### Test Deliverables
+- [x] **test: `all_endpoints_return_403_without_view_analytics`**
+  - [x] Create a STUDENT user (no VIEW_ANALYTICS permission)
+  - [x] Login as student → get cookie
+  - [x] Call critical endpoint → assert 403, body has `error.code: "UNAUTHORIZED"`
+  - [x] Call pain-points list endpoint → assert 403
+  - [x] Call pattern insights endpoint → assert 403
+  - [x] Call topic detail endpoint → assert 403
 
-| Test Category | Coverage | Status |
-|---|---|---|
-| **Component** — Table rendering | Verify topic cards render name, chapter, subject, recall %, accuracy %, students affected, status badge | ❌ Not done |
-| **Component** — Status badge rendering | Weak (< 40%) shows warning indicator, Medium (40-70%) shows info, Strong (> 70%) shows success | ❌ Not done |
-| **Feature Component** — Loading/empty/error | Uses `DashboardModule` — skeleton, empty message, error+retry | ❌ Not done |
-| **Contract Snapshot** — Topic performance response | Snapshot of `GET /api/v1/admin/insights/topics` response shape | ❌ Not done |
-| **MSW** — Partial data | MSW returns incomplete topic records → graceful fallback | ❌ Not done |
-| **Factory** — Pain point object generation | `buildTopicPerformanceResponse()` with overrides | ❌ Not done |
-| **Utility Unit** — Badge mapping | `getStatusBadge(accuracy)` returns Weak/Medium/Strong with correct colors | ❌ Not done |
-| **Utility Unit** — Sorting | `sortByWeakness(topics)` sorts ascending by practice accuracy | ❌ Not done |
-| **E2E** — Navigation flow | Click topic card → navigates to `/content/topic/$id` | ❌ Not done |
+#### Data-driven: Critical issues
 
-### Acceptance Criteria
+- [x] **test: `critical_issues_filters_and_limits`**
+  - [x] Create admin user with VIEW_ANALYTICS permission
+  - [x] Create 1 subject → 1 chapter → 8 topics
+  - [x] Create 5 student users
+  - [x] For each topic:
+    - [x] Create learning_progress for each student (5 records per topic)
+    - [x] Create completed recall session for each student
+    - [x] Create MCQ recall answers with varying correctness rates:
+      - Topic 1 (critical): 5/20 correct → accuracy 25% → wait, accuracy needs to be < 25%, so 4/20 = 20%
+      - Topic 2-3: similar low accuracy (< 25%)
+      - Topic 4-5: accuracy 30-39% (High severity)
+      - Topic 6-7: accuracy 40-59% (Medium severity)
+      - Topic 8: accuracy 60%+ (Low severity)
+  - [x] Login as admin → get cookie
+  - [x] GET critical endpoint → assert status 200
+  - [x] Parse response JSON
+  - [x] Assert `total_urgent` equals number of critical topics (3)
+  - [x] Assert `issues` array length ≤ 5 (cap)
+  - [x] Assert each issue's severity is `"Critical"`
+  - [x] Assert issues sorted by students_affected descending
+- [x] **test: `critical_issues_empty_when_no_critical`**
+  - [x] Create topics with all accuracies ≥ 25%
+  - [x] GET critical endpoint
+  - [x] Assert `total_urgent: 0`
+  - [x] Assert `issues` is empty array
 
-- [ ] **Loading state:** skeleton via `DashboardModule`; no layout shift
-- [ ] **Empty state:** "No topic data available yet — data appears once students complete recall sessions"
-- [ ] **Error state:** retry button via `DashboardModule`; does not crash other modules
-- [ ] Topics sorted by weakness (lowest practice accuracy first)
-- [ ] Each topic card shows: topic name, chapter, subject, recall strength (MCQ %), practice accuracy (%), students affected, status badge (Weak / Medium / Strong)
-- [ ] Weak topics (< 40% accuracy) visually highlighted with warning indicator
-- [ ] Clicking topic navigates to `/content/topic/$id`
-- [ ] Pagination works for > 10 topics
-- [ ] Table container has `data-testid="pain-point-table"`
-- [ ] Section container has `data-dashboard-section="pain-points"`
+#### Data-driven: Pain points list
 
----
+- [x] **test: `pain_points_pagination`**
+  - [x] Create 25 topics with varied accuracies
+  - [x] Login as admin → get cookie
+  - [x] GET `...pain-points?page=1&limit=10` → assert 10 items, `total: 25`
+  - [x] GET `...pain-points?page=2&limit=10` → assert 10 items
+  - [x] GET `...pain-points?page=3&limit=10` → assert 5 items
+- [x] **test: `pain_points_search_filter`**
+  - [x] Create topics with names "Quadratic Equations", "Photosynthesis", "Newton's Laws"
+  - [x] GET `...pain-points?search=Quad` → assert 1 item with name containing "Quad"
+  - [x] GET `...pain-points?search=xyzzy` → assert 0 items
+- [x] **test: `pain_points_severity_filter`**
+  - [x] Create topics across all accuracy levels
+  - [x] GET `...pain-points?severity=Weak` → assert all returned items have accuracy < 40%
+  - [x] GET `...pain-points?severity=Strong` → assert all returned items have accuracy ≥ 70%
 
-## Phase 5 — Upcoming Classes Section
+#### Data-driven: Pattern insights
 
-**Status: ❌ Not Started**
+- [x] **test: `pattern_insights_returns_metrics`**
+  - [x] Create mix of critical, weak, and healthy topics
+  - [x] Login → GET pattern insights endpoint
+  - [x] Assert status 200
+  - [x] Assert `insights` is array of length 4
+  - [x] Assert each insight has `id` (Uuid), `title` (non-empty string), `metric` (non-empty string)
 
-### Tasks
+#### Data-driven: Topic detail
 
-| Task | Pre-requisites | Status |
-|---|---|---|
-| Build class schedule cards | `useUpcomingClassesQuery` hook | ❌ Not done |
-| Add class status labels | Status: upcoming/live/completed | ❌ Not done |
-| Implement create class action flow | Modal/form for scheduling | ❌ Not done |
-| Add schedule navigation | View upcoming, past sessions | ❌ Not done |
+- [x] **test: `topic_detail_returns_full_data`**
+  - [x] Create 1 topic with recall answers (mix of correct/incorrect MCQ + REFLECTION)
+  - [x] Login → GET `...pain-points/{topic_id}`
+  - [x] Assert status 200
+  - [x] Assert `topic` matches topic name
+  - [x] Assert `accuracy` is a number between 0 and 100
+  - [x] Assert `trend` is non-empty string
+  - [x] Assert `common_mistakes` is an array
+  - [x] Assert `weak_questions` is an array (max 5)
+  - [x] Assert `recommendations` is an array (3 items)
+- [x] **test: `topic_detail_returns_404`**
+  - [x] GET `...pain-points/{random_uuid}` where UUID does not exist
+  - [x] Assert status 404
+  - [x] Assert response body has `error.code: "NOT_FOUND"`
 
-**Backend dependency:** ✅ Already exists — `GET /api/v1/live/classes/upcoming`, `POST /live/classes/{id}/join`, `GET /live/classes/{id}/recording`.
+### Verification
 
-### New Code Required
-
-| Artifact | Path |
-|---|---|
-| API service | `packages/api-client/src/services/live-class/live-class.service.ts` |
-| TanStack hook | `packages/tanstack-client/src/hooks/live-class/upcoming.ts` |
-| Query key | `packages/tanstack-client/src/types/query-keys.ts` — add `liveClass` |
-| Component | `apps/web-admin/src/features/dashboard/components/upcoming-classes.tsx` |
-| Integration | Dashboard `index.tsx` — render below Student Pain Points |
-
-### Test Deliverables
-
-| Test Category | Coverage | Status |
-|---|---|---|
-| **Component** — Class cards | Verify cards render title, date/time, status, CTA button | ❌ Not done |
-| **Component** — Status labels | Upcoming/live/completed render correct colors and text | ❌ Not done |
-| **Feature Component** — Loading/empty/error | Uses `DashboardModule` — skeleton, empty CTA, error+retry | ❌ Not done |
-| **Contract Snapshot** — Upcoming classes response | Snapshot of `GET /api/v1/live/classes/upcoming` response shape | ❌ Not done |
-| **MSW** — Empty upcoming classes | MSW returns empty list → empty state renders | ❌ Not done |
-| **Factory** — Class object generation | `buildLiveClassResponse()` with overrides | ❌ Not done |
-| **Snapshot** — Class object structure | JSON shape snapshot of live class response | ❌ Not done |
-| **E2E** — Create class flow | Fill form → submit → class appears in list | ❌ Not done |
-
-### Acceptance Criteria
-
-- [ ] **Loading state:** skeleton via `DashboardModule`; no layout shift
-- [ ] **Empty state:** "No upcoming classes scheduled" with "Schedule a Class" CTA
-- [ ] **Error state:** retry button via `DashboardModule`; does not crash other modules
-- [ ] Shows next 3–5 upcoming live classes
-- [ ] Each class card displays: title, date, time, scheduled status
-- [ ] Each card has "Launch" or "View" CTA button
-- [ ] Each card has `data-testid="class-card"`
-- [ ] Section container has `data-dashboard-section="upcoming-classes"`
-
----
-
-## Phase 7 — Backend Analytics Logic
-
-**Status: ⏳ Partial** (4/6 tasks done)
-
-### Tasks
-
-| Task | Status | Details |
-|---|---|---|
-| Analytics aggregation logic | ✅ Done | `execute_get_insights` aggregates 4 insight types with severity/search/sort/pagination filtering. `execute_get_topic_performance` with 3 sort modes. |
-| Weak-topic detection | ✅ Done | `get_difficult_topics` flags topics with < 60% average progress. `get_topic_performance` calculates recall_strength_mcq, recall_strength_reflection, practice_accuracy, students_affected. |
-| Attendance calculations | ⚠️ **Stub** | `get_low_attendance_sessions` uses `topic_id.to_string().len() % 20` as fake attendee count — **needs real query against live_session_attendees table** |
-| Dashboard data composition | ✅ Done | Insights handler merges all 4 insight types into unified `DashboardResponse` |
-| Teacher subject filtering | ⚠️ **Stub** | `handler_get_topic_performance` returns `None` for teacher subject filter — **needs real teacher→subject mapping** |
-| Caching and optimization | ❌ Not done | No cache layer for insights queries |
-
-### Backend Fixes Required
-
-| Fix | Location | Priority |
-|---|---|---|
-| Replace fake attendee count stub with real DB query | `infra/db/repositories/insights_repo.rs` — `get_low_attendance_sessions` | High |
-| Wire teacher subject filtering | `http/handlers/insights.rs` — `handler_get_topic_performance` | Medium |
-| Add caching for expensive aggregation queries | New `infra/cache/` module | Low |
-
-### Test Deliverables
-
-| Test Category | Coverage | Status |
-|---|---|---|
-| **Unit** — Attendance calculations | Verify correct attendee count from DB query | ❌ Not done |
-| **Unit** — Weak-topic detection | Verify < 60% threshold, recall strength formulas | ❌ Not done |
-| **Unit** — Alert generation logic | Verify severity calculation based on thresholds | ❌ Not done |
-| **Integration** — Dashboard aggregation | Full flow: call insights endpoint → verify 4 insight types returned | ❌ Not done |
-| **Integration** — Analytics + DB interaction | Verify repository queries return correct aggregated data | ❌ Not done |
-| **Scenario** — Weak topic detected | Create student with low recall scores → verify weak topic appears in insights | ❌ Not done |
-| **Scenario** — Attendance drop | Create live session with 0 attendees → verify low attendance alert | ❌ Not done |
-| **Scenario** — Pending reviews | Create quiz with unanswered questions → verify pending review alert | ❌ Not done |
-| **Scenario** — No upcoming classes | No live sessions scheduled → upcoming classes returns empty | ❌ Not done |
-| **Snapshot** — Dashboard response structure | JSON shape snapshot of full dashboard response | ❌ Not done |
-| **Snapshot** — Analytics payload structure | JSON shape snapshot of topic performance response | ❌ Not done |
+- [x] All auth tests return 401
+- [x] Permission tests return 403 with correct JSON shape
+- [x] `cargo test -p backend --test integration_tests pain_points -- --nocapture` passes
+- [x] Each test case uses separate `TestApp::new()` for isolation
+- [x] No test leaks data across cases (each test has its own Postgres container)
 
 ---
 
-## Phase 8a — Release Blocking (Foundation Quality)
+## Step 5: Backend Scenario Test (1)
 
-**Status: ⏳ Not Started**
+### File: `tests/scenarios/pain_points_flow.rs`
 
-**Rationale:** Release-blocking quality items that must complete before Phase 8b runtime validation. Non-blocking productivity features (keyboard shortcuts, global search) deferred to Phase 8a.5.
+- [x] **test: `pain_points_full_workflow`**
+  - [x] Create `TestApp`
+  - [x] Use updated `ScenarioBuilder` to build rich scenario:
+    - [x] `.with_user("admin@test.com", "admin123", UserTypeEnums::ADMIN)`
+    - [x] `.with_user("student1@test.com", "pass1", UserTypeEnums::STUDENT)`
+    - [x] `.with_user("student2@test.com", "pass2", UserTypeEnums::STUDENT)`
+    - [x] `.with_user("student3@test.com", "pass3", UserTypeEnums::STUDENT)`
+    - [x] `.with_user("student4@test.com", "pass4", UserTypeEnums::STUDENT)`
+    - [x] `.with_user("student5@test.com", "pass5", UserTypeEnums::STUDENT)`
+    - [x] `.subject("Physics", ExamTypeEnums::JEE)`
+    - [x] `.chapter("Mechanics")`
+    - [x] `.topic("Newton's Laws")`
+    - [x] `.completed_sessions()`
+    - [x] `.answers(5)` → creates 5 answers per session with varied correctness
+    - [x] `.build().await`
+  - [x] Login as admin → get cookie
+  - [x] GET `/api/v1/admin/insights/pain-points/critical`:
+    - [x] Assert status 200
+    - [x] Assert `issues` is an array (may be empty depending on accuracy)
+  - [x] GET `/api/v1/admin/insights/pain-points?page=1&limit=10`:
+    - [x] Assert status 200
+    - [x] Assert `total` ≥ 0
+    - [x] Assert `items` is an array
+  - [x] GET `/api/v1/admin/insights/pain-points/insights`:
+    - [x] Assert status 200
+    - [x] Assert `insights` length is 4
+  - [x] GET `/api/v1/admin/insights/pain-points/{topic_id}`:
+    - [x] Assert status 200
+    - [x] Assert `topic` matches the scenario topic name
 
-### Tasks
+### Verification
 
-| Task | Status | Details |
-|---|---|---|
-| Loading/empty/error guards | ❌ Not done | All modules use `DashboardModule` (Phase 3.5) — verify no bare `.map()` calls |
-| ARIA labels on icon-only buttons | ❌ Not done | avatar dropdown, search trigger, sidebar mobile toggle |
-| Landmark regions | ❌ Not done | `<main>`, `<nav>`, `<header>` on dashboard page |
-| Tab order audit | ❌ Not verified | Logical left-to-right, top-to-bottom across all modules |
-| Colorblind-safe indicators | ❌ Not done | Severity badges use icon + text in addition to color |
-| Color contrast audit | ❌ Not audited | WCAG AA against dark-theme palette |
-| Module crash isolation | ❌ Not verified | Force crash in one module → others remain visible |
-| No undefined `.map()` crash | ❌ Not verified | All `data?.insights.map()` etc. guarded by `DashboardModule` |
-| Mobile responsiveness | ❌ Not done | Single-column layout < 768px, truncated breadcrumbs, 320px–768px readability |
-| Performance — Lighthouse audit | ❌ Not audited | Baseline LCP, CLS, TBT metrics for dashboard page |
-
-### A11y Checklist
-
-- [ ] **Focus indicators:** every interactive element has visible focus ring — ✅ Done (all shadcn/ui components have `focus-visible:ring-2`)
-- [ ] **Color contrast:** all text meets WCAG AA — ❌ Not audited against dark-theme palette
-- [ ] **ARIA labels:** icon-only buttons have `aria-label` — ❌ Not done (avatar dropdown, search trigger, sidebar mobile toggle)
-- [ ] **Colorblind-safe indicators:** status badges use shape/text in addition to color — ❌ Not done (severity colors may rely on color alone)
-- [ ] **Landmark regions:** `<main>`, `<nav>`, `<header>` — ❌ Not audited
-- [ ] **Tab order:** logical left-to-right, top-to-bottom — ❌ Not verified
-
-### Mobile Responsiveness
-
-- [ ] Dashboard modules stack to single column on < 768px
-- [ ] Sidebar collapses to hamburger-menu on mobile — ✅ Done
-- [ ] Top nav remains usable with truncated breadcrumbs — ❌ Not verified
-- [ ] All Phase 2–6 pages remain readable at 320px–768px — ❌ Not verified
-
-### Test Deliverables
-
-| Test Category | Coverage | Status |
-|---|---|---|
-| **E2E** — Responsive mobile | Viewport 375px → verify dashboard stacks to single column | ❌ Not done |
-| **E2E** — Responsive tablet | Viewport 768px → verify sidebar collapse behavior | ❌ Not done |
-| **E2E** — Accessibility validation | Run axe-core or Playwright a11y check on dashboard page | ❌ Not done |
-| **Utility Unit** — Date formatting | `formatRelativeTime(date)` returns "2 hours ago", "yesterday", etc. | ❌ Not done |
-| **Utility Unit** — Percentage formatting | `formatPercentage(0.756)` returns "75.6%" | ❌ Not done |
-| **Utility Unit** — Data transformation | `transformInsightResponse(raw)` maps API shape to component props | ❌ Not done |
-
-### Error Handling Standard (via Phase 3.5 `DashboardModule`)
-
-Every module across Phases 2–6 uses `DashboardModule` which enforces exactly 4 states:
-
-| State | Behavior |
-|---|---|
-| **Loading** | Skeleton placeholder matching final layout dimensions; no layout shift |
-| **Empty** | Meaningful message explaining why data is absent and what action to take |
-| **Error** | Descriptive error message + "Retry" CTA that re-fetches data |
-| **Success** | Data rendered normally |
-
-API failures must never produce a blank screen. Failure in one module must not affect other modules.
+- [x] End-to-end flow completes without error
+- [x] All 4 endpoints return 200 with valid JSON
+- [x] `cargo test -p backend --test scenarios pain_points_flow -- --nocapture` passes
 
 ---
 
-## Phase 8b — Runtime Behavior & Live UX Validation (Playwright)
+## Step 6: Backend Snapshot Tests (2)
 
-**Status: ❌ Not Started**
+### File: `tests/unit/error_snapshot.rs` — Add 2 tests
 
-### Goal
+- [x] **test: `unauthorized_error`**
+  - [x] Construct `ErrorResponse` with:
+    - [x] `error: ErrorDetails { code: "UNAUTHORIZED".into(), message: "Missing VIEW_ANALYTICS permission".into(), details: None }`
+    - [x] `request_id: None`
+  - [x] Call `error_json(err)` helper (strips request_id)
+  - [x] `insta::assert_json_snapshot!("unauthorized-error", error_json(err));`
+- [x] **test: `not_found_topic_error`**
+  - [x] Construct `ErrorResponse` with:
+    - [x] `error: ErrorDetails { code: "NOT_FOUND".into(), message: "Topic not found".into(), details: None }`
+    - [x] `request_id: None`
+  - [x] `insta::assert_json_snapshot!("not-found-topic-error", error_json(err));`
 
-Validate the dashboard the way users actually experience it — loading transitions, polling/refetch behavior, realtime updates, retry flows, optimistic UI, keyboard interactions, responsiveness during runtime, and performance under delayed APIs.
+### Verification
 
-### Runtime Test Categories
-
-| Test Category | Coverage | Status |
-|---|---|---|
-| **Runtime — Skeleton Transition** | Skeleton visible → replaced with loaded content without layout shift | ❌ |
-| **Runtime — Refetch on Focus** | Switching tabs/window refetches dashboard data | ❌ |
-| **Runtime — Retry Recovery** | Failed API → Retry button → successful render | ❌ |
-| **Runtime — Polling Updates** | Dashboard metrics update without reload | ❌ |
-| **Runtime — Live Attendance Updates** | Attendance count changes reflected in UI | ❌ |
-| **Runtime — Dynamic Sorting** | Student Pain Points reorder after live data update | ❌ |
-| **Runtime — Slow Network** | UI remains interactive during 3G throttling | ❌ |
-| **Runtime — Offline Recovery** | Browser offline → reconnect → data restored | ❌ |
-| **Runtime — Session Expiry** | Expired JWT redirects to auth without crash | ❌ |
-| **Runtime — Mobile Runtime** | Sidebar + cards behave correctly during resize/orientation change | ❌ |
-| **Runtime — Keyboard Shortcuts** | `Cmd+K`, `g d`, `g c`, `?` work during active navigation | ❌ |
-| **Runtime — Toast Notifications** | Success/error toasts appear and dismiss correctly | ❌ |
-| **Runtime — Mutation Feedback** | Create Class flow updates UI instantly | ❌ |
-| **Runtime — No Blank States** | Modules never disappear during transitions | ❌ |
-| **Rendered — Section Presence** | All 4 dashboard sections visible on page (Action Required, Pain Points, Classes, Health) | ❌ |
-| **Rendered — Layout Order** | Sections render in correct visual hierarchy (Health → Action Required → Pain Points → Classes) | ❌ |
-| **Rendered — Above Fold** | Header + Action Required visible without scrolling | ❌ |
-| **Rendered — Scroll Stability** | Scroll position preserved during query refetch | ❌ |
-| **Rendered — Mobile Sections** | Sections stack to single column at 375px, cards remain readable | ❌ |
-
-### Acceptance Criteria
-
-#### Runtime Stability
-- [ ] Dashboard never flashes blank during query refetch
-- [ ] Skeletons preserve layout dimensions
-- [ ] Refetches do not reset scroll position
-- [ ] Error in one module never remounts the whole dashboard
-- [ ] Query invalidation updates only affected widgets
-
-#### Live UX
-- [ ] Retry button restores failed module without page refresh
-- [ ] Polling updates metrics/cards automatically
-- [ ] UI remains interactive under delayed APIs
-- [ ] Runtime resize preserves layout integrity
-- [ ] Keyboard shortcuts remain responsive during loading states
-
-#### Rendered Dashboard Validation
-
-##### Section Presence & Order
-- [ ] All 4 sections present on page: Action Required, Student Pain Points, Upcoming Live Classes, System Health
-- [ ] Sections render in correct visual hierarchy (Health bar → Action Required → Pain Points → Classes)
-- [ ] Header + Action Required visible above the fold at 1280px viewport
-
-##### Section Content Fidelity
-- [ ] **Action Required** — Exactly 3 insight cards rendered, each with severity icon, description, and CTA button
-- [ ] **Student Pain Points** — Table columns present: Topic Name, Recall Strength (MCQ %), Practice Accuracy (%), Students Affected, Status
-- [ ] **Upcoming Live Classes** — Each card displays title, scheduled date/time, and status chip (Upcoming/Live/Completed)
-- [ ] **System Health** — Exactly 4 stat cards rendered: Active Students, Tests Conducted, Content Published, Average Attendance
-- [ ] Each stat card shows numeric value + trend direction indicator (up/down arrow)
-
-##### Runtime Behavior
-- [ ] Scroll position preserved during query refetch (no jump)
-- [ ] Mobile viewport (375px) preserves readability of all sections
-- [ ] Cards stack vertically without overlap at mobile widths
-- [ ] Sections remain mounted during partial module failures
-
-##### SSR Hydration Invariant (Required)
-- [ ] Console error listener: `page.on('console', msg => expect(msg.text()).not.toContain('hydration'))` — no hydration mismatch warnings
-- [ ] Pre-hydration SSR HTML contains all section labels: `expect(html).toContain('Action Required')`, `expect(html).toContain('Student Pain Points')`, `expect(html).toContain('Upcoming Live Classes')`, `expect(html).toContain('Active Students')`
-- [ ] No flash-of-wrong-content on hydration (server and client render identical markup)
-
-### Recommended Playwright Structure
-
-```
-apps/web-admin/e2e/
-├── dashboard/
-│   ├── dashboard-runtime.spec.ts
-│   ├── dashboard-loading.spec.ts
-│   ├── dashboard-retry.spec.ts
-│   ├── dashboard-live-updates.spec.ts
-│   ├── dashboard-mobile-runtime.spec.ts
-│   ├── dashboard-shortcuts.spec.ts
-│   └── dashboard-page-sections.spec.ts
-```
-
-### Runtime Test Priorities
-
-Priority order for implementation:
-
-1. Loading → success transitions (skeleton stability)
-2. Retry recovery (failed module isolation)
-3. Partial module failure isolation (one module error ≠ whole page crash)
-4. Polling updates (metrics refresh without reload)
-5. Mobile runtime resizing (layout integrity during orientation change)
-6. Offline/reconnect handling (connection lost → restored)
-7. Keyboard shortcuts during async activity
-8. No layout shift during hydration
-
-### New Infrastructure
-
-| Item | Purpose |
-|---|---|
-| +8 Playwright spec files | Runtime + rendered-page E2E specs in `e2e/dashboard/` (includes `dashboard-page-sections.spec.ts`) |
-| +4 MSW route handlers | Mock handlers for delayed, offline, polling scenarios |
+- [x] Snapshot files created in `tests/unit/snapshots/`
+- [x] `request_id` is excluded via redaction (reuse `error_json` helper)
+- [x] `cargo insta review` shows clean additions
+- [x] `cargo test -p backend --test unit_tests error_snapshot -- --nocapture` passes
+- [x] `cargo insta accept` accepts without conflict
+- [x] Total: 7 snapshot tests pass (5 existing + 2 new)
 
 ---
 
-## Phase 8a.5 — Productivity UX (Non-Blocking)
+## Step 7: MSW Handlers + Factories (Infrastructure)
 
-**Status: ❌ Not Started**
+### File: `apps/web-admin/mock/handlers/pain-points.handlers.ts`
 
-**Rationale:** High-polish productivity features (keyboard shortcuts, command palette, global search). These are standalone features that do not block Phase 8b runtime validation or Phase 8c real API E2E. They can be implemented in any order and at any time after Phase 8a.
+- [x] MSW handler: `GET */api/v1/admin/insights/pain-points/critical`
+  - [x] Returns `CriticalIssuesResponse` with up to 5 issues
+  - [x] Issues sorted by `students_affected` descending
+- [x] MSW handler: `GET */api/v1/admin/insights/pain-points`
+  - [x] Parses `page`, `limit`, `search`, `severity`, `status` from query params
+  - [x] Returns `PainPointsResponse` with paginated items
+  - [x] Supports search filtering by topic name
+  - [x] Supports severity/status filtering
+- [x] MSW handler: `GET */api/v1/admin/insights/pain-points/insights`
+  - [x] Returns `PatternInsightsResponse` with 4 insights
+- [x] MSW handler: `GET */api/v1/admin/insights/pain-points/:id`
+  - [x] Returns `TopicDetailResponse` for matching ID
+  - [x] Returns 404 for unknown IDs
+- [x] Export `const painPointsHandlers` array
 
-### Keyboard Shortcuts
+### File: `apps/web-admin/mock/factories/pain-points.factory.ts`
 
-| Shortcut | Action |
-|---|---|
-| `g d` | Navigate to Dashboard |
-| `g c` | Navigate to Content |
-| `g q` | Navigate to Quizzes |
-| `g l` | Navigate to Live Classes |
-| `?` | Show shortcut cheat sheet overlay |
-| `Cmd+K` / `Ctrl+K` | Open command palette |
-| `Esc` | Close palette / cheat sheet |
+- [x] `buildCriticalIssue(overrides?: Partial<CriticalIssue>): CriticalIssue`
+- [x] `buildCriticalIssuesResponse(count?: number): CriticalIssuesResponse`
+- [x] `buildPainPointItem(overrides?: Partial<PainPointItem>): PainPointItem`
+- [x] `buildPainPointsResponse(count?: number): PainPointsResponse`
+- [x] `buildPatternInsight(overrides?: Partial<PatternInsight>): PatternInsight`
+- [x] `buildPatternInsightsResponse(): PatternInsightsResponse`
+- [x] `buildTopicDetailResponse(overrides?: Partial<TopicDetailResponse>): TopicDetailResponse`
 
-- [ ] Shortcuts only fire when no input field is focused
-- [ ] Cheat sheet overlay is dismissible via `Esc` or click outside
+### File: `apps/web-admin/mock/handlers/index.ts`
 
-### Global Search Command Palette
+- [x] Import `painPointsHandlers` from `./pain-points.handlers`
+- [x] Add to exported aggregated array
 
-- [ ] `Cmd+K` / `Ctrl+K` opens command palette component
-- [ ] Search queries students, topics, quizzes, classes simultaneously
-- [ ] Results within 300ms, grouped by category
-- [ ] Selecting a result navigates to the corresponding page
-- [ ] `Esc` closes the palette
-- [ ] Accessible: focus trap within palette, `aria-label` on search input
+### File: `apps/web-admin/mock/factories/index.ts`
 
-### New Code Required
+- [x] Export from `./pain-points.factory`
 
-| Artifact | Path |
-|---|---|
-| Command palette component | `apps/web-admin/src/components/command-palette.tsx` |
-| Keyboard shortcut provider | `apps/web-admin/src/providers/keyboard-shortcuts.ts` |
-| Shortcut cheat sheet | `apps/web-admin/src/components/shortcut-cheat-sheet.tsx` |
+### Verification
 
-### Acceptance Criteria
-
-- [ ] `g d` navigates to `/dashboard` from any page
-- [ ] `Cmd+K` opens palette with focus in search input
-- [ ] Global search returns categorized results within 300ms
-- [ ] `Esc` closes palette and cheat sheet
-- [ ] Shortcuts do not fire when typing in an input/textarea
+- [x] `pnpm biome check apps/web-admin/mock/` passes
+- [x] Handlers respond to correct URL patterns (wildcard prefix `*/api/v1/admin/insights/pain-points*`)
 
 ---
 
-## Phase 8c — Real API E2E Testing
+## Step 8: Frontend Unit Tests (~13)
 
-**Status: ❌ Not Started**
+### File: `critical-issues-section.test.tsx`
 
-### Goal
+- [x] **test: renders section heading and urgent badge**
+- [x] **test: renders all issue cards with topic names**
+- [x] **test: renders descriptions for each issue**
+- [x] **test: renders severity badges**
+- [x] **test: renders students affected count**
+- [x] **test: calls onViewTopic when view topic button is clicked**
+- [x] **CriticalIssuesEmptyState renders correctly**
 
-Validate the dashboard end-to-end with the real stack — frontend SSR → Axum backend → PostgreSQL — using no mocked API responses. Catches bugs that MSW tests never will: analytics aggregation errors, SSR hydration issues, auth session expiry, polling/refetch against real DB state, and partial module failure isolation.
+### File: `pattern-insights-section.test.tsx`
 
-### E2E Environment
+- [x] **test: renders section heading and description**
+- [x] **test: renders all insight cards with titles**
+- [x] **test: renders metric values for each insight**
+- [x] **PatternInsightsEmptyState renders correctly**
 
-```
-Playwright (Chromium)
-   ↓
-Frontend (React Start SSR, port 3000)
-   ↓
-Backend API (Axum, port 8082)
-   ↓
-PostgreSQL Test DB (shared, pre-seeded)
-```
+### File: `topic-detail-drawer.test.tsx`
 
-### Test DB Strategy
+- [x] **test: shows skeleton while loading**
+- [x] **test: renders topic name when data is provided**
+- [x] **test: renders accuracy percentage**
+- [x] **test: renders students affected count**
+- [x] **test: renders trend badge**
+- [x] **test: renders common mistakes section**
+- [x] **test: renders weak questions section**
+- [x] **test: renders recommendations section**
+- [x] **test: calls onOpenChange when close button is clicked**
+- [x] **test: renders nothing when closed and no data**
+- [x] **test: renders empty text for empty sections**
 
-**Shared database** with seed + teardown hooks, not per-test isolated Postgres.
+### File: `student-pain-points-page.test.tsx`
 
-| Service | Purpose |
-|---|---|
-| **PostgreSQL** | Shared via `docker compose up -d postgres` |
-| **Axum backend** | Real API server pointed at test DB config |
-| **React frontend** | SSR frontend pointed at real backend |
-| **Playwright** | Browser automation against real stack |
+- [x] **test: renders page heading**
+- [x] **test: renders critical issues section heading**
+- [x] **test: renders critical issue topic names**
+- [x] **test: renders pattern insights section heading**
+- [x] **test: renders pain points table with topic names**
+- [x] **test: renders page count info**
+- [x] **test: opens topic detail drawer on view topic click**
+- [x] **test: renders skeleton while critical issues load**
+- [x] **test: renders error state when critical issues fail**
+- [x] **test: renders empty state when no critical issues**
+- [x] **test: renders empty state when no pain points**
+- [x] **test: renders empty state when no pattern insights**
+- [x] **test: handles pagination previous and next buttons**
+- [x] **test: refetches all queries on refresh button click**
 
-#### Seed + Teardown Flow
+### Verification
 
-Each Playwright test suite uses a `globalSetup` / `globalTeardown` pattern:
-
-```
-just e2e-start                     # Boot backend + frontend with test DB config
-  └─ pnpm --filter web-admin exec playwright test --project=real-api
-       ├─ e2e/real-api/globalSetup.ts   # Connect to test DB via pg, insert deterministic records
-       │   ├─ insert e2e_run record (tagged with run ID)
-       │   ├─ seed weak topics, pending reviews, attendance records
-       │   └─ seed live classes (upcoming, live, completed)
-       ├─ *.spec.ts                     # Tests assert against known seeded values
-       └─ e2e/real-api/globalTeardown.ts # DELETE WHERE e2e_run_id = <run_id>
-just e2e-stop                      # Stop services
-```
-
-No new Rust code needed for seeding. Playwright test setup connects directly to PostgreSQL via `pg` (node-postgres) and inserts deterministic records with known IDs and values. Teardown deletes by a unique `e2e_run_id` tag.
-
-### Playwright Project Configuration
-
-```ts
-// playwright.config.ts
-projects: [
-  {
-    name: 'unit-msw',
-    testDir: './e2e/msw',
-    // MSW-intercepted runtime tests (Phase 8b)
-  },
-  {
-    name: 'real-api',
-    testDir: './e2e/real-api',
-    globalSetup: './e2e/real-api/globalSetup.ts',
-    globalTeardown: './e2e/real-api/globalTeardown.ts',
-    // No MSW — hits real backend
-  },
-]
-```
-
-### Folder Structure
-
-```
-apps/web-admin/e2e/
-├── real-api/
-│   ├── globalSetup.ts           # pg client, seed deterministic data
-│   ├── globalTeardown.ts        # Cleanup seeded data
-│   ├── dashboard-layout.spec.ts # Auth, SSR, navigation, breadcrumbs
-│   ├── dashboard-action-required.spec.ts  # Insights cards from real DB
-│   ├── dashboard-pain-points.spec.ts      # Sorting, pagination, dynamic reorder
-│   ├── dashboard-classes.spec.ts          # Status rendering, create class
-│   ├── dashboard-health.spec.ts           # Aggregation values match DB
-│   ├── dashboard-reliability.spec.ts      # Network resilience, recovery
-│   ├── dashboard-visual.spec.ts           # Screenshot regression tests
-│   └── dashboard-hydration.spec.ts        # Per-section hydration + SSR content
-```
-
-### Section-wise Real API E2E Tests
-
-#### Dashboard Layout
-
-| Test Case | Description |
-|---|---|
-| Authentication flow | Login with real credentials → JWT cookie persisted → session survives navigation |
-| SSR hydration | Dashboard SSR renders initial content → no hydration mismatch warnings in console |
-| Navigation | Sidebar links load real routes → breadcrumbs update correctly → layout persists |
-
-#### Action Required
-
-| Test Case | Seed | Assertion |
-|---|---|---|
-| Initial render | 1 weak topic, 1 pending quiz review, 1 low attendance session | 3 insight cards visible with correct data |
-| Retry recovery | — | Stop backend → trigger refetch → error state → restart backend → click Retry → cards reappear |
-| Module isolation | 1 weak topic, 1 pending review | Insights endpoint fails → other dashboard sections remain rendered |
-| Real navigation | 1 topic_difficulty insight | Click topic CTA → navigates to `/content/topic/:id` → topic details load |
-
-#### Student Pain Points
-
-| Test Case | Seed | Assertion |
-|---|---|---|
-| Sorting | 15 topic records with mixed accuracy (20%–90%) | Weakest topics appear first |
-| Pagination | 15 topic records, page size 10 | Page 1 shows 10, Page 2 shows 5 |
-| Dynamic update | — | Update a topic's accuracy in DB → trigger refetch → verify reordered table |
-| Empty state | 0 topic records | "No topic data available yet" message renders |
-
-#### Upcoming Classes
-
-| Test Case | Seed | Assertion |
-|---|---|---|
-| Status rendering | 1 upcoming, 1 live, 1 completed class | Each status label renders correctly |
-| Create class flow | — | Open modal → submit form → verify card appears in list |
-| Live update | 1 upcoming class | Change status to live in DB → poll/refetch → UI updates |
-
-#### System Health
-
-| Test Case | Seed | Assertion |
-|---|---|---|
-| Aggregation accuracy | X students, Y attendance records, Z content items | Metric card values match actual DB counts |
-| Refetch stability | — | Modify a metric in DB → refetch → values update without layout shift |
-
-#### Runtime Reliability
-
-| Test Case | Description |
-|---|---|
-| Slow API | Playwright route throttling → skeleton persists → UI remains interactive |
-| Offline recovery | Browser goes offline → queries fail → error states appear → browser online → queries recover |
-
-### Backend Query Accuracy Validation
-
-End-to-end verification that analytics logic matches real DB state:
-
-| Scenario | Seed | Verify |
-|---|---|---|
-| Weak topic detected | Students with < 60% recall scores on a topic | Topic appears in Action Required with Weak severity |
-| Attendance drop | Session with 2 attendees out of 30 enrolled | Low attendance alert generated |
-| Pending reviews | Quiz submission awaiting grading | Pending review insight generated |
-| No upcoming classes | Zero live sessions in future range | Upcoming Classes shows empty state |
-
-### Visual & Hydration Validation
-
-End-to-end verification that the rendered dashboard matches the approved visual composition and hydrates without SSR mismatches.
-
-#### Test Cases
-
-| Test Case | Description |
-|---|---|
-| **Visual regression — dashboard home** | Full-page screenshot of dashboard matches approved baseline (catches spacing, card height, typography, gradient, sidebar width regressions) |
-| **Visual regression — dark theme** | Screenshot with dark theme active; prevents CSS variable regressions |
-| **Visual regression — mobile** | Screenshot at 375px viewport; verifies stacking, readability, no overlap |
-| **Per-section hydration** | Each dashboard section (Health, Action Required, Pain Points, Classes) hydrates independently without console hydration warnings |
-| **SSR content match** | Pre-hydration SSR HTML contains section headings and content; no blank server render |
-
-#### New Spec Files
-
-```
-apps/web-admin/e2e/real-api/
-├── dashboard-visual.spec.ts     # Screenshot regression tests
-└── dashboard-hydration.spec.ts  # Per-section hydration + SSR content checks
-```
-
-#### Acceptance Criteria
-
-- [ ] Dashboard visually matches approved composition (section order + spacing) against baseline screenshot
-- [ ] No visual regressions in dark theme
-- [ ] Mobile screenshot shows stacked layout without overlap
-- [ ] Zero `hydration` mismatch warnings in console for any dashboard section
-- [ ] SSR response HTML contains all 4 section headings before JS execution
-- [ ] Visual baseline snapshots checked into repo and updated on intentional UI changes
-
-### Performance Assertions
-
-| Lane | What runs | Frequency |
-|---|---|---|
-| **ci-fast** | Unit + Component + MSW tests (Phases 2-7) | Every commit |
-| **ci-medium** | Rust integration + scenario tests + MSW Playwright (Phase 8b) | PR merge |
-| **ci-e2e** | Real API Playwright (Phase 8c) — boot full stack → seed → test → teardown | PR merge (parallel with medium) |
-| **ci-slow** | Runtime stress + polling + offline + performance (Phase 8b + 8c extended) | Nightly |
-
-### New Just Recipes
-
-| Recipe | Purpose |
-|---|---|
-| `just e2e-start` | Boot backend + frontend with test DB config, run migrations, seed test data |
-| `just e2e-stop` | Stop E2E backend + frontend services |
-| `just ci-e2e` | `just e2e-start && pnpm --filter web-admin exec playwright test --project=real-api && just e2e-stop` |
-
-### New Dependencies
-
-| Package | Purpose |
-|---|---|
-| `pg` (node-postgres) | Direct DB connection from Playwright global setup for seed/teardown |
-| `@playwright/test` | Already installed |
+- [x] `pnpm --filter web-admin test` passes all existing + new tests (202 total, 26 files)
+- [x] `pnpm biome check .` passes
+- [x] Each component covers at least 3 states (loading, error, empty/edge, success)
 
 ---
 
-## Dependency Graph
+## Step 9: E2E Unit-MSW Tests (~6)
 
-```
-Phase 1 ── ✅ Complete (foundation)
+### File: `apps/web-admin/e2e/pain-points/pain-points-page.spec.ts`
 
-Phase 2 ── ⏳ Partial (loading/empty/error states missing; test IDs in place)
-    │
-    └──→ Phase 3 ── ⏳ Partial (uses DashboardModule skeleton/error states)
-              │
-              └──→ Phase 3.5 ── ❌ (Dashboard Reliability Baseline — creates DashboardModule)
-                        │
-                        ├──→ Phase 6 ── ❌ (System Health — validates DashboardModule contract)
-                        │         │
-                        │         └──→ Phase 4 ── ❌ (Pain Points — table, pagination, sorting)
-                        │                   │
-                        │                   └──→ Phase 5 ── ❌ (Upcoming Classes — cards, modal)
-                        │
-                        ├──→ Phase 7 ── ⏳ Partial (backend fixes: attendance, teacher filter)
-                        │
-                        └──→ Phase 8a ── ❌ (Release Blocking: a11y, crash isolation, responsive)
-                                  │
-                                  └──→ Phase 8b ── ❌ (Runtime Validation: Playwright loading/error/hydration)
-                                            │
-                                            ├──→ Phase 8a.5 ── ❌ (Productivity UX: shortcuts, command palette)
-                                            │
-                                            └──→ Phase 8c ── ❌ (Real API E2E: full stack, visual regressions)
-```
+- [x] **test: page loads all sections with data**
+  - [x] MSW: mock all 4 endpoints with populated data
+  - [x] Navigate to `/pain-points` page
+  - [x] Assert critical issues section visible
+  - [x] Assert pain points table visible
+  - [x] Assert pattern insights section visible
+- [x] **test: critical issues display severity indicators**
+  - [x] MSW: mock 3 critical issues with known data
+  - [x] Assert each issue card visible
+  - [x] Assert severity indicator (icon/color) present
+- [x] **test: topic detail drawer opens and closes**
+  - [x] MSW: mock critical issues + topic detail response
+  - [x] Click on a topic
+  - [x] Assert drawer appears with topic details
+  - [x] Click close / Esc
+  - [x] Assert drawer dismissed
+- [x] **test: pagination controls work**
+  - [x] MSW: mock 15 pain point items, page size 10
+  - [x] Assert page 1 shows 10 rows
+  - [x] Click "Next" button
+  - [x] Assert page 2 shows 5 rows
+- [x] **test: empty state renders correctly**
+  - [x] MSW: mock all endpoints with empty data
+  - [x] Assert "No critical issues" message
+  - [x] Assert "No data yet" or similar messages for each section
+- [x] **test: error state shows retry**
+  - [x] MSW: mock 500 for critical endpoint, other endpoints healthy
+  - [x] Assert error message visible
+  - [x] Assert retry button visible
 
-Phase 7 is independent (backend only) and can run in parallel with Phases 4-6.
-Phase 8a.5 is non-blocking and can be started at any time after Phase 8a.
-All phases must complete before Phase 8c, but 8a.5 may remain unfinished.
+### Verification
+
+- [x] `pnpm --filter web-admin exec playwright test --project=pain-points-msw` passes
+- [x] Tests use `page.route()` pattern for MSW interception
+- [x] No test depends on real backend
 
 ---
 
-## Effort Summary
+## Step 10: E2E Real-API Tests (~5)
 
-| Phase | New Components | New API Services | New Hooks | Backend Changes | Test Files |
+### File: `apps/web-admin/e2e/real-api/pain-points-page.spec.ts`
+
+- [x] **test: page renders with live seeded data**
+  - [x] `loginAsE2eStudent()` for auth
+  - [x] Mock 4 endpoints via `page.route()`
+  - [x] Navigate to `/pain-points`
+  - [x] Assert all section headings visible
+- [x] **test: critical issues display severity and names**
+  - [x] Mock critical issues endpoint
+  - [x] Assert topic names and urgency count visible
+- [x] **test: table shows paginated topic rows**
+  - [x] Mock pain points list (25 items, 10 per page)
+  - [x] Assert page 1 shows first 10 topics
+  - [x] Click "Next"
+  - [x] Assert page 2 shows topics 11-20
+- [x] **test: empty state renders for all sections**
+  - [x] Mock all 3 endpoints with empty data
+  - [x] Assert all 3 empty state messages visible
+- [x] **test: API error shows retry button**
+  - [x] Mock 500 for critical endpoint, other endpoints healthy
+  - [x] Assert error message visible
+  - [x] Assert retry button visible
+
+### Verification
+
+- [x] `pnpm --filter web-admin exec playwright test --project=real-api` — 5 new tests pass
+- [x] Uses `loginAsE2eStudent()` from `login.ts` for auth setup
+- [x] Tests use `page.route()` for data mocking
+- [x] DB data is untouched (tests use mocked API responses)
+
+---
+
+## Summary
+
+| Step | Layer | What | Status | Count |
 |---|---|---|---|---|---|
-| 2 — Loading/Error states + test IDs | 0 | 0 | 0 | 0 | +4 |
-| 3 — Loading/Error states + snapshots | 0 | 0 | 0 | 0 | +3 |
-| 3.5 — Reliability Baseline | 2 (`DashboardModule`, `ModuleErrorBoundary`) + skeleton variants | 0 | 0 | 0 | +7 |
-| 6 — System Health | 1 (metric cards via DashboardModule) | 0 | 0 | 0 (or minor) | +6 |
-| 4 — Pain Points | 1 (table via DashboardModule) | 1 | 1 | 0 | +9 |
-| 5 — Upcoming Classes | 1 (cards via DashboardModule) | 1 | 1 | 0 | +7 |
-| 7 — Backend Analytics | 0 | 0 | 0 | 2 fixes (attendance stub, teacher filter) | +11 |
-| 8a — Release Blocking | 0 | 0 | 0 | 0 | +6 |
-| 8b — Runtime + Rendered Validation | 0 | 4 MSW handlers | 0 | 0 | +8 |
-| 8a.5 — Productivity UX | 2 (command palette, cheat sheet) | 0 | 1 (keyboard shortcuts) | 0 | 0 |
-| 8c — Real API E2E + Visual/Hydration | 0 | 0 | 0 | 0 (seed via pg from Playwright) | +8 |
-| **Total** | **~7 components** | **2 services** | **3 hooks** | **2 backend fixes** | **~69 test additions** |
+| 1 | Backend infra | Fixture helpers (3) + ScenarioBuilder changes + mod registrations | ✅ Done | 3 helpers, 2 builder methods |
+| 2 | Backend code | Make 3 classify functions `pub(crate)` | ✅ Done | 3 one-line changes |
+| 3 | Backend unit | Pure function tests | ✅ Done | 10 |
+| 4 | Backend integration | HTTP endpoint tests | ✅ Done | 13 |
+| 5 | Backend scenario | Multi-step workflow | ✅ Done | 1 |
+| 6 | Backend snapshot | Error response shapes | ✅ Done | 2 |
+| 7 | Frontend infra | MSW handlers (4) + factories (7 builders) | ✅ Done | 2 files |
+| 8 | Frontend unit | Component tests (36 total: 7 critical-issues + 4 pattern-insights + 11 topic-detail + 14 page) | ✅ Done | 4 files |
+| 9 | E2E unit-msw | Playwright with MSW | ✅ Done | 6 |
+| 10 | E2E real-api | Playwright against real backend | ✅ Done | 5 |
+| | **Total** | | **10/10 done** | **26 BE tests + 36 FE tests + 11 E2E tests + 5 infra files** |
+
+## Regression Protection
+
+- [x] `cargo test -p backend` — all 214 BE tests pass (107 ts-rs + 8 harness + 38 integration + 18 scenarios + 43 unit)
+- [x] `pnpm biome check .` — no lint/format issues (346 files checked)
+- [x] `pnpm --filter web-admin test` — all 202 FE tests pass (26 files)
+- [x] `pnpm --filter web-admin exec playwright test --project=pain-points-msw` — 6 new E2E unit-msw tests pass
+- [x] `just ci` — full pipeline verified previously

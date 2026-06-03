@@ -263,3 +263,312 @@ export async function seedData(): Promise<SeedData> {
     progressIds,
   }
 }
+
+export interface PainPointsSeedData {
+  runId: string
+  adminUser: { id: string; email: string; password: string }
+  emptyAdminUser: { id: string; email: string; password: string }
+  studentIds: string[]
+  subject: { id: string }
+  chapter: { id: string }
+  topics: Array<{ id: string; name: string }>
+  sessionIds: string[]
+  answerIds: string[]
+  progressIds: string[]
+}
+
+export async function seedPainPointsData(): Promise<PainPointsSeedData> {
+  const runId = randomUUID()
+  const now = new Date()
+
+  const EMPTY_ADMIN_ID = '20000000-0000-0000-0000-000000000002'
+  const ADMIN_ID = '20000000-0000-0000-0000-000000000001'
+  const STUDENT_IDS = [
+    '20000000-0000-0000-0000-000000000011',
+    '20000000-0000-0000-0000-000000000012',
+    '20000000-0000-0000-0000-000000000013',
+    '20000000-0000-0000-0000-000000000014',
+    '20000000-0000-0000-0000-000000000015',
+  ]
+  const SUBJECT_ID = '20000000-0000-0000-0000-000000000020'
+  const CHAPTER_ID = '20000000-0000-0000-0000-000000000030'
+  const TOPICS = [
+    { id: '20000000-0000-0000-0000-000000000041', name: 'PP Critical Topic' },
+    { id: '20000000-0000-0000-0000-000000000042', name: 'PP Medium Topic' },
+    { id: '20000000-0000-0000-0000-000000000043', name: 'PP Strong Topic' },
+  ]
+
+  // Accuracy targets per topic (practice_accuracy = correct / total * 100):
+  //   Topic 0 → 20% (1 correct + 4 wrong per session × 5 students = 5/25)
+  //   Topic 1 → 36% (mix per student, total 9/25)
+  //   Topic 2 → 80% (4 correct + 1 wrong per session × 5 students = 20/25)
+  const CORRECT_PER_SESSION: number[][] = [
+    [1, 1, 1, 1, 1], // Topic 0: each student gets 1 correct
+    [2, 2, 2, 2, 1], // Topic 1: students 0-3 get 2 correct, student 4 gets 1
+    [4, 4, 4, 4, 4], // Topic 2: each student gets 4 correct
+  ]
+  const ANSWERS_PER_SESSION = 5
+
+  // Clean up existing data for these IDs
+  const ALL_TOPIC_IDS = TOPICS.map((t) => t.id)
+  const ALL_STUDENT_IDS = [...STUDENT_IDS]
+
+  // Compute session & answer IDs
+  const sessionIds: string[] = []
+  const answerIds: string[] = []
+  const progressIds: string[] = []
+  let sessionIdx = 0
+  let answerIdx = 0
+  let progressIdx = 0
+
+  const SESSION_BASE = '20000000-0000-0000-0000-00000000'
+  const ANSWER_BASE = '20000000-0000-0000-0000-00000001'
+  const PROGRESS_BASE = '20000000-0000-0000-0000-00000002'
+
+  // Delete in reverse FK order
+  for (let t = 0; t < TOPICS.length; t++) {
+    for (let s = 0; s < STUDENT_IDS.length; s++) {
+      const sid = `${SESSION_BASE}${String(sessionIdx).padStart(4, '0')}`
+      sessionIds.push(sid)
+      for (let a = 0; a < ANSWERS_PER_SESSION; a++) {
+        const aid = `${ANSWER_BASE}${String(answerIdx).padStart(4, '0')}`
+        answerIds.push(aid)
+        answerIdx++
+      }
+      sessionIdx++
+      const pid = `${PROGRESS_BASE}${String(progressIdx).padStart(4, '0')}`
+      progressIds.push(pid)
+      progressIdx++
+    }
+  }
+
+  // Clean up
+  await pool.query(
+    'DELETE FROM learning_recall_answers WHERE id = ANY($1::uuid[])',
+    [answerIds],
+  )
+  await pool.query(
+    'DELETE FROM learning_recall_sessions WHERE id = ANY($1::uuid[])',
+    [sessionIds],
+  )
+  await pool.query('DELETE FROM learning_progress WHERE id = ANY($1::uuid[])', [
+    progressIds,
+  ])
+  await pool.query('DELETE FROM content_topics WHERE id = ANY($1::uuid[])', [
+    ALL_TOPIC_IDS,
+  ])
+  await pool.query('DELETE FROM content_chapters WHERE id = $1', [CHAPTER_ID])
+  await pool.query('DELETE FROM content_subjects WHERE id = $1', [SUBJECT_ID])
+  await pool.query('DELETE FROM user_roles WHERE user_id = ANY($1::uuid[])', [
+    [ADMIN_ID, EMPTY_ADMIN_ID, ...ALL_STUDENT_IDS],
+  ])
+  await pool.query(
+    'DELETE FROM user_profiles WHERE user_id = ANY($1::uuid[])',
+    [[ADMIN_ID, EMPTY_ADMIN_ID, ...ALL_STUDENT_IDS]],
+  )
+  await pool.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [
+    [ADMIN_ID, EMPTY_ADMIN_ID, ...ALL_STUDENT_IDS],
+  ])
+
+  const passwordHash = await bcrypt.hash('admin123', 4)
+  const studentPasswordHash = await bcrypt.hash('student123', 4)
+
+  // Create admin user
+  await pool.query(
+    `INSERT INTO users (id, email, password_hash, is_active, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [ADMIN_ID, 'pp.admin@aspiron.test', passwordHash, true, now, now],
+  )
+  await pool.query(
+    `INSERT INTO user_profiles (user_id, first_name, last_name)
+     VALUES ($1, $2, $3)`,
+    [ADMIN_ID, 'PainPoints', 'Admin'],
+  )
+
+  // Look up ADMIN role (created by Rust seed runner)
+  const roleResult = await pool.query(
+    `SELECT id FROM roles WHERE name = 'ADMIN'`,
+  )
+  const roleId: string = roleResult.rows[0]?.id
+  if (!roleId) throw new Error('ADMIN role not found — run `just seed` first')
+
+  // Assign ADMIN role to admin user
+  await pool.query(
+    `INSERT INTO user_roles (id, user_id, role_id, assigned_at, is_active)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [randomUUID(), ADMIN_ID, roleId, now, true],
+  )
+
+  // Create empty-state admin user (VIEW_ANALYTICS but no content data — for test 4)
+  await pool.query(
+    `INSERT INTO users (id, email, password_hash, is_active, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [EMPTY_ADMIN_ID, 'pp.empty@aspiron.test', passwordHash, true, now, now],
+  )
+  await pool.query(
+    `INSERT INTO user_profiles (user_id, first_name, last_name)
+     VALUES ($1, $2, $3)`,
+    [EMPTY_ADMIN_ID, 'Empty', 'Admin'],
+  )
+  await pool.query(
+    `INSERT INTO user_roles (id, user_id, role_id, assigned_at, is_active)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [randomUUID(), EMPTY_ADMIN_ID, roleId, now, true],
+  )
+
+  // Create student users
+  for (let i = 0; i < STUDENT_IDS.length; i++) {
+    const sid = STUDENT_IDS[i]
+    await pool.query(
+      `INSERT INTO users (id, email, password_hash, is_active, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        sid,
+        `pp.student${i + 1}@aspiron.test`,
+        studentPasswordHash,
+        true,
+        now,
+        now,
+      ],
+    )
+    await pool.query(
+      `INSERT INTO user_profiles (user_id, first_name, last_name)
+       VALUES ($1, $2, $3)`,
+      [sid, `Student`, `${i + 1}`],
+    )
+  }
+
+  // Create content hierarchy
+  await pool.query(
+    `INSERT INTO content_subjects (id, name, exam_type, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [SUBJECT_ID, 'PP E2E Mathematics', 'JEE', now, now],
+  )
+  await pool.query(
+    `INSERT INTO content_chapters (id, name, subject_id, order_number)
+     VALUES ($1, $2, $3, $4)`,
+    [CHAPTER_ID, 'PP E2E Algebra', SUBJECT_ID, 100],
+  )
+  for (let i = 0; i < TOPICS.length; i++) {
+    await pool.query(
+      `INSERT INTO content_topics (id, name, chapter_id, order_number)
+       VALUES ($1, $2, $3, $4)`,
+      [TOPICS[i].id, TOPICS[i].name, CHAPTER_ID, i + 1],
+    )
+  }
+
+  // Create learning progress + recall sessions + answers
+  let sessionCounter = 0
+  let answerCounter = 0
+  let progressCounter = 0
+
+  for (let t = 0; t < TOPICS.length; t++) {
+    for (let s = 0; s < STUDENT_IDS.length; s++) {
+      const progressId = `${PROGRESS_BASE}${String(progressCounter).padStart(4, '0')}`
+      const sessionId = `${SESSION_BASE}${String(sessionCounter).padStart(4, '0')}`
+      const correctCount = CORRECT_PER_SESSION[t][s]
+
+      // Learning progress
+      await pool.query(
+        `INSERT INTO learning_progress (id, topic_id, user_id, progress_percent, last_accessed_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [progressId, TOPICS[t].id, STUDENT_IDS[s], 50, now],
+      )
+
+      // Recall session (completed)
+      await pool.query(
+        `INSERT INTO learning_recall_sessions (id, user_id, topic_id, status, started_at, completed_at)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [sessionId, STUDENT_IDS[s], TOPICS[t].id, 'completed', now, now],
+      )
+
+      // Recall answers
+      for (let a = 0; a < ANSWERS_PER_SESSION; a++) {
+        const answerId = `${ANSWER_BASE}${String(answerCounter).padStart(4, '0')}`
+        const isCorrect = a < correctCount
+        await pool.query(
+          `INSERT INTO learning_recall_answers (id, session_id, question_type, question, answer, is_correct, score)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            answerId,
+            sessionId,
+            'mcq',
+            `Question ${a + 1} for topic ${t + 1}`,
+            isCorrect ? 'Correct answer' : 'Wrong answer',
+            isCorrect,
+            isCorrect ? 100 : 0,
+          ],
+        )
+        answerCounter++
+      }
+
+      sessionCounter++
+      progressCounter++
+    }
+  }
+
+  console.log(
+    `[e2e] Seeded pain-points run ${runId.slice(0, 8)}: admin ${ADMIN_ID}, 3 topics, 5 students, ${sessionCounter} sessions, ${answerCounter} answers`,
+  )
+
+  return {
+    runId,
+    adminUser: {
+      id: ADMIN_ID,
+      email: 'pp.admin@aspiron.test',
+      password: 'admin123',
+    },
+    emptyAdminUser: {
+      id: EMPTY_ADMIN_ID,
+      email: 'pp.empty@aspiron.test',
+      password: 'admin123',
+    },
+    studentIds: ALL_STUDENT_IDS,
+    subject: { id: SUBJECT_ID },
+    chapter: { id: CHAPTER_ID },
+    topics: TOPICS,
+    sessionIds,
+    answerIds,
+    progressIds,
+  }
+}
+
+export async function cleanupPainPointsData(data: PainPointsSeedData) {
+  const allUserIds = [
+    data.adminUser.id,
+    data.emptyAdminUser.id,
+    ...data.studentIds,
+  ]
+  const allTopicIds = data.topics.map((t) => t.id)
+
+  await pool.query(
+    'DELETE FROM learning_recall_answers WHERE id = ANY($1::uuid[])',
+    [data.answerIds],
+  )
+  await pool.query(
+    'DELETE FROM learning_recall_sessions WHERE id = ANY($1::uuid[])',
+    [data.sessionIds],
+  )
+  await pool.query('DELETE FROM learning_progress WHERE id = ANY($1::uuid[])', [
+    data.progressIds,
+  ])
+  await pool.query('DELETE FROM content_topics WHERE id = ANY($1::uuid[])', [
+    allTopicIds,
+  ])
+  await pool.query('DELETE FROM content_chapters WHERE id = $1', [
+    data.chapter.id,
+  ])
+  await pool.query('DELETE FROM content_subjects WHERE id = $1', [
+    data.subject.id,
+  ])
+  await pool.query('DELETE FROM user_roles WHERE user_id = ANY($1::uuid[])', [
+    allUserIds,
+  ])
+  await pool.query(
+    'DELETE FROM user_profiles WHERE user_id = ANY($1::uuid[])',
+    [allUserIds],
+  )
+  await pool.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [allUserIds])
+
+  console.log(`[e2e] Cleaned up pain-points run ${data.runId.slice(0, 8)}`)
+}

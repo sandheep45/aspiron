@@ -10,12 +10,28 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
+    headless: false,
   },
   projects: [
     {
       name: 'unit-msw',
       testDir: './e2e/dashboard',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'pain-points-msw',
+      testDir: './e2e/pain-points',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://local.aspiron.test:3000',
+        ignoreHTTPSErrors: true,
+      },
+      webServer: {
+        command: 'bash -c "source ../../.env && pnpm dev --filter web-admin"',
+        port: 3000,
+        reuseExistingServer: !process.env.CI,
+        timeout: 30000,
+      },
     },
     {
       name: 'real-api',
