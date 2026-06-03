@@ -178,4 +178,4 @@ function SidebarInset({ className, ...props }: React.ComponentProps<'main'>) {
   )
 }
 
-export { Sidebar, SidebarTrigger, SidebarRail, SidebarInset }
+export { Sidebar, SidebarInset, SidebarRail, SidebarTrigger }

@@ -1,5 +1,6 @@
 pub mod get_insights;
 pub mod get_topic_performance;
+pub mod pain_points;
 pub mod ports;
 
 use std::sync::Arc;

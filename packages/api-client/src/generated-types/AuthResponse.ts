@@ -5,10 +5,6 @@ import type { AuthRoleResponse } from "@/generated-types/AuthRoleResponse";
 import type { AuthUserResponse } from "@/generated-types/AuthUserResponse";
 
 export type AuthResponse = {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: bigint;
   user: AuthUserResponse;
   roles: Array<AuthRoleResponse>;
   permissions: Array<AuthPermissionResponse>;

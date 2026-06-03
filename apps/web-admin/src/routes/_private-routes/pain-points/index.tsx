@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { PainPointsPage } from '@/features/insights'
+import { StudentPainPointsPage } from '@/features/insights'
 
 export const Route = createFileRoute('/_private-routes/pain-points/')({
   component: RouteComponent,
@@ -9,5 +9,5 @@ export const Route = createFileRoute('/_private-routes/pain-points/')({
 })
 
 function RouteComponent() {
-  return <PainPointsPage />
+  return <StudentPainPointsPage />
 }

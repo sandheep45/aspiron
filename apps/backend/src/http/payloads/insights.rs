@@ -254,6 +254,92 @@ pub struct TopicPerformanceQueryParams {
     pub sort: TopicPerformanceSort,
 }
 
+// ─── Pain Point Query Params ─────────────────────────────────────
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, TS, utoipa::ToSchema,
+)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, rename = "PainPointSortBy")]
+pub enum PainPointSortBy {
+    #[serde(rename = "accuracy")]
+    #[ts(rename = "accuracy")]
+    Accuracy,
+    #[serde(rename = "students")]
+    #[ts(rename = "students")]
+    Students,
+    #[serde(rename = "last_activity")]
+    #[ts(rename = "last_activity")]
+    LastActivity,
+}
+
+#[derive(Debug, Clone, Deserialize, TS, IntoParams, utoipa::ToSchema)]
+#[ts(export, rename = "PainPointFilters")]
+pub struct PainPointFilters {
+    #[ts(optional)]
+    pub subject: Option<String>,
+    #[ts(optional)]
+    pub severity: Option<String>,
+    #[ts(optional)]
+    pub status: Option<String>,
+}
+
+#[derive(Debug, Clone, TS, IntoParams, utoipa::ToSchema)]
+#[ts(export, rename = "PainPointSort")]
+pub struct PainPointSort {
+    #[ts(optional)]
+    pub sort_by: Option<PainPointSortBy>,
+    #[ts(optional)]
+    pub sort_order: Option<SortOrder>,
+}
+
+impl<'de> Deserialize<'de> for PainPointSort {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Helper {
+            sort_by: Option<String>,
+            sort_order: Option<String>,
+        }
+
+        let helper = Helper::deserialize(deserializer)?;
+
+        let sort_by = helper
+            .sort_by
+            .map(|s| {
+                serde_json::from_str(&format!("\"{}\"", s))
+                    .map_err(|_| de::Error::custom("invalid sort_by"))
+            })
+            .transpose()?;
+
+        let sort_order = helper
+            .sort_order
+            .map(|s| {
+                serde_json::from_str(&format!("\"{}\"", s))
+                    .map_err(|_| de::Error::custom("invalid sort_order"))
+            })
+            .transpose()?;
+
+        Ok(PainPointSort {
+            sort_by,
+            sort_order,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, TS, IntoParams)]
+#[ts(export, rename = "PainPointQueryParams")]
+pub struct PainPointQueryParams {
+    #[serde(flatten)]
+    pub pagination: PaginationPayload,
+    #[serde(flatten)]
+    pub filter: PainPointFilters,
+    #[serde(flatten)]
+    pub sort: PainPointSort,
+}
+
 impl TopicPerformanceQueryParams {
     pub fn get_subject_id(&self) -> Option<Uuid> {
         self.subject_id

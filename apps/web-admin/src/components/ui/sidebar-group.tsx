@@ -81,7 +81,7 @@ function SidebarGroupContent({
 
 export {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupAction,
   SidebarGroupContent,
+  SidebarGroupLabel,
 }

@@ -69,7 +69,7 @@ impl<'a> SeedRunner<'a> {
                     }),
                     question: Set(question),
                     answer: Set(answer),
-                    is_correct: Set(rng.gen_bool(0.75)),
+                    is_correct: Set(rng.gen_bool(0.35)),
                     score: Set(if is_mcq {
                         None
                     } else {

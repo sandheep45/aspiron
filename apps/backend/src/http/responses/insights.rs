@@ -210,6 +210,136 @@ pub struct TopicPerformance {
     pub total_students: i64,
 }
 
+// ─── Pain Point DTOs ───────────────────────────────────────────────
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, TS, ToSchema,
+)]
+#[serde(rename_all = "lowercase")]
+#[ts(export, rename = "IssueSeverity")]
+pub enum IssueSeverity {
+    Critical,
+    High,
+    Medium,
+    Low,
+}
+
+impl std::fmt::Display for IssueSeverity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Critical => write!(f, "critical"),
+            Self::High => write!(f, "high"),
+            Self::Medium => write!(f, "medium"),
+            Self::Low => write!(f, "low"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "CriticalIssue")]
+pub struct CriticalIssue {
+    #[schema(value_type = String)]
+    pub id: Uuid,
+    pub topic: String,
+    pub description: String,
+    pub severity: IssueSeverity,
+    pub students_affected: i64,
+    pub action_label: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "CriticalIssuesResponse")]
+pub struct CriticalIssuesResponse {
+    pub total_urgent: i64,
+    pub issues: Vec<CriticalIssue>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, ToSchema)]
+#[serde(rename_all = "lowercase")]
+#[ts(export, rename = "RecallStrength")]
+pub enum RecallStrength {
+    Weak,
+    Medium,
+    Strong,
+}
+
+impl std::fmt::Display for RecallStrength {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Weak => write!(f, "weak"),
+            Self::Medium => write!(f, "medium"),
+            Self::Strong => write!(f, "strong"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, ToSchema)]
+#[serde(rename_all = "lowercase")]
+#[ts(export, rename = "StatusTrend")]
+pub enum StatusTrend {
+    Degrading,
+    Stable,
+    Improving,
+}
+
+impl std::fmt::Display for StatusTrend {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Degrading => write!(f, "degrading"),
+            Self::Stable => write!(f, "stable"),
+            Self::Improving => write!(f, "improving"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "PainPointItem")]
+pub struct PainPointItem {
+    #[schema(value_type = String)]
+    pub id: Uuid,
+    pub topic: String,
+    pub recall_strength: RecallStrength,
+    pub accuracy: f64,
+    pub common_mistake: String,
+    pub last_activity: String,
+    pub status: StatusTrend,
+    pub students: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "PainPointsResponse")]
+pub struct PainPointsResponse {
+    pub total: i64,
+    pub items: Vec<PainPointItem>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "PatternInsight")]
+pub struct PatternInsight {
+    #[schema(value_type = String)]
+    pub id: Uuid,
+    pub title: String,
+    pub metric: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "PatternInsightsResponse")]
+pub struct PatternInsightsResponse {
+    pub insights: Vec<PatternInsight>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, rename = "TopicDetailResponse")]
+pub struct TopicDetailResponse {
+    pub topic: String,
+    pub accuracy: f64,
+    pub students_affected: i64,
+    pub trend: String,
+    pub common_mistakes: Vec<String>,
+    pub weak_questions: Vec<String>,
+    pub recommendations: Vec<String>,
+}
+
 fn map_insight(i: domain::Insight) -> Insight {
     Insight {
         id: i.id,

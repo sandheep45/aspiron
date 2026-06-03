@@ -71,9 +71,9 @@ function SidebarInput({
 }
 
 export {
-  SidebarHeader,
-  SidebarFooter,
-  SidebarSeparator,
   SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
   SidebarInput,
+  SidebarSeparator,
 }

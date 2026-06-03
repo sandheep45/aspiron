@@ -2,10 +2,15 @@ use axum::{Extension, Json, extract::Query};
 use uuid::Uuid;
 
 use crate::application::insights::InsightsApplicationState;
-use crate::application::insights::{get_insights, get_topic_performance};
+use crate::application::insights::{get_insights, get_topic_performance, pain_points};
 use crate::domain::insights::entities as domain;
-use crate::http::payloads::insights::{InsightsQueryParams, TopicPerformanceQueryParams};
-use crate::http::responses::insights::{InsightsResponse, TopicPerformanceResponse};
+use crate::http::payloads::insights::{
+    InsightsQueryParams, PainPointQueryParams, TopicPerformanceQueryParams,
+};
+use crate::http::responses::insights::{
+    CriticalIssuesResponse, InsightsResponse, PainPointsResponse, PatternInsightsResponse,
+    TopicDetailResponse, TopicPerformanceResponse,
+};
 use crate::middleware::auth::AuthUser;
 use crate::setup::error::AppError;
 
@@ -86,6 +91,122 @@ pub async fn handler_get_topic_performance(
     )
     .await?;
     Ok(Json(result))
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/insights/pain-points/critical",
+    tag = "Insights",
+    responses(
+        (status = 200, description = "Critical pain points requiring immediate attention")
+    )
+)]
+pub async fn handler_get_critical_issues(
+    Extension(state): Extension<InsightsApplicationState>,
+    AuthUser(user_id): AuthUser,
+) -> Result<Json<CriticalIssuesResponse>, AppError> {
+    let has_perm = state
+        .auth
+        .has_permission(user_id, "SYSTEM".to_string(), "VIEW_ANALYTICS".to_string())
+        .await?;
+
+    if !has_perm {
+        return Err(AppError::unauthorized("Missing VIEW_ANALYTICS permission"));
+    }
+
+    let response = pain_points::execute_get_critical_issues(&*state.repo).await?;
+    Ok(Json(response))
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/insights/pain-points",
+    tag = "Insights",
+    params(
+        PainPointQueryParams
+    ),
+    responses(
+        (status = 200, description = "All student pain points with filtering and sorting")
+    )
+)]
+pub async fn handler_get_pain_points(
+    Extension(state): Extension<InsightsApplicationState>,
+    AuthUser(user_id): AuthUser,
+    Query(params): Query<PainPointQueryParams>,
+) -> Result<Json<PainPointsResponse>, AppError> {
+    let has_perm = state
+        .auth
+        .has_permission(user_id, "SYSTEM".to_string(), "VIEW_ANALYTICS".to_string())
+        .await?;
+
+    if !has_perm {
+        return Err(AppError::unauthorized("Missing VIEW_ANALYTICS permission"));
+    }
+
+    let response = pain_points::execute_get_pain_points(
+        &*state.repo,
+        params.filter.subject.clone(),
+        params.filter.severity,
+        params.filter.status,
+        params.pagination.search.clone(),
+        params.sort.sort_by,
+        params.sort.sort_order,
+        params.pagination.get_page(),
+        params.pagination.get_limit(),
+    )
+    .await?;
+    Ok(Json(response))
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/insights/pain-points/insights",
+    tag = "Insights",
+    responses(
+        (status = 200, description = "Pattern insights detected across struggling students")
+    )
+)]
+pub async fn handler_get_pattern_insights(
+    Extension(state): Extension<InsightsApplicationState>,
+    AuthUser(user_id): AuthUser,
+) -> Result<Json<PatternInsightsResponse>, AppError> {
+    let has_perm = state
+        .auth
+        .has_permission(user_id, "SYSTEM".to_string(), "VIEW_ANALYTICS".to_string())
+        .await?;
+
+    if !has_perm {
+        return Err(AppError::unauthorized("Missing VIEW_ANALYTICS permission"));
+    }
+
+    let response = pain_points::execute_get_pattern_insights(&*state.repo).await?;
+    Ok(Json(response))
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/insights/pain-points/{id}",
+    tag = "Insights",
+    responses(
+        (status = 200, description = "Detailed topic pain point information")
+    )
+)]
+pub async fn handler_get_topic_detail(
+    Extension(state): Extension<InsightsApplicationState>,
+    AuthUser(user_id): AuthUser,
+    axum::extract::Path(id): axum::extract::Path<Uuid>,
+) -> Result<Json<TopicDetailResponse>, AppError> {
+    let has_perm = state
+        .auth
+        .has_permission(user_id, "SYSTEM".to_string(), "VIEW_ANALYTICS".to_string())
+        .await?;
+
+    if !has_perm {
+        return Err(AppError::unauthorized("Missing VIEW_ANALYTICS permission"));
+    }
+
+    let response = pain_points::execute_get_topic_detail(&*state.repo, id).await?;
+    Ok(Json(response))
 }
 
 async fn get_teacher_subjects(

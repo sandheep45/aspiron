@@ -120,5 +120,11 @@ function SidebarProvider({
   )
 }
 
-export { SidebarProvider, useSidebar, SidebarContext }
-export { SIDEBAR_WIDTH, SIDEBAR_WIDTH_MOBILE, SIDEBAR_WIDTH_ICON }
+export {
+  SIDEBAR_WIDTH,
+  SIDEBAR_WIDTH_ICON,
+  SIDEBAR_WIDTH_MOBILE,
+  SidebarContext,
+  SidebarProvider,
+  useSidebar,
+}

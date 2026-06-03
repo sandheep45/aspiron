@@ -254,14 +254,14 @@ function SidebarMenuSubButton({
 }
 
 export {
-  sidebarMenuButtonVariants,
   SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   SidebarMenuAction,
   SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarMenuSub,
-  SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  sidebarMenuButtonVariants,
 }

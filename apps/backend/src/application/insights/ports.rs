@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use crate::domain::insights::entities::{Insight, TopicPerformance};
+use crate::domain::insights::entities::{Insight, PainPointTopicDetail, TopicPerformance};
 use crate::setup::error::AppError;
 
 #[async_trait]
@@ -33,6 +33,10 @@ pub trait InsightsRepository: Send + Sync {
         chapter_id: Option<Uuid>,
         topic_id: Option<Uuid>,
     ) -> Result<Vec<TopicPerformance>, AppError>;
+    async fn get_topic_detail(
+        &self,
+        topic_id: Uuid,
+    ) -> Result<Option<PainPointTopicDetail>, AppError>;
 }
 
 #[async_trait]

@@ -1,6 +1,7 @@
 // Export all public APIs here
 
 export * from '@/services/admin/insight.service'
+export * from '@/services/admin/pain-point.service'
 export * from '@/services/admin/topic-performance.service'
 export * from '@/services/content/topic.service'
 export * from '@/services/live-class/live-class.service'

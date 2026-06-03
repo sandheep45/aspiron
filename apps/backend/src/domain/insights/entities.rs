@@ -83,3 +83,20 @@ pub struct LowEngagementMetadata {
     pub topic_id: Uuid,
     pub active_users: i64,
 }
+
+#[derive(Debug, Clone)]
+pub struct PainPointTopicDetail {
+    pub topic_id: Uuid,
+    pub topic_name: String,
+    pub chapter_name: String,
+    pub subject_name: String,
+    pub practice_accuracy: f64,
+    pub recall_strength_mcq: Option<f64>,
+    pub recall_strength_reflection: Option<f64>,
+    pub students_affected: i64,
+    pub total_students: i64,
+    pub trend: String,
+    pub common_mistakes: Vec<String>,
+    pub weak_questions: Vec<String>,
+    pub recommendations: Vec<String>,
+}

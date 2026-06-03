@@ -15,10 +15,17 @@ impl<'a> SeedRunner<'a> {
         }
 
         let mut active_topic_ids = Vec::new();
-        if let Some(subject_ids) = self.relationship_map.subject_ids.get(&ExamTypeEnums::JEE) {
-            for subject_id in subject_ids {
-                let topics = self.relationship_map.get_topics_for_subject(*subject_id);
-                active_topic_ids.extend(topics.iter().take(10));
+        let exam_types = [
+            ExamTypeEnums::JEE,
+            ExamTypeEnums::NEET,
+            ExamTypeEnums::StatePGT,
+        ];
+        for exam_type in &exam_types {
+            if let Some(subject_ids) = self.relationship_map.subject_ids.get(exam_type) {
+                for subject_id in subject_ids {
+                    let topics = self.relationship_map.get_topics_for_subject(*subject_id);
+                    active_topic_ids.extend(topics.iter().take(10));
+                }
             }
         }
         self.relationship_map.active_topic_ids = active_topic_ids.clone();

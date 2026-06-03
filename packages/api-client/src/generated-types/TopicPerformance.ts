@@ -3,6 +3,7 @@
 
 export type TopicPerformance = {
   topic_id: string;
+  subject_id: string;
   topic_name: string;
   chapter_name: string;
   subject_name: string;

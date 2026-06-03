@@ -82,6 +82,6 @@ export const QueryProvider: React.FC<QueryProviderProps> = ({
   )
 }
 
+export type { QueryClientConfig }
 // Export the query client factory for consumers who want to customize
 export { createDefaultQueryClient }
-export type { QueryClientConfig }

@@ -7,8 +7,8 @@ use uuid::Uuid;
 
 use crate::application::insights::ports::InsightsRepository;
 use crate::domain::insights::entities::{
-    Insight, InsightType, LowAttendanceMetadata, LowEngagementMetadata, QuizReviewPendingMetadata,
-    Severity, TopicDifficultyMetadata, TopicPerformance,
+    Insight, InsightType, LowAttendanceMetadata, LowEngagementMetadata, PainPointTopicDetail,
+    QuizReviewPendingMetadata, Severity, TopicDifficultyMetadata, TopicPerformance,
 };
 use crate::entries::entities::assessment_attempt::Column as AttemptColumn;
 use crate::entries::entities::assessment_attempt::Entity as AttemptEntity;
@@ -434,6 +434,93 @@ impl InsightsRepository for SeaOrmInsightsRepository {
         }
 
         Ok(performances)
+    }
+
+    async fn get_topic_detail(
+        &self,
+        topic_id: Uuid,
+    ) -> Result<Option<PainPointTopicDetail>, AppError> {
+        let performances = self
+            .get_topic_performance(None, None, Some(topic_id))
+            .await?;
+
+        let Some(tp) = performances.into_iter().next() else {
+            return Ok(None);
+        };
+
+        let answers = RecallAnswerEntity::find()
+            .filter(
+                RecallAnswerColumn::SessionId.is_in(
+                    RecallSessionEntity::find()
+                        .filter(RecallSessionColumn::TopicId.eq(tp.topic_id))
+                        .filter(
+                            RecallSessionColumn::Status
+                                .eq(LearningRecallSessionStatusEnum::COMPLETED),
+                        )
+                        .all(&*self.db)
+                        .await
+                        .map_err(AppError::Database)?
+                        .into_iter()
+                        .map(|s| s.id)
+                        .collect::<Vec<Uuid>>(),
+                ),
+            )
+            .all(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
+
+        let common_mistakes: Vec<String> = answers
+            .iter()
+            .filter(|a| !a.is_correct && a.question_type == LearningRecallQuestionTypeEnum::MCQ)
+            .map(|a| a.answer.clone())
+            .collect();
+
+        let wrong_mcq_questions: Vec<String> = answers
+            .iter()
+            .filter(|a| !a.is_correct && a.question_type == LearningRecallQuestionTypeEnum::MCQ)
+            .map(|a| a.question.clone())
+            .collect();
+
+        let weak_questions: Vec<String> = if wrong_mcq_questions.is_empty() {
+            vec![]
+        } else {
+            let mut seen = std::collections::HashSet::new();
+            wrong_mcq_questions
+                .into_iter()
+                .filter(|q| seen.insert(q.clone()))
+                .take(5)
+                .collect()
+        };
+
+        let recommendations = vec![
+            format!("Assign Practice Set for {}", tp.topic_name),
+            "Review Concept Video".to_string(),
+            "Schedule a doubt-clearing session".to_string(),
+        ];
+
+        let trend = if tp.practice_accuracy < 30.0 {
+            "degrading".to_string()
+        } else if tp.practice_accuracy < 60.0 {
+            "stable".to_string()
+        } else {
+            "improving".to_string()
+        };
+
+        Ok(Some(PainPointTopicDetail {
+            topic_id: tp.topic_id,
+            topic_name: tp.topic_name,
+            chapter_name: tp.chapter_name,
+            subject_name: tp.subject_name,
+            practice_accuracy: tp.practice_accuracy,
+            recall_strength_mcq: tp.recall_strength_mcq,
+            recall_strength_reflection: tp.recall_strength_reflection,
+            students_affected: tp.students_affected,
+            total_students: tp.total_students,
+            trend,
+            common_mistakes,
+            weak_questions,
+            recommendations,
+        }))
     }
 }
 

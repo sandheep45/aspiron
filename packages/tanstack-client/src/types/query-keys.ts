@@ -14,6 +14,11 @@ export const queryKeys = {
     list: (page: number, limit: number) =>
       [...queryKeys.admin.lists(), { page, limit }] as const,
     topicPerformance: () => ['topicPerformance'] as const,
+    painPointsCritical: () => ['painPoints', 'critical'] as const,
+    painPoints: () => ['painPoints'] as const,
+    painPointsInsights: () => ['painPoints', 'insights'] as const,
+    painPointsTopicDetail: (id: string) =>
+      ['painPoints', 'detail', id] as const,
   },
 
   // Users
