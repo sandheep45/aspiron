@@ -8,7 +8,15 @@
 
 - `README*` files contain project overview, architecture, and setup docs — read first when onboarding.
 - This file (`AGENTS.md`) is loaded as system context at every session start — keep it updated with high-signal repo facts.
-- `.opencode/instructions/` contains detailed conventions per concern (frontend, backend, API client, forms, testing).
+- `.opencode/instructions/` — read the relevant file when your task touches that concern:
+
+  | When working with… | Read this file |
+  |---|---|
+  | Rust backend, handlers, routes, DTOs, DB, SeaORM, Axum | `BACKEND.md` |
+  | React components, pages, imports (`@/`), styling, shadcn | `FRONTEND.md` |
+  | API client services, TanStack Query hooks, query keys | `API_CLIENT.md` |
+  | React forms, TanStack Form, validation, field components | `FORMS.md` |
+  | Writing or running tests, test patterns, assertions | `TESTING.md` |
 - All imports in `apps/web-admin/src/` must use `@/` absolute paths — no relative imports in hand-authored code. Generated files (`routeTree.gen.ts`) and barrel files (`index.ts` re-exporting sibling modules) are exempt.
 
 ## Workspace
