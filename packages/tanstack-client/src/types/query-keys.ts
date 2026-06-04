@@ -37,6 +37,15 @@ export const queryKeys = {
     },
   },
 
+  // Content Dashboard
+  contentDashboard: {
+    summary: () => ['contentDashboard', 'summary'] as const,
+    attention: (params?: Record<string, unknown>) =>
+      ['contentDashboard', 'attention', ...(params ? [params] : [])] as const,
+    subjects: () => ['contentDashboard', 'subjects'] as const,
+    signals: () => ['contentDashboard', 'signals'] as const,
+  },
+
   // Courses
   courses: {
     all: () => ['courses'] as const,

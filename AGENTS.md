@@ -58,6 +58,22 @@
 - Pre-commit hook runs `just ci` via `lint-staged` — this includes `format → lint → build-all → check`
 - Pre-commit build includes ALL Rust + JS packages; can be slow. `--no-verify` to bypass (only if hook failure is pre-existing).
 
+## Content Dashboard
+
+Added June 2026:
+
+- **Backend endpoints:** `GET /api/v1/content/dashboard/summary`, `/attention`, `/subjects`, `/signals`
+  - Routes in `apps/backend/src/http/routes/content.rs`
+  - Handlers in `apps/backend/src/http/handlers/content_dashboard.rs` (queries existing tables directly via AppState db)
+  - Response DTOs in `apps/backend/src/http/responses/content_dashboard.rs`
+- **API client:** `contentDashboardService` in `packages/api-client/src/services/admin/content-dashboard.service.ts`
+- **TanStack hooks:** `useContentSummaryQuery`, `useAttentionItemsQuery`, `useSubjectProgressQuery`, `useContentSignalsQuery` in `packages/tanstack-client/src/hooks/admin/content-dashboard.ts`
+- **MSW mocks:** Factory + handlers in `apps/web-admin/mock/factories/content-dashboard.factory.ts` and `apps/web-admin/mock/handlers/content-dashboard.handlers.ts`
+- **Frontend:** `ContentDashboardPage` at `apps/web-admin/src/features/content-dashboard/components/` with 10 sub-components (MetricCard, ContentAttentionTable, IssueBadge, SubjectProgressCard, ProgressBar, QualitySignalsSection, SignalCard, LoadingSkeleton, EmptyState)
+- **Frontend:** `useDebounceValue` hook added at `apps/web-admin/src/hooks/use-debounce-value.ts` — standalone zero-dependency implementation based on usehooks-ts API (`[T, (value: T) => void]`)
+- **API-driven sorting:** The "Content Needing Attention" table (`ContentAttentionTable`) was refactored from client-side `useMemo` sorting/filtering/pagination to API-driven. Sort state (`sortBy`, `sortOrder`), search (debounced 300ms), issue filter, and pagination (`page`/`limit`) are managed in `ContentDashboardPage` and passed as `AttentionQueryParams args` to `useAttentionItemsQuery()`. Backend handler `handler_get_content_dashboard_attention` accepts `Query(AttentionQueryParams)` and applies search/filter/sort/pagination server-side.
+- **`AttentionQueryParams`** is a `#[derive(TS)]` DTO in `apps/backend/src/http/payloads/content.rs` — generated to `@/generated-types` via `ts-rs`.
+
 ## Test infrastructure
 
 - Test harness: `apps/backend/tests/harness.rs` — `TestApp` with testcontainers Postgres + SeaORM migrator + `tower::ServiceExt::oneshot`

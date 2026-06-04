@@ -11,6 +11,10 @@ use crate::http::handlers::content::{
     handler_get_offline_token_by_video_id, handler_get_topic_by_id,
     handler_get_topics_by_chapter_id, handler_get_videos_by_topic_id,
 };
+use crate::http::handlers::content_dashboard::{
+    handler_get_content_dashboard_attention, handler_get_content_dashboard_signals,
+    handler_get_content_dashboard_subjects, handler_get_content_dashboard_summary,
+};
 use crate::http::handlers::learning::handler_get_teachers_notes;
 use crate::infra::db::repositories::content_repo::SeaOrmContentRepository;
 use crate::infra::db::repositories::learning_repo::SeaOrmLearningRepository;
@@ -47,6 +51,22 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         .route(
             "/videos/{video_id}/offline-token",
             get(handler_get_offline_token_by_video_id),
+        )
+        .route(
+            "/content/dashboard/summary",
+            get(handler_get_content_dashboard_summary),
+        )
+        .route(
+            "/content/dashboard/attention",
+            get(handler_get_content_dashboard_attention),
+        )
+        .route(
+            "/content/dashboard/subjects",
+            get(handler_get_content_dashboard_subjects),
+        )
+        .route(
+            "/content/dashboard/signals",
+            get(handler_get_content_dashboard_signals),
         )
         .layer(axum::Extension(content_state))
         .layer(axum::Extension(learning_state))

@@ -2,6 +2,7 @@ import { assessmentHandlers } from './assessment.handlers'
 import { authHandlers } from './auth.handlers'
 import { communityHandlers } from './community.handlers'
 import { contentHandlers } from './content.handlers'
+import { contentDashboardHandlers } from './content-dashboard.handlers'
 import { healthHandlers } from './health.handlers'
 import { insightsHandlers } from './insights.handlers'
 import { learningHandlers } from './learning.handlers'
@@ -16,6 +17,7 @@ export const handlers = [
   ...assessmentHandlers,
   ...authHandlers,
   ...communityHandlers,
+  ...contentDashboardHandlers,
   ...contentHandlers,
   ...healthHandlers,
   ...insightsHandlers,
