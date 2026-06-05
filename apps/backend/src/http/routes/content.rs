@@ -16,6 +16,9 @@ use crate::http::handlers::content_dashboard::{
     handler_get_content_dashboard_subjects, handler_get_content_dashboard_summary,
 };
 use crate::http::handlers::learning::handler_get_teachers_notes;
+use crate::http::handlers::subjects_page::{
+    handler_get_subjects_page, handler_get_subjects_page_signals, handler_get_subjects_page_summary,
+};
 use crate::infra::db::repositories::content_repo::SeaOrmContentRepository;
 use crate::infra::db::repositories::learning_repo::SeaOrmLearningRepository;
 use crate::setup::app::AppState;
@@ -67,6 +70,15 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         .route(
             "/content/dashboard/signals",
             get(handler_get_content_dashboard_signals),
+        )
+        .route("/content/subjects-page", get(handler_get_subjects_page))
+        .route(
+            "/content/subjects-page/summary",
+            get(handler_get_subjects_page_summary),
+        )
+        .route(
+            "/content/subjects-page/signals",
+            get(handler_get_subjects_page_signals),
         )
         .layer(axum::Extension(content_state))
         .layer(axum::Extension(learning_state))

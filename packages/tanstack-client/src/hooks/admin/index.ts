@@ -1,4 +1,5 @@
 export * from '@/hooks/admin/content-dashboard'
 export * from '@/hooks/admin/insight'
 export * from '@/hooks/admin/pain-point'
+export * from '@/hooks/admin/subjects-page'
 export * from '@/hooks/admin/topic-performance'

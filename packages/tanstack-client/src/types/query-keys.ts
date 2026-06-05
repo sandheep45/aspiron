@@ -37,6 +37,14 @@ export const queryKeys = {
     },
   },
 
+  // Subjects Page
+  subjectsPage: {
+    all: () => ['subjectsPage'] as const,
+    subjects: () => [...queryKeys.subjectsPage.all(), 'subjects'] as const,
+    summary: () => [...queryKeys.subjectsPage.all(), 'summary'] as const,
+    signals: () => [...queryKeys.subjectsPage.all(), 'signals'] as const,
+  },
+
   // Content Dashboard
   contentDashboard: {
     summary: () => ['contentDashboard', 'summary'] as const,

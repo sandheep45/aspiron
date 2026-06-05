@@ -3,6 +3,7 @@
 export * from '@/services/admin/content-dashboard.service'
 export * from '@/services/admin/insight.service'
 export * from '@/services/admin/pain-point.service'
+export * from '@/services/admin/subjects-page.service'
 export * from '@/services/admin/topic-performance.service'
 export * from '@/services/content/topic.service'
 export * from '@/services/live-class/live-class.service'

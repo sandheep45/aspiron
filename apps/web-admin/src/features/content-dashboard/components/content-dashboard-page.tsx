@@ -5,6 +5,7 @@ import {
   useContentSummaryQuery,
   useSubjectProgressQuery,
 } from '@aspiron/tanstack-client'
+import { useNavigate } from '@tanstack/react-router'
 import {
   AlertTriangle,
   BookOpen,
@@ -34,6 +35,7 @@ export function ContentDashboardPage() {
   const subjects = useSubjectProgressQuery()
   const signals = useContentSignalsQuery()
 
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue('', 300)
   const [issueFilter, setIssueFilter] = useState('')
@@ -238,7 +240,7 @@ export function ContentDashboardPage() {
               variant='ghost'
               size='xs'
               className='h-7 px-2 font-medium text-indigo-400 text-xs hover:text-indigo-300'
-              onClick={() => console.warn('View Subjects not implemented')}
+              onClick={() => navigate({ to: '/content/subjects' })}
             >
               View Subjects
             </Button>

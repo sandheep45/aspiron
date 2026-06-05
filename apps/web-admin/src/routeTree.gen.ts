@@ -27,6 +27,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as PrivateRoutesContentContentLayoutRouteImport } from './routes/_private-routes/content/_content-layout'
 import { Route as PrivateRoutesLiveClassesCreateIndexRouteImport } from './routes/_private-routes/live-classes/create/index'
 import { Route as PrivateRoutesContentContentLayoutIndexRouteImport } from './routes/_private-routes/content/_content-layout/index'
+import { Route as PrivateRoutesContentContentLayoutSubjectsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/index'
 import { Route as PrivateRoutesContentContentLayoutTopicIdRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id'
 
 const PrivateRoutesRoute = PrivateRoutesRouteImport.update({
@@ -130,6 +131,12 @@ const PrivateRoutesContentContentLayoutIndexRoute =
     path: '/',
     getParentRoute: () => PrivateRoutesContentContentLayoutRoute,
   } as any)
+const PrivateRoutesContentContentLayoutSubjectsIndexRoute =
+  PrivateRoutesContentContentLayoutSubjectsIndexRouteImport.update({
+    id: '/subjects/',
+    path: '/subjects/',
+    getParentRoute: () => PrivateRoutesContentContentLayoutRoute,
+  } as any)
 const PrivateRoutesContentContentLayoutTopicIdRoute =
   PrivateRoutesContentContentLayoutTopicIdRouteImport.update({
     id: '/topic/$id',
@@ -156,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/content/': typeof PrivateRoutesContentContentLayoutIndexRoute
   '/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
+  '/content/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PrivateRoutesIndexRoute
@@ -174,6 +182,7 @@ export interface FileRoutesByTo {
   '/content': typeof PrivateRoutesContentContentLayoutIndexRoute
   '/live-classes/create': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
+  '/content/subjects': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -196,6 +205,7 @@ export interface FileRoutesById {
   '/_private-routes/content/_content-layout/': typeof PrivateRoutesContentContentLayoutIndexRoute
   '/_private-routes/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/_private-routes/content/_content-layout/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
+  '/_private-routes/content/_content-layout/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/content/'
     | '/live-classes/create/'
     | '/content/topic/$id'
+    | '/content/subjects/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/content'
     | '/live-classes/create'
     | '/content/topic/$id'
+    | '/content/subjects'
   id:
     | '__root__'
     | '/_private-routes'
@@ -257,6 +269,7 @@ export interface FileRouteTypes {
     | '/_private-routes/content/_content-layout/'
     | '/_private-routes/live-classes/create/'
     | '/_private-routes/content/_content-layout/topic/$id'
+    | '/_private-routes/content/_content-layout/subjects/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -393,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesContentContentLayoutIndexRouteImport
       parentRoute: typeof PrivateRoutesContentContentLayoutRoute
     }
+    '/_private-routes/content/_content-layout/subjects/': {
+      id: '/_private-routes/content/_content-layout/subjects/'
+      path: '/subjects'
+      fullPath: '/content/subjects/'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutSubjectsIndexRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutRoute
+    }
     '/_private-routes/content/_content-layout/topic/$id': {
       id: '/_private-routes/content/_content-layout/topic/$id'
       path: '/topic/$id'
@@ -406,6 +426,7 @@ declare module '@tanstack/react-router' {
 interface PrivateRoutesContentContentLayoutRouteChildren {
   PrivateRoutesContentContentLayoutIndexRoute: typeof PrivateRoutesContentContentLayoutIndexRoute
   PrivateRoutesContentContentLayoutTopicIdRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+  PrivateRoutesContentContentLayoutSubjectsIndexRoute: typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
 }
 
 const PrivateRoutesContentContentLayoutRouteChildren: PrivateRoutesContentContentLayoutRouteChildren =
@@ -414,6 +435,8 @@ const PrivateRoutesContentContentLayoutRouteChildren: PrivateRoutesContentConten
       PrivateRoutesContentContentLayoutIndexRoute,
     PrivateRoutesContentContentLayoutTopicIdRoute:
       PrivateRoutesContentContentLayoutTopicIdRoute,
+    PrivateRoutesContentContentLayoutSubjectsIndexRoute:
+      PrivateRoutesContentContentLayoutSubjectsIndexRoute,
   }
 
 const PrivateRoutesContentContentLayoutRouteWithChildren =
