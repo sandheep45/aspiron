@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { SectionHeader } from '@/components/ui/section-header'
 import {
   painPointCardVariants,
   painPointIconVariants,
@@ -44,15 +45,20 @@ export function CriticalIssuesSection({
 }: CriticalIssuesSectionProps) {
   return (
     <section>
-      <div className='mb-4 flex items-center gap-3'>
-        <h2 className='font-semibold text-lg text-white'>Critical Issues</h2>
-        <Badge
-          variant='destructive'
-          className='rounded-md px-2.5 py-0.5 font-semibold text-[0.7rem]'
-        >
-          {totalUrgent} urgent
-        </Badge>
-      </div>
+      <SectionHeader
+        title='Critical Issues'
+        accent='bg-red-500'
+        action={
+          totalUrgent > 0 && (
+            <Badge
+              variant='destructive'
+              className='rounded-md px-2.5 py-0.5 font-semibold text-[0.7rem]'
+            >
+              {totalUrgent} urgent
+            </Badge>
+          )
+        }
+      />
 
       <div className='grid gap-3'>
         {issues.map((issue) => {

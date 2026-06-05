@@ -9,6 +9,7 @@ import { useCallback, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SectionHeader } from '@/components/ui/section-header'
 import {
   Select,
   SelectContent,
@@ -217,18 +218,15 @@ export function StudentPainPointsPage() {
       )}
 
       <section>
-        <div className='mb-4 flex items-center justify-between'>
-          <div>
-            <h2 className='font-semibold text-lg text-white'>
-              All Pain Points
-            </h2>
-            {painPoints.data && (
-              <p className='mt-0.5 text-slate-400 text-xs'>
-                {Number(painPoints.data.total)} topics identified
-              </p>
-            )}
-          </div>
-        </div>
+        <SectionHeader
+          title='All Pain Points'
+          accent='bg-indigo-500'
+          description={
+            painPoints.data
+              ? `${Number(painPoints.data.total)} topics identified`
+              : undefined
+          }
+        />
 
         <div className='mb-4 flex flex-wrap items-center gap-2'>
           <div className='relative flex-1 sm:max-w-xs'>

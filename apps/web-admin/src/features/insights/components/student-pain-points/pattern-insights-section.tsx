@@ -1,5 +1,6 @@
 import type { PatternInsight } from '@aspiron/api-client'
 import { Lightbulb } from 'lucide-react'
+import { SectionHeader } from '@/components/ui/section-header'
 
 interface PatternInsightsSectionProps {
   insights: PatternInsight[]
@@ -10,12 +11,11 @@ export function PatternInsightsSection({
 }: PatternInsightsSectionProps) {
   return (
     <section>
-      <div className='mb-4'>
-        <h2 className='font-semibold text-lg text-white'>Pattern Insights</h2>
-        <p className='mt-0.5 text-slate-400 text-xs'>
-          Recurring trends detected across struggling students.
-        </p>
-      </div>
+      <SectionHeader
+        title='Pattern Insights'
+        description='Recurring trends detected across struggling students.'
+        accent='bg-violet-500'
+      />
 
       <div className='grid gap-4 md:grid-cols-2'>
         {insights.map((insight) => (
