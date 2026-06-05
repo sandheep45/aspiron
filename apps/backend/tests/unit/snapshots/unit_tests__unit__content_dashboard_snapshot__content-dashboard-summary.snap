@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/content_dashboard_snapshot.rs
+expression: value
+---
+{
+  "subjects_covered": 5,
+  "topics_flagged": 1,
+  "topics_in_draft": 3,
+  "topics_published": 42
+}

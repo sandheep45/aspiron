@@ -16,7 +16,17 @@ export default defineConfig({
     {
       name: 'unit-msw',
       testDir: './e2e/dashboard',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://local.aspiron.test:3000',
+        ignoreHTTPSErrors: true,
+      },
+      webServer: {
+        command: 'bash -c "source ../../.env && pnpm dev --filter web-admin"',
+        port: 3000,
+        reuseExistingServer: !process.env.CI,
+        timeout: 30000,
+      },
     },
     {
       name: 'pain-points-msw',

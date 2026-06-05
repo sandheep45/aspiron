@@ -2,8 +2,9 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Qu
 use uuid::Uuid;
 
 use backend::entries::entities::{
-    content_chapter, content_subject, content_topic, learning_progress, learning_recall_answer,
-    learning_recall_session, permission, role, user, user_profile, user_role,
+    assessment_quiz, content_chapter, content_subject, content_topic, learning_progress,
+    learning_recall_answer, learning_recall_session, permission, role, user, user_profile,
+    user_role,
 };
 use backend::entries::entity_enums::action_types::ActionTypeEnum;
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
@@ -165,6 +166,20 @@ pub async fn create_test_topic(
     model.insert(db).await.expect("insert topic");
 
     TestTopic { id }
+}
+
+/// Create a test quiz for a topic, returning the quiz ID.
+pub async fn create_test_quiz(db: &DatabaseConnection, topic_id: Uuid, title: &str) -> Uuid {
+    let id = Uuid::new_v4();
+
+    let model = assessment_quiz::ActiveModel {
+        id: Set(id),
+        topic_id: Set(topic_id),
+        title: Set(title.to_string()),
+    };
+    model.insert(db).await.expect("insert quiz");
+
+    id
 }
 
 /// Create a completed recall session for a user and topic.

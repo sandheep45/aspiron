@@ -1,3 +1,4 @@
+mod content_dashboard;
 pub mod context;
 pub mod helpers;
 mod pain_points_flow;

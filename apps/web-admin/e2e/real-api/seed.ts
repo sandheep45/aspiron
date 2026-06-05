@@ -533,6 +533,249 @@ export async function seedPainPointsData(): Promise<PainPointsSeedData> {
   }
 }
 
+export interface ContentDashboardSeedData {
+  runId: string
+  adminUser: { id: string; email: string; password: string }
+  studentIds: string[]
+  subject: { id: string }
+  chapter: { id: string }
+  topics: Array<{ id: string; name: string }>
+  quizIds: string[]
+  sessionIds: string[]
+  answerIds: string[]
+}
+
+export async function seedContentDashboardData(): Promise<ContentDashboardSeedData> {
+  const runId = randomUUID()
+  const now = new Date()
+
+  const ADMIN_ID = '30000000-0000-0000-0000-000000000001'
+  const STUDENT_IDS = [
+    '30000000-0000-0000-0000-000000000011',
+    '30000000-0000-0000-0000-000000000012',
+  ]
+  const SUBJECT_ID = '30000000-0000-0000-0000-000000000020'
+  const CHAPTER_ID = '30000000-0000-0000-0000-000000000030'
+  const TOPICS = [
+    {
+      id: '30000000-0000-0000-0000-000000000041',
+      name: 'CD Quadratic Equations',
+    },
+    { id: '30000000-0000-0000-0000-000000000042', name: 'CD Linear Algebra' },
+    { id: '30000000-0000-0000-0000-000000000043', name: 'CD Calculus' },
+  ]
+  const QUIZ_IDS = [
+    '30000000-0000-0000-0000-000000000051',
+    '30000000-0000-0000-0000-000000000052',
+  ]
+  const SESSION_BASE = '30000000-0000-0000-0000-00000000'
+  const ANSWER_BASE = '30000000-0000-0000-0000-00000001'
+
+  // Compute IDs for cleanup
+  const sessionIds: string[] = []
+  const answerIds: string[] = []
+  let sessionIdx = 0
+  let answerIdx = 0
+  const ANSWERS_PER_SESSION = 5
+
+  for (let t = 0; t < TOPICS.length; t++) {
+    for (let s = 0; s < STUDENT_IDS.length; s++) {
+      const sid = `${SESSION_BASE}${String(60 + sessionIdx).padStart(4, '0')}`
+      sessionIds.push(sid)
+      for (let a = 0; a < ANSWERS_PER_SESSION; a++) {
+        const aid = `${ANSWER_BASE}${String(answerIdx).padStart(4, '0')}`
+        answerIds.push(aid)
+        answerIdx++
+      }
+      sessionIdx++
+    }
+  }
+
+  // Clean up
+  const ALL_TOPIC_IDS = TOPICS.map((t) => t.id)
+  await pool.query(
+    'DELETE FROM learning_recall_answers WHERE id = ANY($1::uuid[])',
+    [answerIds],
+  )
+  await pool.query(
+    'DELETE FROM learning_recall_sessions WHERE id = ANY($1::uuid[])',
+    [sessionIds],
+  )
+  await pool.query(
+    'DELETE FROM assessment_quizzes WHERE id = ANY($1::uuid[])',
+    [QUIZ_IDS],
+  )
+  await pool.query('DELETE FROM content_topics WHERE id = ANY($1::uuid[])', [
+    ALL_TOPIC_IDS,
+  ])
+  await pool.query('DELETE FROM content_chapters WHERE id = $1', [CHAPTER_ID])
+  await pool.query('DELETE FROM content_subjects WHERE id = $1', [SUBJECT_ID])
+  await pool.query(
+    'DELETE FROM user_profiles WHERE user_id = ANY($1::uuid[])',
+    [[ADMIN_ID, ...STUDENT_IDS]],
+  )
+  await pool.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [
+    [ADMIN_ID, ...STUDENT_IDS],
+  ])
+
+  const passwordHash = await bcrypt.hash('admin123', 4)
+  const studentHash = await bcrypt.hash('student123', 4)
+
+  // Create admin
+  await pool.query(
+    `INSERT INTO users (id, email, password_hash, is_active, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [ADMIN_ID, 'cd.admin@aspiron.test', passwordHash, true, now, now],
+  )
+  await pool.query(
+    `INSERT INTO user_profiles (user_id, first_name, last_name)
+     VALUES ($1, $2, $3)`,
+    [ADMIN_ID, 'Content', 'Admin'],
+  )
+
+  // Create students
+  for (let i = 0; i < STUDENT_IDS.length; i++) {
+    await pool.query(
+      `INSERT INTO users (id, email, password_hash, is_active, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        STUDENT_IDS[i],
+        `cd.student${i + 1}@aspiron.test`,
+        studentHash,
+        true,
+        now,
+        now,
+      ],
+    )
+    await pool.query(
+      `INSERT INTO user_profiles (user_id, first_name, last_name)
+       VALUES ($1, $2, $3)`,
+      [STUDENT_IDS[i], 'Student', `${i + 1}`],
+    )
+  }
+
+  // Content hierarchy
+  await pool.query(
+    `INSERT INTO content_subjects (id, name, exam_type, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [SUBJECT_ID, 'CD Mathematics', 'JEE', now, now],
+  )
+  await pool.query(
+    `INSERT INTO content_chapters (id, name, subject_id, order_number)
+     VALUES ($1, $2, $3, $4)`,
+    [CHAPTER_ID, 'CD Algebra', SUBJECT_ID, 100],
+  )
+  for (let i = 0; i < TOPICS.length; i++) {
+    await pool.query(
+      `INSERT INTO content_topics (id, name, chapter_id, order_number)
+       VALUES ($1, $2, $3, $4)`,
+      [TOPICS[i].id, TOPICS[i].name, CHAPTER_ID, i + 1],
+    )
+
+    // Create a quiz for each topic with questions
+    if (i < 2) {
+      await pool.query(
+        `INSERT INTO assessment_quizzes (id, topic_id, title)
+         VALUES ($1, $2, $3)`,
+        [QUIZ_IDS[i], TOPICS[i].id, `${TOPICS[i].name} Quiz`],
+      )
+    }
+  }
+
+  // Recall sessions + answers
+  const correctPerSession = [3, 2] // first student 3/5, second 2/5
+  sessionIdx = 0
+  answerIdx = 0
+
+  for (let t = 0; t < TOPICS.length; t++) {
+    for (let s = 0; s < STUDENT_IDS.length; s++) {
+      const sessionId = `${SESSION_BASE}${String(60 + sessionIdx).padStart(4, '0')}`
+      await pool.query(
+        `INSERT INTO learning_recall_sessions (id, user_id, topic_id, status, started_at, completed_at)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [sessionId, STUDENT_IDS[s], TOPICS[t].id, 'completed', now, now],
+      )
+      for (let a = 0; a < ANSWERS_PER_SESSION; a++) {
+        const answerId = `${ANSWER_BASE}${String(answerIdx).padStart(4, '0')}`
+        const isCorrect = a < correctPerSession[s]
+        await pool.query(
+          `INSERT INTO learning_recall_answers (id, session_id, question_type, question, answer, is_correct, score)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            answerId,
+            sessionId,
+            'mcq',
+            `Q${a + 1}`,
+            isCorrect ? 'Correct' : 'Wrong',
+            isCorrect,
+            isCorrect ? 100 : 0,
+          ],
+        )
+        answerIdx++
+      }
+      sessionIdx++
+    }
+  }
+
+  console.log(
+    `[e2e] Seeded content dashboard run ${runId.slice(0, 8)}: 1 subject, 3 topics, 2 quizzes, ${sessionIdx} sessions, ${answerIdx} answers`,
+  )
+
+  return {
+    runId,
+    adminUser: {
+      id: ADMIN_ID,
+      email: 'cd.admin@aspiron.test',
+      password: 'admin123',
+    },
+    studentIds: STUDENT_IDS,
+    subject: { id: SUBJECT_ID },
+    chapter: { id: CHAPTER_ID },
+    topics: TOPICS,
+    quizIds: QUIZ_IDS,
+    sessionIds,
+    answerIds,
+  }
+}
+
+export async function cleanupContentDashboardData(
+  data: ContentDashboardSeedData,
+) {
+  const allUserIds = [data.adminUser.id, ...data.studentIds]
+  const allTopicIds = data.topics.map((t) => t.id)
+
+  await pool.query(
+    'DELETE FROM learning_recall_answers WHERE id = ANY($1::uuid[])',
+    [data.answerIds],
+  )
+  await pool.query(
+    'DELETE FROM learning_recall_sessions WHERE id = ANY($1::uuid[])',
+    [data.sessionIds],
+  )
+  await pool.query(
+    'DELETE FROM assessment_quizzes WHERE id = ANY($1::uuid[])',
+    [data.quizIds],
+  )
+  await pool.query('DELETE FROM content_topics WHERE id = ANY($1::uuid[])', [
+    allTopicIds,
+  ])
+  await pool.query('DELETE FROM content_chapters WHERE id = $1', [
+    data.chapter.id,
+  ])
+  await pool.query('DELETE FROM content_subjects WHERE id = $1', [
+    data.subject.id,
+  ])
+  await pool.query(
+    'DELETE FROM user_profiles WHERE user_id = ANY($1::uuid[])',
+    [allUserIds],
+  )
+  await pool.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [allUserIds])
+
+  console.log(
+    `[e2e] Cleaned up content dashboard run ${data.runId.slice(0, 8)}`,
+  )
+}
+
 export async function cleanupPainPointsData(data: PainPointsSeedData) {
   const allUserIds = [
     data.adminUser.id,

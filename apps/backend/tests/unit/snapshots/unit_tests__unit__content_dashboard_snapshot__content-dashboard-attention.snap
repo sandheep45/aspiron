@@ -1,0 +1,21 @@
+---
+source: apps/backend/tests/unit/content_dashboard_snapshot.rs
+expression: value
+---
+{
+  "items": [
+    {
+      "issue": "Low Recall",
+      "reason": "Students showing recall decline",
+      "students_affected": 23,
+      "topic": "Newton's Laws"
+    },
+    {
+      "issue": "Poor Accuracy",
+      "reason": "Accuracy below 60% threshold",
+      "students_affected": 15,
+      "topic": "Quadratic Equations"
+    }
+  ],
+  "total": 2
+}

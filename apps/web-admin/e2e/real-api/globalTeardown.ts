@@ -2,7 +2,8 @@ import { readFileSync, unlinkSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { pool } from './db'
-import type { SeedData } from './seed'
+import type { ContentDashboardSeedData, SeedData } from './seed'
+import { cleanupContentDashboardData } from './seed'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -10,15 +11,34 @@ const __dirname = path.dirname(__filename)
 export default async function globalTeardown() {
   const filePath = path.join(__dirname, '.e2e-run-data.json')
 
-  let seedResult: SeedData
+  let allData: SeedData & { cd?: ContentDashboardSeedData }
   try {
-    seedResult = JSON.parse(readFileSync(filePath, 'utf-8'))
+    allData = JSON.parse(readFileSync(filePath, 'utf-8'))
   } catch {
     console.warn('[e2e] No seed data file found — skipping teardown')
     return
   }
 
+  const seedResult: SeedData = {
+    runId: allData.runId,
+    user: allData.user,
+    subject: allData.subject,
+    chapter: allData.chapter,
+    topics: allData.topics,
+    liveSessions: allData.liveSessions,
+    attendeeIds: allData.attendeeIds,
+    quizIds: allData.quizIds,
+    questionIds: allData.questionIds,
+    attemptIds: allData.attemptIds,
+    progressIds: allData.progressIds,
+  }
+
   console.log(`[e2e] Tearing down run ${seedResult.runId.slice(0, 8)}`)
+
+  // Clean up content dashboard data first
+  if (allData.cd) {
+    await cleanupContentDashboardData(allData.cd)
+  }
 
   const sessionIds = seedResult.liveSessions.map((s) => s.id)
   const topicIds = seedResult.topics.map((t) => t.id)

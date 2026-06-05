@@ -5,7 +5,13 @@ async function setupAuth(page: Page) {
     {
       name: 'jwt_refresh',
       value: 'mock-refresh-token',
-      domain: 'localhost',
+      domain: 'local.aspiron.test',
+      path: '/',
+    },
+    {
+      name: 'jwt',
+      value: 'mock-access-token',
+      domain: 'local.aspiron.test',
       path: '/',
     },
   ])

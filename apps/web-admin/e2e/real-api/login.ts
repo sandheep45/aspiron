@@ -105,6 +105,10 @@ export async function loginAsPPEmpty(page: Page, context: BrowserContext) {
   await loginAs(page, context, 'pp.empty@aspiron.test', 'admin123')
 }
 
+export async function loginAsCDAdmin(page: Page, context: BrowserContext) {
+  await loginAs(page, context, 'cd.admin@aspiron.test', 'admin123')
+}
+
 export async function seedUser(context: BrowserContext, page: Page) {
   await loginAsE2eStudent(page, context)
   await page.goto('/dashboard')

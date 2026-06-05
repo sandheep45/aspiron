@@ -55,4 +55,43 @@ describe('MSW', () => {
     expect(body.id).toBe('topic-42')
     expect(body).toHaveProperty('name')
   })
+
+  it('intercepts content dashboard summary', async () => {
+    const response = await fetch('/api/v1/content/dashboard/summary')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('subjects_covered')
+    expect(body).toHaveProperty('topics_published')
+    expect(body).toHaveProperty('topics_flagged')
+  })
+
+  it('intercepts content dashboard attention', async () => {
+    const response = await fetch('/api/v1/content/dashboard/attention')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('total')
+    expect(body).toHaveProperty('items')
+    expect(Array.isArray(body.items)).toBe(true)
+  })
+
+  it('intercepts content dashboard subjects', async () => {
+    const response = await fetch('/api/v1/content/dashboard/subjects')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('name')
+      expect(body[0]).toHaveProperty('completion')
+    }
+  })
+
+  it('intercepts content dashboard signals', async () => {
+    const response = await fetch('/api/v1/content/dashboard/signals')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('highest_recall')
+    expect(body).toHaveProperty('fastest_decay')
+    expect(Array.isArray(body.highest_recall)).toBe(true)
+    expect(Array.isArray(body.fastest_decay)).toBe(true)
+  })
 })

@@ -1,3 +1,5 @@
+mod content_dashboard;
+mod content_dashboard_snapshot;
 mod error_snapshot;
 mod jwt;
 mod notification_rules;

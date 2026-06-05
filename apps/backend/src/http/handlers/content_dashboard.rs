@@ -1,5 +1,5 @@
-use axum::extract::{Query, State};
 use axum::Json;
+use axum::extract::{Query, State};
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QuerySelect};
 use uuid::Uuid;
 
@@ -10,12 +10,69 @@ use crate::entries::entities::{
     learning_recall_session,
 };
 use crate::http::responses::content_dashboard::{
-    ContentDashboardAttentionItem, ContentDashboardAttentionResponse,
-    ContentDashboardSignalItem, ContentDashboardSignalsResponse,
-    ContentDashboardSubjectProgress, ContentDashboardSummaryResponse,
+    ContentDashboardAttentionItem, ContentDashboardAttentionResponse, ContentDashboardSignalItem,
+    ContentDashboardSignalsResponse, ContentDashboardSubjectProgress,
+    ContentDashboardSummaryResponse,
 };
 use crate::setup::app::AppState;
 use crate::setup::error::AppError;
+
+pub fn classify_signals(
+    scores: &[(String, f64)],
+) -> (
+    Vec<ContentDashboardSignalItem>,
+    Vec<ContentDashboardSignalItem>,
+) {
+    let n = scores.len() as f64;
+
+    if n == 0.0 {
+        return (Vec::new(), Vec::new());
+    }
+
+    let mean = scores.iter().map(|(_, score)| score).sum::<f64>() / n;
+    let variance = scores
+        .iter()
+        .map(|(_, score)| (score - mean).powi(2))
+        .sum::<f64>()
+        / n;
+    let std_dev = variance.sqrt();
+
+    let upper_benchmark = mean + 0.5 * std_dev;
+    let lower_benchmark = mean - 0.5 * std_dev;
+
+    let mut highest_recall: Vec<_> = scores
+        .iter()
+        .filter(|(_, score)| *score > upper_benchmark)
+        .map(|(name, score)| ContentDashboardSignalItem {
+            topic: name.clone(),
+            score: Some(*score),
+            drop: None,
+        })
+        .collect();
+
+    let mut fastest_decay: Vec<_> = scores
+        .iter()
+        .filter(|(_, score)| *score < lower_benchmark)
+        .map(|(name, score)| ContentDashboardSignalItem {
+            topic: name.clone(),
+            score: None,
+            drop: Some(100.0 - score),
+        })
+        .collect();
+
+    highest_recall.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+    fastest_decay.sort_by(|a, b| {
+        b.drop
+            .partial_cmp(&a.drop)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    (highest_recall, fastest_decay)
+}
 
 pub async fn handler_get_content_dashboard_summary(
     State(app_state): State<AppState>,
@@ -136,29 +193,29 @@ pub async fn handler_get_content_dashboard_attention(
                     topic: topic.name,
                     issue: issue.to_string(),
                     reason: reason.to_string(),
-                    students_affected: (15 + (i as i64 * 7) % 30) as i64,
+                    students_affected: 15 + (i as i64 * 7) % 30,
                 });
             }
         }
     }
 
     // Search filter
-    if let Some(ref search) = params.search {
-        if !search.is_empty() {
-            let q = search.to_lowercase();
-            items.retain(|item| {
-                item.topic.to_lowercase().contains(&q)
-                    || item.issue.to_lowercase().contains(&q)
-                    || item.reason.to_lowercase().contains(&q)
-            });
-        }
+    if let Some(ref search) = params.search
+        && !search.is_empty()
+    {
+        let q = search.to_lowercase();
+        items.retain(|item| {
+            item.topic.to_lowercase().contains(&q)
+                || item.issue.to_lowercase().contains(&q)
+                || item.reason.to_lowercase().contains(&q)
+        });
     }
 
     // Issue filter
-    if let Some(ref issue) = params.issue {
-        if !issue.is_empty() {
-            items.retain(|item| item.issue.to_lowercase() == issue.to_lowercase());
-        }
+    if let Some(ref issue) = params.issue
+        && !issue.is_empty()
+    {
+        items.retain(|item| item.issue.to_lowercase() == issue.to_lowercase());
     }
 
     // Sort
@@ -170,22 +227,22 @@ pub async fn handler_get_content_dashboard_attention(
             } else {
                 items.sort_by(|a, b| a.topic.cmp(&b.topic));
             }
-        },
+        }
         Some("issue") => {
             if sort_order == "desc" {
                 items.sort_by(|a, b| b.issue.cmp(&a.issue));
             } else {
                 items.sort_by(|a, b| a.issue.cmp(&b.issue));
             }
-        },
+        }
         Some("students") => {
             if sort_order == "desc" {
                 items.sort_by(|a, b| b.students_affected.cmp(&a.students_affected));
             } else {
                 items.sort_by(|a, b| a.students_affected.cmp(&b.students_affected));
             }
-        },
-        _ => {},
+        }
+        _ => {}
     }
 
     let total = items.len() as i64;
@@ -293,12 +350,7 @@ pub async fn handler_get_content_dashboard_signals(
         .await
         .unwrap_or_default();
 
-    struct TopicScore {
-        name: String,
-        score: f64,
-    }
-
-    let mut all_topics: Vec<TopicScore> = Vec::new();
+    let mut all_topics: Vec<(String, f64)> = Vec::new();
 
     for topic_id in &topic_ids_with_recall {
         let topic = content_topic::Entity::find_by_id(*topic_id)
@@ -324,53 +376,12 @@ pub async fn handler_get_content_dashboard_signals(
 
             if total > 0.0 {
                 let score = (correct / total) * 100.0;
-                all_topics.push(TopicScore {
-                    name: topic.name,
-                    score,
-                });
+                all_topics.push((topic.name, score));
             }
         }
     }
 
-    let mut highest_recall = Vec::new();
-    let mut fastest_decay = Vec::new();
-
-    if !all_topics.is_empty() {
-        let n = all_topics.len() as f64;
-        let mean = all_topics.iter().map(|t| t.score).sum::<f64>() / n;
-        let variance = all_topics.iter().map(|t| (t.score - mean).powi(2)).sum::<f64>() / n;
-        let std_dev = variance.sqrt();
-
-        let upper_benchmark = mean + 0.5 * std_dev;
-        let lower_benchmark = mean - 0.5 * std_dev;
-
-        for topic in &all_topics {
-            if topic.score > upper_benchmark {
-                highest_recall.push(ContentDashboardSignalItem {
-                    topic: topic.name.clone(),
-                    score: Some(topic.score),
-                    drop: None,
-                });
-            } else if topic.score < lower_benchmark {
-                fastest_decay.push(ContentDashboardSignalItem {
-                    topic: topic.name.clone(),
-                    score: None,
-                    drop: Some(100.0 - topic.score),
-                });
-            }
-        }
-    }
-
-    highest_recall.sort_by(|a, b| {
-        b.score
-            .partial_cmp(&a.score)
-            .unwrap_or(std::cmp::Ordering::Equal)
-    });
-    fastest_decay.sort_by(|a, b| {
-        b.drop
-            .partial_cmp(&a.drop)
-            .unwrap_or(std::cmp::Ordering::Equal)
-    });
+    let (highest_recall, fastest_decay) = classify_signals(&all_topics);
 
     Ok(Json(ContentDashboardSignalsResponse {
         highest_recall,

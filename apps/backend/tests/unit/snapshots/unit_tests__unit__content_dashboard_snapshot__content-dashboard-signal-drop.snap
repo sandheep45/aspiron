@@ -1,0 +1,9 @@
+---
+source: apps/backend/tests/unit/content_dashboard_snapshot.rs
+expression: value
+---
+{
+  "drop": 28.0,
+  "score": null,
+  "topic": "Electrostatics - Gauss's Law"
+}
