@@ -189,4 +189,101 @@ describe('SubjectsPage', () => {
     customRender(<SubjectsPage />)
     expect(screen.getAllByText('Retry').length).toBeGreaterThan(0)
   })
+
+  it('renders empty table state when subjects is empty', () => {
+    setupMocks()
+    mockUseSubjectsPageSubjectsQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+    customRender(<SubjectsPage />)
+    expect(screen.getByText('No subjects found')).toBeInTheDocument()
+  })
+
+  it('renders empty signals state when signals is empty', () => {
+    setupMocks()
+    mockUseSubjectsPageSignalsQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+    customRender(<SubjectsPage />)
+    expect(screen.getByText('Subject Signals')).toBeInTheDocument()
+  })
+
+  it('calls onViewChapters callback with subject id', async () => {
+    setupMocks()
+    const onViewChapters = vi.fn()
+    customRender(<SubjectsPage onViewChapters={onViewChapters} />)
+    const buttons = screen.getAllByText('View Chapters')
+    await buttons[0].click()
+    expect(onViewChapters).toHaveBeenCalledWith('1')
+  })
+
+  it('retry button refetches a single section on error', async () => {
+    const subjectsRefetch = vi.fn()
+    mockUseSubjectsPageSubjectsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('Subjects error'),
+      refetch: subjectsRefetch,
+    })
+    mockUseSubjectsPageSummaryQuery.mockReturnValue({
+      data: summaryData,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+    mockUseSubjectsPageSignalsQuery.mockReturnValue({
+      data: signalsData,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+    customRender(<SubjectsPage />)
+    const retryButtons = screen.getAllByText('Retry')
+    await retryButtons[0].click()
+    expect(subjectsRefetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('refresh button calls refetch on all 3 queries', async () => {
+    const subjectsRefetch = vi.fn()
+    const summaryRefetch = vi.fn()
+    const signalsRefetch = vi.fn()
+    mockUseSubjectsPageSubjectsQuery.mockReturnValue({
+      data: subjectsData,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: subjectsRefetch,
+    })
+    mockUseSubjectsPageSummaryQuery.mockReturnValue({
+      data: summaryData,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: summaryRefetch,
+    })
+    mockUseSubjectsPageSignalsQuery.mockReturnValue({
+      data: signalsData,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: signalsRefetch,
+    })
+    const { container } = customRender(<SubjectsPage />)
+    const refreshButton = container.querySelector('button') as HTMLButtonElement
+    await refreshButton.click()
+    expect(subjectsRefetch).toHaveBeenCalledTimes(1)
+    expect(summaryRefetch).toHaveBeenCalledTimes(1)
+    expect(signalsRefetch).toHaveBeenCalledTimes(1)
+  })
 })

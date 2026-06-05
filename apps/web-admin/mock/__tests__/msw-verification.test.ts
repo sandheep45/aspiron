@@ -94,4 +94,26 @@ describe('MSW', () => {
     expect(Array.isArray(body.highest_recall)).toBe(true)
     expect(Array.isArray(body.fastest_decay)).toBe(true)
   })
+
+  it('intercepts subjects-page endpoint', async () => {
+    const response = await fetch('/api/v1/content/subjects-page')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+  })
+
+  it('intercepts subjects-page summary', async () => {
+    const response = await fetch('/api/v1/content/subjects-page/summary')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('total_subjects')
+    expect(body).toHaveProperty('descriptions')
+  })
+
+  it('intercepts subjects-page signals', async () => {
+    const response = await fetch('/api/v1/content/subjects-page/signals')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+  })
 })

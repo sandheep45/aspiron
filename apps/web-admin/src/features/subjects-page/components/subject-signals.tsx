@@ -29,7 +29,7 @@ export function SubjectSignals({ signals }: SubjectSignalsProps) {
         description='Quick subject-level insights.'
         accent='bg-fuchsia-500'
       />
-      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+      <div className='grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         {signals.map((signal, index) => {
           const isPositive = signal.signal_type === 'positive'
           return (

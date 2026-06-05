@@ -80,7 +80,7 @@ async fn compute_avg_accuracy(
     Ok(Some(avg))
 }
 
-fn derive_status(average_recall: Option<f64>, practice_accuracy: Option<f64>) -> String {
+pub fn derive_status(average_recall: Option<f64>, practice_accuracy: Option<f64>) -> String {
     let recall = average_recall.unwrap_or(1.0);
     let accuracy = practice_accuracy.unwrap_or(1.0);
     let min_score = recall.min(accuracy);

@@ -2,9 +2,9 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Qu
 use uuid::Uuid;
 
 use backend::entries::entities::{
-    assessment_quiz, content_chapter, content_subject, content_topic, learning_progress,
-    learning_recall_answer, learning_recall_session, permission, role, user, user_profile,
-    user_role,
+    assessment_attempt, assessment_quiz, content_chapter, content_subject, content_topic,
+    learning_progress, learning_recall_answer, learning_recall_session, permission, role, user,
+    user_profile, user_role,
 };
 use backend::entries::entity_enums::action_types::ActionTypeEnum;
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
@@ -251,6 +251,28 @@ pub async fn create_test_learning_progress(
         last_accessed_at: Set(now),
     };
     model.insert(db).await.expect("insert learning progress");
+    id
+}
+
+/// Create a test assessment attempt for a quiz and user, returning the attempt ID.
+pub async fn create_test_assessment_attempt(
+    db: &DatabaseConnection,
+    quiz_id: Uuid,
+    user_id: Uuid,
+    score: i32,
+) -> Uuid {
+    let id = Uuid::new_v4();
+    let now: sea_orm::prelude::DateTimeWithTimeZone = chrono::Utc::now().into();
+
+    let model = assessment_attempt::ActiveModel {
+        id: Set(id),
+        quiz_id: Set(quiz_id),
+        user_id: Set(user_id),
+        score: Set(score),
+        started_at: Set(now),
+        submitted_at: Set(Some(now)),
+    };
+    model.insert(db).await.expect("insert assessment attempt");
     id
 }
 

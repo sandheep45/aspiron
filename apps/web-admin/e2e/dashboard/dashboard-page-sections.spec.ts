@@ -198,6 +198,13 @@ test.describe('Dashboard — Section Presence & Order', () => {
     await expect(page.getByText('Action Required')).toBeVisible()
     await expect(page.getByText('Student Pain Points')).toBeVisible()
     await expect(page.getByText('Upcoming Classes')).toBeVisible()
+
+    // No horizontal scrollbar
+    const scrollWidth = await page.evaluate(
+      () => document.documentElement.scrollWidth,
+    )
+    const viewportWidth = await page.evaluate(() => window.innerWidth)
+    expect(scrollWidth).toBeLessThanOrEqual(viewportWidth + 5)
   })
 
   test('renders correct visual hierarchy', async ({ page }) => {

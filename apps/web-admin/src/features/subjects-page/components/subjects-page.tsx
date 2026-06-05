@@ -27,7 +27,7 @@ export function SubjectsPage({ onViewChapters }: SubjectsPageProps) {
   }, [subjects, summary, signals])
 
   return (
-    <div className='flex w-full min-w-0 flex-col gap-8 pb-10'>
+    <div className='flex w-full min-w-0 flex-col gap-8 overflow-x-hidden pb-10'>
       {/* Header */}
       <header className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>

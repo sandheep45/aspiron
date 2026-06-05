@@ -160,6 +160,13 @@ test.describe('Content Dashboard — Section Presence', () => {
     await expect(page.getByText('Content Needing Attention')).toBeVisible()
     await expect(page.getByText('Subject Entry Points')).toBeVisible()
     await expect(page.getByText('Content Quality Signals')).toBeVisible()
+
+    // No horizontal scrollbar
+    const scrollWidth = await page.evaluate(
+      () => document.documentElement.scrollWidth,
+    )
+    const viewportWidth = await page.evaluate(() => window.innerWidth)
+    expect(scrollWidth).toBeLessThanOrEqual(viewportWidth + 5)
   })
 
   test('renders metric card values', async ({ page }) => {

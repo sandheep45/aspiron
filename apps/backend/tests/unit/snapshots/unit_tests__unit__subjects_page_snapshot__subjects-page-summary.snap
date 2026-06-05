@@ -1,0 +1,16 @@
+---
+source: apps/backend/tests/unit/subjects_page_snapshot.rs
+expression: value
+---
+{
+  "descriptions": [
+    "Physics, Chemistry, Mathematics, Biology",
+    "250 topics across 4 subjects",
+    "193 topics published and available",
+    "18 topics with low recall or accuracy"
+  ],
+  "published_topics": 193,
+  "topics_needing_attention": 18,
+  "total_subjects": 4,
+  "total_topics": 250
+}

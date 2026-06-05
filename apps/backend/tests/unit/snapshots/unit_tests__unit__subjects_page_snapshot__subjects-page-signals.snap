@@ -1,0 +1,16 @@
+---
+source: apps/backend/tests/unit/subjects_page_snapshot.rs
+expression: value
+---
+[
+  {
+    "message": "Physics has fastest recall decay",
+    "signal_type": "negative",
+    "subject_name": "Physics"
+  },
+  {
+    "message": "Chemistry has highest practice accuracy",
+    "signal_type": "positive",
+    "subject_name": "Chemistry"
+  }
+]

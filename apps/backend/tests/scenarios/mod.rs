@@ -5,4 +5,5 @@ mod pain_points_flow;
 mod quiz_lifecycle;
 pub mod scenario_builder;
 mod student_onboarding;
+mod subjects_page_flow;
 mod teacher_content_upload;

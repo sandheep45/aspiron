@@ -9,3 +9,5 @@ mod permissions;
 mod progression;
 mod recall_algorithm;
 mod scoring;
+mod subjects_page;
+mod subjects_page_snapshot;

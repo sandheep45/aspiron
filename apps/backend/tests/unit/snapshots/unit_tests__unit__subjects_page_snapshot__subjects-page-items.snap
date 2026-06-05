@@ -1,0 +1,26 @@
+---
+source: apps/backend/tests/unit/subjects_page_snapshot.rs
+expression: value
+---
+[
+  {
+    "average_recall": 0.62,
+    "chapters_count": 12,
+    "coverage": 87.0,
+    "id": "subj-1",
+    "name": "Physics",
+    "practice_accuracy": 0.74,
+    "status": "Needs Attention",
+    "topics_published": 59
+  },
+  {
+    "average_recall": 0.81,
+    "chapters_count": 10,
+    "coverage": 72.0,
+    "id": "subj-2",
+    "name": "Chemistry",
+    "practice_accuracy": 0.85,
+    "status": "Healthy",
+    "topics_published": 39
+  }
+]
