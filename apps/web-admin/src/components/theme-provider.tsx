@@ -20,6 +20,22 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
+function resolveTheme(theme: Theme): 'dark' | 'light' {
+  if (theme === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
+  }
+  return theme
+}
+
+function setThemeCookie(storageKey: string, theme: Theme) {
+  if (typeof window === 'undefined') return
+  const resolved = resolveTheme(theme)
+  // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API requires async, using document.cookie for sync access
+  document.cookie = `${storageKey}=${resolved}; path=/; max-age=31536000; SameSite=Lax`
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
@@ -39,24 +55,22 @@ export function ThemeProvider({
     root.classList.remove('light', 'dark')
 
     if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light'
-
+      const systemTheme = resolveTheme(theme)
       root.classList.add(systemTheme)
-      return
+    } else {
+      root.classList.add(theme)
     }
 
-    root.classList.add(theme)
-  }, [theme])
+    setThemeCookie(storageKey, theme)
+  }, [theme, storageKey])
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
+    setTheme: (newTheme: Theme) => {
       if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, theme)
-        setTheme(theme)
+        localStorage.setItem(storageKey, newTheme)
+        setThemeCookie(storageKey, newTheme)
+        setTheme(newTheme)
       }
     },
   }

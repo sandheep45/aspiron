@@ -14,6 +14,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { getThemeCookie } from '@/features/theme/server-function/get-theme.function'
 import { fetchSession } from '@/lib/auth'
 import { KeyboardShortcutProvider } from '@/providers/keyboard-shortcuts'
 import appCss from '@/styles.css?url'
@@ -21,6 +22,7 @@ import appCss from '@/styles.css?url'
 interface RouterContext {
   queryClient: QueryClient
   isAuthenticated?: boolean
+  theme?: string | null
 }
 
 declare global {
@@ -33,8 +35,11 @@ declare global {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
-    const session = await fetchSession()
-    return session
+    const [session, theme] = await Promise.all([
+      fetchSession(),
+      getThemeCookie(),
+    ])
+    return { ...session, theme: theme ?? 'dark' }
   },
   head: () => ({
     meta: [
@@ -63,8 +68,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { theme } = Route.useRouteContext()
   return (
-    <html lang='en'>
+    <html lang='en' className={theme === 'light' ? 'light' : 'dark'}>
       <head>
         <HeadContent />
       </head>
