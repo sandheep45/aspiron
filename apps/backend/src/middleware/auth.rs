@@ -11,6 +11,7 @@ use uuid::Uuid;
 
 use crate::setup::error::AppError;
 use crate::utils::jwt::decode_jwt;
+use tracing::warn;
 
 #[derive(Clone, Debug)]
 pub enum PathMatch {
@@ -104,30 +105,38 @@ pub async fn require_auth(mut request: Request<Body>, next: Next) -> Response {
                     request.extensions_mut().insert(AuthUser(user_id));
                     next.run(request).await
                 }
-                Err(_) => AppError::Auth("Invalid user ID".to_string()).into_response(),
+                Err(_) => {
+                    warn!(path, token, "Invalid user ID in auth token");
+                    AppError::Auth("Invalid user ID".to_string()).into_response()
+                }
             },
             Err(err) => match err {
                 crate::utils::jwt::JwtError::Expired(_) => {
+                    warn!(path, token, "Expired auth token");
                     AppError::access_token_expired("Access token has expired").into_response()
                 }
                 crate::utils::jwt::JwtError::Invalid(_) => {
+                    warn!(path, token, "Invalid auth token");
                     AppError::auth("Invalid access token").into_response()
                 }
             },
         },
-        None => AppError::Auth("Missing authentication token".to_string()).into_response(),
+        None => {
+            warn!(path, "Missing authentication token");
+            AppError::Auth("Missing authentication token".to_string()).into_response()
+        }
     }
 }
 
 fn extract_token(request: &Request<Body>, cookie_name: &str) -> Option<String> {
-    if let Some(cookie_header) = request.headers().get("cookie")
-        && let Ok(cookie_str) = cookie_header.to_str()
-    {
-        let prefix = format!("{}=", cookie_name);
-        for cookie in cookie_str.split(';') {
-            let cookie = cookie.trim();
-            if cookie.starts_with(&prefix) {
-                return Some(cookie.strip_prefix(&prefix).unwrap().to_string());
+    let prefix = format!("{}=", cookie_name);
+    for cookie_header in request.headers().get_all("cookie").iter() {
+        if let Ok(cookie_str) = cookie_header.to_str() {
+            for cookie in cookie_str.split(';') {
+                let cookie = cookie.trim();
+                if cookie.starts_with(&prefix) {
+                    return Some(cookie.strip_prefix(&prefix).unwrap().to_string());
+                }
             }
         }
     }
