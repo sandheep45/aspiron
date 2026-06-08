@@ -1,5 +1,6 @@
 // Export all public APIs here
 
+export * from '@/services/admin/chapters-page.service'
 export * from '@/services/admin/content-dashboard.service'
 export * from '@/services/admin/insight.service'
 export * from '@/services/admin/pain-point.service'

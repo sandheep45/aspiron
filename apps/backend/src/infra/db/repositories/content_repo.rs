@@ -1,16 +1,23 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use chrono::{DateTime, Utc};
+use sea_orm::{
+    ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder,
+    QuerySelect,
+};
 use uuid::Uuid;
 
+use crate::application::content::chapters_page_types::{
+    ChapterInsightData, ChapterSummaryData, ChapterWithMetrics,
+};
 use crate::application::content::ports::ContentRepository;
 use crate::domain::content::entities::{Chapter, Subject, Topic, Video};
 use crate::domain::content::value_objects::OfflineToken;
-use crate::entries::entities::content_chapter;
-use crate::entries::entities::content_subject;
-use crate::entries::entities::content_topic;
-use crate::entries::entities::content_video;
+use crate::entries::entities::{
+    assessment_attempt, assessment_quiz, content_chapter, content_subject, content_topic,
+    content_video, learning_recall_answer, learning_recall_session,
+};
 use crate::setup::error::AppError;
 
 pub(crate) struct SeaOrmContentRepository {
@@ -86,6 +93,462 @@ impl ContentRepository for SeaOrmContentRepository {
             token: "stub-token".to_string(),
             expires_at: chrono::Utc::now() + chrono::Duration::hours(24),
         })
+    }
+
+    async fn get_subject_by_id(&self, subject_id: Uuid) -> Result<Subject, AppError> {
+        let subject = content_subject::Entity::find()
+            .filter(content_subject::Column::Id.eq(subject_id))
+            .one(&*self.db)
+            .await
+            .map_err(AppError::Database)?
+            .ok_or_else(|| AppError::not_found("Subject not found"))?;
+
+        Ok(map_subject_orm_to_domain(subject))
+    }
+
+    async fn get_topics_by_chapter_ids(
+        &self,
+        chapter_ids: Vec<Uuid>,
+    ) -> Result<Vec<Topic>, AppError> {
+        if chapter_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let topics = content_topic::Entity::find()
+            .filter(content_topic::Column::ChapterId.is_in(chapter_ids))
+            .all(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
+
+        Ok(topics.into_iter().map(map_topic_orm_to_domain).collect())
+    }
+
+    async fn get_chapter_summary(&self, subject_id: Uuid) -> Result<ChapterSummaryData, AppError> {
+        let db = &*self.db;
+
+        let subject = content_subject::Entity::find()
+            .filter(content_subject::Column::Id.eq(subject_id))
+            .one(db)
+            .await
+            .map_err(AppError::Database)?
+            .ok_or_else(|| AppError::not_found("Subject not found"))?;
+
+        let chapters = content_chapter::Entity::find()
+            .filter(content_chapter::Column::SubjectId.eq(subject_id))
+            .all(db)
+            .await
+            .map_err(AppError::Database)?;
+
+        let total_chapters = chapters.len() as i64;
+
+        let chapter_ids: Vec<Uuid> = chapters.iter().map(|c| c.id).collect();
+
+        let (total_topics, topic_ids, topics) = if chapter_ids.is_empty() {
+            (0i64, Vec::new(), Vec::new())
+        } else {
+            let topics = content_topic::Entity::find()
+                .filter(content_topic::Column::ChapterId.is_in(chapter_ids.clone()))
+                .all(db)
+                .await
+                .map_err(AppError::Database)?;
+            let ids: Vec<Uuid> = topics.iter().map(|t| t.id).collect();
+            (topics.len() as i64, ids, topics)
+        };
+
+        let quiz_topic_ids: Vec<Uuid> = assessment_quiz::Entity::find()
+            .select_only()
+            .column(assessment_quiz::Column::TopicId)
+            .distinct()
+            .into_tuple::<Uuid>()
+            .all(db)
+            .await
+            .unwrap_or_default();
+
+        let published_topics = topic_ids
+            .iter()
+            .filter(|id| quiz_topic_ids.contains(id))
+            .count() as i64;
+
+        let draft_topics = total_topics - published_topics;
+
+        let topics_by_chapter: std::collections::HashMap<Uuid, Vec<Uuid>> = {
+            let mut map: std::collections::HashMap<Uuid, Vec<Uuid>> =
+                std::collections::HashMap::new();
+            for t in &topics {
+                map.entry(t.chapter_id).or_default().push(t.id);
+            }
+            map
+        };
+
+        let mut chapters_with_weak_recall = 0i64;
+        for chapter in &chapters {
+            let chapter_topic_ids = topics_by_chapter
+                .get(&chapter.id)
+                .cloned()
+                .unwrap_or_default();
+
+            if chapter_topic_ids.is_empty() {
+                continue;
+            }
+
+            let recall_session_topic_ids: Vec<Uuid> = learning_recall_session::Entity::find()
+                .select_only()
+                .column(learning_recall_session::Column::TopicId)
+                .filter(learning_recall_session::Column::TopicId.is_in(chapter_topic_ids.clone()))
+                .distinct()
+                .into_tuple::<Uuid>()
+                .all(db)
+                .await
+                .unwrap_or_default();
+
+            if recall_session_topic_ids.is_empty() {
+                continue;
+            }
+
+            let mut correct = 0u64;
+            let mut total_recall = 0u64;
+            for tid in &recall_session_topic_ids {
+                let c = learning_recall_answer::Entity::find()
+                    .inner_join(learning_recall_session::Entity)
+                    .filter(learning_recall_session::Column::TopicId.eq(*tid))
+                    .filter(learning_recall_answer::Column::IsCorrect.eq(true))
+                    .count(db)
+                    .await
+                    .unwrap_or(0);
+
+                let t = learning_recall_answer::Entity::find()
+                    .inner_join(learning_recall_session::Entity)
+                    .filter(learning_recall_session::Column::TopicId.eq(*tid))
+                    .count(db)
+                    .await
+                    .unwrap_or(0);
+
+                correct += c;
+                total_recall += t;
+            }
+
+            if total_recall > 0 && (correct as f64 / total_recall as f64) < 0.6 {
+                chapters_with_weak_recall += 1;
+            }
+        }
+
+        Ok(ChapterSummaryData {
+            subject_name: subject.name,
+            total_chapters,
+            published_topics,
+            draft_topics,
+            chapters_needing_attention: chapters_with_weak_recall,
+        })
+    }
+
+    async fn get_chapters_with_metrics(
+        &self,
+        subject_id: Uuid,
+    ) -> Result<Vec<ChapterWithMetrics>, AppError> {
+        let db = &*self.db;
+
+        let chapters = content_chapter::Entity::find()
+            .filter(content_chapter::Column::SubjectId.eq(subject_id))
+            .all(db)
+            .await
+            .map_err(AppError::Database)?;
+
+        let chapter_ids: Vec<Uuid> = chapters.iter().map(|c| c.id).collect();
+
+        let topics = if chapter_ids.is_empty() {
+            Vec::new()
+        } else {
+            content_topic::Entity::find()
+                .filter(content_topic::Column::ChapterId.is_in(chapter_ids.clone()))
+                .all(db)
+                .await
+                .map_err(AppError::Database)?
+        };
+
+        let quiz_topic_ids: Vec<Uuid> = assessment_quiz::Entity::find()
+            .select_only()
+            .column(assessment_quiz::Column::TopicId)
+            .distinct()
+            .into_tuple::<Uuid>()
+            .all(db)
+            .await
+            .unwrap_or_default();
+
+        let mut results = Vec::new();
+
+        for chapter in &chapters {
+            let chapter_topics: Vec<&content_topic::Model> = topics
+                .iter()
+                .filter(|t| t.chapter_id == chapter.id)
+                .collect();
+
+            let total_topics = chapter_topics.len() as i64;
+
+            if total_topics == 0 {
+                results.push(ChapterWithMetrics {
+                    id: chapter.id,
+                    name: chapter.name.clone(),
+                    subject_id: chapter.subject_id,
+                    published_topics: 0,
+                    total_topics: 0,
+                    coverage: 0.0,
+                    avg_recall: None,
+                    practice_accuracy: None,
+                    last_activity_at: None,
+                });
+                continue;
+            }
+
+            let topic_ids: Vec<Uuid> = chapter_topics.iter().map(|t| t.id).collect();
+            let published = topic_ids
+                .iter()
+                .filter(|id| quiz_topic_ids.contains(id))
+                .count() as i64;
+            let coverage = (published as f64 / total_topics as f64) * 100.0;
+
+            let recall_session_topic_ids: Vec<Uuid> = learning_recall_session::Entity::find()
+                .select_only()
+                .column(learning_recall_session::Column::TopicId)
+                .filter(learning_recall_session::Column::TopicId.is_in(topic_ids.clone()))
+                .distinct()
+                .into_tuple::<Uuid>()
+                .all(db)
+                .await
+                .unwrap_or_default();
+
+            let avg_recall = if recall_session_topic_ids.is_empty() {
+                None
+            } else {
+                let mut correct = 0u64;
+                let mut total_recall = 0u64;
+                for tid in &recall_session_topic_ids {
+                    let c = learning_recall_answer::Entity::find()
+                        .inner_join(learning_recall_session::Entity)
+                        .filter(learning_recall_session::Column::TopicId.eq(*tid))
+                        .filter(learning_recall_answer::Column::IsCorrect.eq(true))
+                        .count(db)
+                        .await
+                        .unwrap_or(0);
+                    let t = learning_recall_answer::Entity::find()
+                        .inner_join(learning_recall_session::Entity)
+                        .filter(learning_recall_session::Column::TopicId.eq(*tid))
+                        .count(db)
+                        .await
+                        .unwrap_or(0);
+                    correct += c;
+                    total_recall += t;
+                }
+                if total_recall > 0 {
+                    Some(correct as f64 / total_recall as f64)
+                } else {
+                    None
+                }
+            };
+
+            let quiz_ids: Vec<Uuid> = assessment_quiz::Entity::find()
+                .select_only()
+                .column(assessment_quiz::Column::Id)
+                .filter(assessment_quiz::Column::TopicId.is_in(topic_ids.clone()))
+                .into_tuple::<Uuid>()
+                .all(db)
+                .await
+                .unwrap_or_default();
+
+            let practice_accuracy = if quiz_ids.is_empty() {
+                None
+            } else {
+                let attempts = assessment_attempt::Entity::find()
+                    .filter(assessment_attempt::Column::QuizId.is_in(quiz_ids.clone()))
+                    .all(db)
+                    .await
+                    .map_err(AppError::Database)?;
+
+                if attempts.is_empty() {
+                    None
+                } else {
+                    let total_score: i32 = attempts.iter().map(|a| a.score).sum();
+                    let count = attempts.len() as f64;
+                    Some((total_score as f64 / count) / 100.0)
+                }
+            };
+
+            let mut last_activity: Option<DateTime<Utc>> = None;
+
+            if !recall_session_topic_ids.is_empty() {
+                let latest_session = learning_recall_session::Entity::find()
+                    .filter(learning_recall_session::Column::TopicId.is_in(topic_ids.clone()))
+                    .order_by_desc(learning_recall_session::Column::CompletedAt)
+                    .one(db)
+                    .await
+                    .map_err(AppError::Database)?;
+                if let Some(session) = latest_session
+                    && let Some(completed) = session.completed_at
+                {
+                    let utc_completed: DateTime<Utc> = completed.into();
+                    last_activity = Some(
+                        last_activity
+                            .map(|la| la.max(utc_completed))
+                            .unwrap_or(utc_completed),
+                    );
+                }
+            }
+
+            if !quiz_ids.is_empty() {
+                let latest_attempt = assessment_attempt::Entity::find()
+                    .filter(assessment_attempt::Column::QuizId.is_in(quiz_ids.clone()))
+                    .order_by_desc(assessment_attempt::Column::SubmittedAt)
+                    .one(db)
+                    .await
+                    .map_err(AppError::Database)?;
+                if let Some(attempt) = latest_attempt
+                    && let Some(submitted) = attempt.submitted_at
+                {
+                    let utc_submitted: DateTime<Utc> = submitted.into();
+                    last_activity = Some(
+                        last_activity
+                            .map(|la| la.max(utc_submitted))
+                            .unwrap_or(utc_submitted),
+                    );
+                }
+            }
+
+            results.push(ChapterWithMetrics {
+                id: chapter.id,
+                name: chapter.name.clone(),
+                subject_id: chapter.subject_id,
+                published_topics: published,
+                total_topics,
+                coverage,
+                avg_recall,
+                practice_accuracy,
+                last_activity_at: last_activity,
+            });
+        }
+
+        Ok(results)
+    }
+
+    async fn get_chapter_insights(
+        &self,
+        subject_id: Uuid,
+    ) -> Result<Vec<ChapterInsightData>, AppError> {
+        let metrics = self.get_chapters_with_metrics(subject_id).await?;
+        let mut insights = Vec::new();
+
+        let mut weak_recall_chapters: Vec<&str> = Vec::new();
+        let mut strong_recall_chapters: Vec<&str> = Vec::new();
+        let mut low_coverage_chapters: Vec<&str> = Vec::new();
+        let mut high_coverage_chapters: Vec<&str> = Vec::new();
+        let mut low_accuracy_chapters: Vec<&str> = Vec::new();
+
+        for chapter in &metrics {
+            if let Some(recall) = chapter.avg_recall {
+                if recall < 0.5 {
+                    weak_recall_chapters.push(chapter.name.as_str());
+                } else if recall >= 0.8 {
+                    strong_recall_chapters.push(chapter.name.as_str());
+                }
+            }
+            if chapter.coverage < 50.0 {
+                low_coverage_chapters.push(chapter.name.as_str());
+            } else if chapter.coverage >= 90.0 {
+                high_coverage_chapters.push(chapter.name.as_str());
+            }
+            if let Some(accuracy) = chapter.practice_accuracy
+                && accuracy < 0.5
+            {
+                low_accuracy_chapters.push(chapter.name.as_str());
+            }
+        }
+
+        if !weak_recall_chapters.is_empty() {
+            insights.push(ChapterInsightData {
+                id: "weak-recall".to_string(),
+                signal_type: "warning".to_string(),
+                title: "Chapters with low recall".to_string(),
+                description: format!(
+                    "{} have significantly lower recall rates than other chapters.",
+                    weak_recall_chapters.join(", ")
+                ),
+            });
+        }
+
+        if !low_accuracy_chapters.is_empty() {
+            insights.push(ChapterInsightData {
+                id: "low-accuracy".to_string(),
+                signal_type: "negative".to_string(),
+                title: "Practice accuracy concerns".to_string(),
+                description: format!(
+                    "{} show practice accuracy below 50%, indicating students struggle with application.",
+                    low_accuracy_chapters.join(", ")
+                ),
+            });
+        }
+
+        if !low_coverage_chapters.is_empty() {
+            insights.push(ChapterInsightData {
+                id: "low-coverage".to_string(),
+                signal_type: "warning".to_string(),
+                title: "Content gaps detected".to_string(),
+                description: format!(
+                    "{} have less than 50% topic coverage. Consider adding more topics.",
+                    low_coverage_chapters.join(", ")
+                ),
+            });
+        }
+
+        if !strong_recall_chapters.is_empty() {
+            insights.push(ChapterInsightData {
+                id: "strong-recall".to_string(),
+                signal_type: "positive".to_string(),
+                title: "Strong recall chapters".to_string(),
+                description: format!(
+                    "{} maintain strong recall rates above 80%.",
+                    strong_recall_chapters.join(", ")
+                ),
+            });
+        }
+
+        if !high_coverage_chapters.is_empty() {
+            insights.push(ChapterInsightData {
+                id: "high-coverage".to_string(),
+                signal_type: "positive".to_string(),
+                title: "Full coverage achieved".to_string(),
+                description: format!(
+                    "{} have 90% or higher topic coverage.",
+                    high_coverage_chapters.join(", ")
+                ),
+            });
+        }
+
+        if metrics.iter().all(|c| c.coverage >= 80.0) {
+            insights.push(ChapterInsightData {
+                id: "all-healthy".to_string(),
+                signal_type: "positive".to_string(),
+                title: "All chapters well-covered".to_string(),
+                description:
+                    "Every chapter in this subject has at least 80% topic coverage. Great progress!"
+                        .to_string(),
+            });
+        }
+
+        if metrics.is_empty() {
+            insights.push(ChapterInsightData {
+                id: "no-data".to_string(),
+                signal_type: "info".to_string(),
+                title: "No chapter data available".to_string(),
+                description: "No chapters have been created for this subject yet.".to_string(),
+            });
+        }
+
+        // Deduplicate by title
+        let mut seen = std::collections::HashSet::new();
+        insights.retain(|i| seen.insert(i.title.clone()));
+
+        // Limit to 6
+        insights.truncate(6);
+
+        Ok(insights)
     }
 }
 

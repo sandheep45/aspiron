@@ -37,6 +37,22 @@ export const queryKeys = {
     },
   },
 
+  // Chapters Page
+  chaptersPage: {
+    all: () => ['chaptersPage'] as const,
+    subject: (subjectId: string) =>
+      [...queryKeys.chaptersPage.all(), 'subject', subjectId] as const,
+    chapters: (subjectId: string, params?: Record<string, unknown>) =>
+      [
+        ...queryKeys.chaptersPage.all(),
+        'chapters',
+        subjectId,
+        ...(params ? [params] : []),
+      ] as const,
+    insights: (subjectId: string) =>
+      [...queryKeys.chaptersPage.all(), 'insights', subjectId] as const,
+  },
+
   // Subjects Page
   subjectsPage: {
     all: () => ['subjectsPage'] as const,

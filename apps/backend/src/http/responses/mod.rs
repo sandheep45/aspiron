@@ -1,5 +1,6 @@
 pub mod assessment;
 pub mod auth;
+pub mod chapters_page;
 pub mod common;
 pub mod community;
 pub mod content;

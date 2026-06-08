@@ -1,4 +1,8 @@
+pub mod chapters_page_types;
 pub mod get_chapters;
+pub mod get_chapters_page_chapters;
+pub mod get_chapters_page_insights;
+pub mod get_chapters_page_summary;
 pub mod get_offline_token;
 pub mod get_subjects;
 pub mod get_topic;

@@ -3,8 +3,8 @@ use uuid::Uuid;
 
 use backend::entries::entities::{
     assessment_attempt, assessment_quiz, content_chapter, content_subject, content_topic,
-    learning_progress, learning_recall_answer, learning_recall_session, permission, role, user,
-    user_profile, user_role,
+    learning_progress, learning_recall_answer, learning_recall_session, permission, role,
+    role_permission, user, user_profile, user_role,
 };
 use backend::entries::entity_enums::action_types::ActionTypeEnum;
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
@@ -277,8 +277,9 @@ pub async fn create_test_assessment_attempt(
 }
 
 /// Ensure the analytics permission exists, creating it if needed.
+/// Also links the permission to the ADMIN role so admin users can access insights.
 pub async fn ensure_analytics_permission(db: &DatabaseConnection) -> Uuid {
-    let permission_name = "analytics:read";
+    let permission_name = "analytics:view";
     let existing = permission::Entity::find()
         .filter(permission::Column::Name.eq(permission_name))
         .one(db)
@@ -296,11 +297,32 @@ pub async fn ensure_analytics_permission(db: &DatabaseConnection) -> Uuid {
         id: Set(id),
         name: Set(permission_name.to_string()),
         resource_type: Set(ResourceTypeEnum::SYSTEM),
-        action: Set(ActionTypeEnum::READ),
+        action: Set(ActionTypeEnum::VIEW_ANALYTICS),
         description: Set(Some("View analytics and insights".to_string())),
         created_at: Set(now),
         updated_at: Set(now),
     };
     model.insert(db).await.expect("insert permission");
+
+    // Link permission to the ADMIN role
+    let admin_role_id = ensure_role_exists(db, UserTypeEnums::ADMIN).await;
+
+    let existing_rp = role_permission::Entity::find()
+        .filter(role_permission::Column::RoleId.eq(admin_role_id))
+        .filter(role_permission::Column::PermissionId.eq(id))
+        .one(db)
+        .await
+        .expect("failed to query role_permission");
+
+    if existing_rp.is_none() {
+        let rp_model = role_permission::ActiveModel {
+            id: Set(Uuid::new_v4()),
+            role_id: Set(admin_role_id),
+            permission_id: Set(id),
+            created_at: Set(now),
+        };
+        rp_model.insert(db).await.expect("insert role_permission");
+    }
+
     id
 }

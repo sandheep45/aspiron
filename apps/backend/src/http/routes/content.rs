@@ -6,6 +6,10 @@ use crate::application::content::ContentApplicationState;
 use crate::application::content::ports::ContentRepository;
 use crate::application::learning::LearningApplicationState;
 use crate::application::learning::ports::LearningRepository;
+use crate::http::handlers::chapters_page::{
+    handler_get_chapters_page_chapters, handler_get_chapters_page_insights,
+    handler_get_chapters_page_summary,
+};
 use crate::http::handlers::content::{
     handler_get_all_subjects, handler_get_chapters_by_subject_id,
     handler_get_offline_token_by_video_id, handler_get_topic_by_id,
@@ -79,6 +83,18 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         .route(
             "/content/subjects-page/signals",
             get(handler_get_subjects_page_signals),
+        )
+        .route(
+            "/subjects/{subject_id}/chapters-page/summary",
+            get(handler_get_chapters_page_summary),
+        )
+        .route(
+            "/subjects/{subject_id}/chapters-page/chapters",
+            get(handler_get_chapters_page_chapters),
+        )
+        .route(
+            "/subjects/{subject_id}/chapters-page/insights",
+            get(handler_get_chapters_page_insights),
         )
         .layer(axum::Extension(content_state))
         .layer(axum::Extension(learning_state))

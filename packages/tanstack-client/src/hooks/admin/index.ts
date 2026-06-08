@@ -1,3 +1,4 @@
+export * from '@/hooks/admin/chapters-page'
 export * from '@/hooks/admin/content-dashboard'
 export * from '@/hooks/admin/insight'
 export * from '@/hooks/admin/pain-point'
