@@ -14,34 +14,11 @@ use crate::http::responses::chapters_page::{
 };
 use crate::setup::error::AppError;
 
-pub async fn handler_get_chapters_page_summary(
-    Extension(state): Extension<ContentApplicationState>,
-    Path(subject_id): Path<Uuid>,
-) -> Result<Json<ChapterSummaryResponse>, AppError> {
-    let summary =
-        get_chapters_page_summary::execute_get_chapters_page_summary(&*state.repo, subject_id)
-            .await?;
-
-    Ok(Json(ChapterSummaryResponse {
-        subject_name: summary.subject_name,
-        total_chapters: summary.total_chapters,
-        published_topics: summary.published_topics,
-        draft_topics: summary.draft_topics,
-        chapters_needing_attention: summary.chapters_needing_attention,
-    }))
-}
-
-pub async fn handler_get_chapters_page_chapters(
-    Extension(state): Extension<ContentApplicationState>,
-    Path(subject_id): Path<Uuid>,
-    Query(params): Query<ChaptersQueryParams>,
-) -> Result<Json<Vec<ChapterItemResponse>>, AppError> {
-    let chapters =
-        get_chapters_page_chapters::execute_get_chapters_page_chapters(&*state.repo, subject_id)
-            .await?;
-
-    let mut items: Vec<ChapterItemResponse> =
-        chapters.into_iter().map(map_chapter_to_item).collect();
+pub fn apply_chapters_sorting(
+    items: Vec<ChapterItemResponse>,
+    params: &ChaptersQueryParams,
+) -> Vec<ChapterItemResponse> {
+    let mut items = items;
 
     // API-driven search
     if let Some(ref search) = params.search {
@@ -121,12 +98,41 @@ pub async fn handler_get_chapters_page_chapters(
     let end = (start + limit as usize).min(items.len());
 
     if start < items.len() {
-        items = items[start..end].to_vec();
+        items[start..end].to_vec()
     } else {
-        items = Vec::new();
+        Vec::new()
     }
+}
 
-    Ok(Json(items))
+pub async fn handler_get_chapters_page_summary(
+    Extension(state): Extension<ContentApplicationState>,
+    Path(subject_id): Path<Uuid>,
+) -> Result<Json<ChapterSummaryResponse>, AppError> {
+    let summary =
+        get_chapters_page_summary::execute_get_chapters_page_summary(&*state.repo, subject_id)
+            .await?;
+
+    Ok(Json(ChapterSummaryResponse {
+        subject_name: summary.subject_name,
+        total_chapters: summary.total_chapters,
+        published_topics: summary.published_topics,
+        draft_topics: summary.draft_topics,
+        chapters_needing_attention: summary.chapters_needing_attention,
+    }))
+}
+
+pub async fn handler_get_chapters_page_chapters(
+    Extension(state): Extension<ContentApplicationState>,
+    Path(subject_id): Path<Uuid>,
+    Query(params): Query<ChaptersQueryParams>,
+) -> Result<Json<Vec<ChapterItemResponse>>, AppError> {
+    let chapters =
+        get_chapters_page_chapters::execute_get_chapters_page_chapters(&*state.repo, subject_id)
+            .await?;
+
+    let items: Vec<ChapterItemResponse> = chapters.into_iter().map(map_chapter_to_item).collect();
+
+    Ok(Json(apply_chapters_sorting(items, &params)))
 }
 
 pub async fn handler_get_chapters_page_insights(
@@ -202,7 +208,7 @@ pub fn derive_chapter_status(avg_recall: Option<f64>, practice_accuracy: Option<
     }
 }
 
-fn recall_sort_key(recall: &str) -> u8 {
+pub fn recall_sort_key(recall: &str) -> u8 {
     match recall {
         "strong" => 3,
         "medium" => 2,
@@ -211,7 +217,7 @@ fn recall_sort_key(recall: &str) -> u8 {
     }
 }
 
-fn status_sort_key(status: &str) -> u8 {
+pub fn status_sort_key(status: &str) -> u8 {
     match status {
         "healthy" => 3,
         "needs_attention" => 2,
