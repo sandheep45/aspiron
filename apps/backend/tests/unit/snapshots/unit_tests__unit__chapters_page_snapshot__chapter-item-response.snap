@@ -1,0 +1,15 @@
+---
+source: apps/backend/tests/unit/chapters_page_snapshot.rs
+expression: value
+---
+{
+  "avg_recall": "medium",
+  "coverage": 80.0,
+  "id": "ch-1",
+  "last_updated": "2 days ago",
+  "name": "Mechanics",
+  "practice_accuracy": 74.0,
+  "published_topics": 12,
+  "status": "healthy",
+  "total_topics": 15
+}

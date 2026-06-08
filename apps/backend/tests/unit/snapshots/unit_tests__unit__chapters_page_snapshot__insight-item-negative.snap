@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/chapters_page_snapshot.rs
+expression: value
+---
+{
+  "description": "Optics has the lowest practice accuracy at 32%",
+  "id": "ins-3",
+  "title": "Low Accuracy",
+  "type": "negative"
+}

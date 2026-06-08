@@ -556,6 +556,8 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
   ]
   const SUBJECT_ID = '30000000-0000-0000-0000-000000000020'
   const CHAPTER_ID = '30000000-0000-0000-0000-000000000030'
+  const CHAPTER_2_ID = '30000000-0000-0000-0000-000000000031'
+  const CHAPTER_3_ID = '30000000-0000-0000-0000-000000000032'
   const TOPICS = [
     {
       id: '30000000-0000-0000-0000-000000000041',
@@ -563,6 +565,10 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
     },
     { id: '30000000-0000-0000-0000-000000000042', name: 'CD Linear Algebra' },
     { id: '30000000-0000-0000-0000-000000000043', name: 'CD Calculus' },
+    {
+      id: '30000000-0000-0000-0000-000000000044',
+      name: 'CD Trigonometric Functions',
+    },
   ]
   const QUIZ_IDS = [
     '30000000-0000-0000-0000-000000000051',
@@ -608,7 +614,9 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
   await pool.query('DELETE FROM content_topics WHERE id = ANY($1::uuid[])', [
     ALL_TOPIC_IDS,
   ])
-  await pool.query('DELETE FROM content_chapters WHERE id = $1', [CHAPTER_ID])
+  await pool.query('DELETE FROM content_chapters WHERE id = ANY($1::uuid[])', [
+    [CHAPTER_ID, CHAPTER_2_ID, CHAPTER_3_ID],
+  ])
   await pool.query('DELETE FROM content_subjects WHERE id = $1', [SUBJECT_ID])
   await pool.query(
     'DELETE FROM user_profiles WHERE user_id = ANY($1::uuid[])',
@@ -665,11 +673,22 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
      VALUES ($1, $2, $3, $4)`,
     [CHAPTER_ID, 'CD Algebra', SUBJECT_ID, 100],
   )
+  await pool.query(
+    `INSERT INTO content_chapters (id, name, subject_id, order_number)
+     VALUES ($1, $2, $3, $4)`,
+    [CHAPTER_2_ID, 'CD Geometry', SUBJECT_ID, 200],
+  )
+  await pool.query(
+    `INSERT INTO content_chapters (id, name, subject_id, order_number)
+     VALUES ($1, $2, $3, $4)`,
+    [CHAPTER_3_ID, 'CD Trigonometry', SUBJECT_ID, 300],
+  )
   for (let i = 0; i < TOPICS.length; i++) {
+    const chapterId = i < 3 ? CHAPTER_ID : CHAPTER_3_ID
     await pool.query(
       `INSERT INTO content_topics (id, name, chapter_id, order_number)
        VALUES ($1, $2, $3, $4)`,
-      [TOPICS[i].id, TOPICS[i].name, CHAPTER_ID, i + 1],
+      [TOPICS[i].id, TOPICS[i].name, chapterId, i + 1],
     )
 
     // Create a quiz for each topic with questions

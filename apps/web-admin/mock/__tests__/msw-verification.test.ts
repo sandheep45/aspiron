@@ -116,4 +116,45 @@ describe('MSW', () => {
     expect(response.status).toBe(200)
     expect(Array.isArray(body)).toBe(true)
   })
+
+  it('intercepts chapters-page summary', async () => {
+    const response = await fetch(
+      '/api/v1/subjects/subject-1/chapters-page/summary',
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('subject_name')
+    expect(body).toHaveProperty('total_chapters')
+    expect(body).toHaveProperty('published_topics')
+  })
+
+  it('intercepts chapters-page chapters', async () => {
+    const response = await fetch(
+      '/api/v1/subjects/subject-1/chapters-page/chapters',
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('name')
+      expect(body[0]).toHaveProperty('coverage')
+      expect(body[0]).toHaveProperty('status')
+    }
+  })
+
+  it('intercepts chapters-page insights', async () => {
+    const response = await fetch(
+      '/api/v1/subjects/subject-1/chapters-page/insights',
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('type')
+      expect(body[0]).toHaveProperty('title')
+      expect(body[0]).toHaveProperty('description')
+    }
+  })
 })

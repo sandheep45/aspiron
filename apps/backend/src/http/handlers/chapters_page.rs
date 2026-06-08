@@ -189,7 +189,7 @@ fn map_chapter_to_item(chapter: ChapterWithMetrics) -> ChapterItemResponse {
     }
 }
 
-fn derive_chapter_status(avg_recall: Option<f64>, practice_accuracy: Option<f64>) -> String {
+pub fn derive_chapter_status(avg_recall: Option<f64>, practice_accuracy: Option<f64>) -> String {
     let recall = avg_recall.unwrap_or(1.0);
     let accuracy = practice_accuracy.unwrap_or(1.0);
     let min_score = recall.min(accuracy);

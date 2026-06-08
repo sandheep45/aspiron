@@ -1,0 +1,15 @@
+---
+source: apps/backend/tests/unit/chapters_page_snapshot.rs
+expression: value
+---
+{
+  "avg_recall": "medium",
+  "coverage": 0.0,
+  "id": "ch-2",
+  "last_updated": "Never",
+  "name": "Thermodynamics",
+  "practice_accuracy": 0.0,
+  "published_topics": 0,
+  "status": "healthy",
+  "total_topics": 10
+}

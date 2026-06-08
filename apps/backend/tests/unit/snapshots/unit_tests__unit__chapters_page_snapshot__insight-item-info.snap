@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/chapters_page_snapshot.rs
+expression: value
+---
+{
+  "description": "All chapters show consistent improvement over last month",
+  "id": "ins-4",
+  "title": "Steady Progress",
+  "type": "info"
+}

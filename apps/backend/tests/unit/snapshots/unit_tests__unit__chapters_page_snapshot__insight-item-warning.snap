@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/chapters_page_snapshot.rs
+expression: value
+---
+{
+  "description": "Thermodynamics shows mixed recall across topics",
+  "id": "ins-2",
+  "title": "Mixed Performance",
+  "type": "warning"
+}

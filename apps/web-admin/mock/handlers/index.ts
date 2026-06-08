@@ -1,5 +1,6 @@
 import { assessmentHandlers } from './assessment.handlers'
 import { authHandlers } from './auth.handlers'
+import { chaptersPageHandlers } from './chapters-page.handlers'
 import { communityHandlers } from './community.handlers'
 import { contentHandlers } from './content.handlers'
 import { contentDashboardHandlers } from './content-dashboard.handlers'
@@ -17,6 +18,7 @@ import { upcomingClassesHandlers } from './upcoming-classes.handlers'
 export const handlers = [
   ...assessmentHandlers,
   ...authHandlers,
+  ...chaptersPageHandlers,
   ...communityHandlers,
   ...contentDashboardHandlers,
   ...contentHandlers,

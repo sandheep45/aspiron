@@ -1,3 +1,5 @@
+mod chapters_page;
+mod chapters_page_snapshot;
 mod content_dashboard;
 mod content_dashboard_snapshot;
 mod error_snapshot;

@@ -1,3 +1,4 @@
+mod chapters_page_flow;
 mod content_dashboard;
 pub mod context;
 pub mod helpers;

@@ -91,8 +91,8 @@ Added June 2026:
 - `extract_jwt_cookie()` and `extract_cookies()` in harness for cookie-based auth tests
 - Snapshot testing via `insta` (v1.47+): 7 snapshots in `tests/unit/snapshots/` — OpenAPI spec (1582 lines) + 7 error response shapes (VALIDATION, AUTH, ACCESS_TOKEN_EXPIRED, NOT_FOUND, INTERNAL, UNAUTHORIZED, NOT_FOUND_TOPIC). Run `cargo insta review` or `cargo insta accept` after intentional API changes.
 - `request_id` field stripped from error snapshots via redaction (non-deterministic UUID)
-- All 214 backend tests pass (107 ts-rs bindings + 8 harness + 38 integration + 18 scenarios/mod + 43 unit), clippy clean
-- All 202 frontend tests pass (26 test files, 4 new student-pain-points test files with 36 tests), biome clean
+- All 330+ backend tests pass (106 unit + 8 harness + 84 integration + 27 scenario + 105 ts-rs bindings + 0 doc), clippy clean
+- All 381 frontend tests pass (57 test files), biome clean
 
 ### Phase B.3 unit tests completed
 
@@ -102,12 +102,13 @@ Added June 2026:
 | `tests/unit/jwt.rs` | 10 | Token round-trip, expiry, invalid tokens, wrong secret, expired tokens |
 | `tests/unit/openapi_snapshot.rs` | 1 | OpenAPI spec snapshot (1582 lines) — catches unintended API contract changes |
 | `tests/unit/error_snapshot.rs` | 7 | Error response shape snapshots (VALIDATION, AUTH, ACCESS_TOKEN_EXPIRED, NOT_FOUND, INTERNAL, UNAUTHORIZED, NOT_FOUND_TOPIC) |
+| `tests/unit/chapters_page.rs` | 10 | `derive_chapter_status` boundary tests, null handling, min-of-two logic |
+| `tests/unit/chapters_page_snapshot.rs` | 6 | Summary, item, item-null, positive/warning/negative/info insight snapshots |
 
 ### Blocked unit tests (waiting on real implementations)
 
 | Planned file | Depends on |
 |---|---|
-| `tests/unit/scoring.rs` | Assessment scoring/grading logic (currently all stubs) |
 | `tests/unit/recall_algorithm.rs` | Spaced repetition calculations (currently stubs) |
 | `tests/unit/progression.rs` | Topic completion → unlock logic (currently stubs) |
 | `tests/unit/notification_rules.rs` | Notification trigger rules (currently stubs) |
