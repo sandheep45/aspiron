@@ -23,6 +23,10 @@ use crate::http::handlers::learning::handler_get_teachers_notes;
 use crate::http::handlers::subjects_page::{
     handler_get_subjects_page, handler_get_subjects_page_signals, handler_get_subjects_page_summary,
 };
+use crate::http::handlers::topic_detail::{
+    handler_get_topic_actions, handler_get_topic_components, handler_get_topic_issues,
+    handler_get_topic_overview, handler_get_topic_trends,
+};
 use crate::http::handlers::topics_page::{
     handler_get_topics_page_insights, handler_get_topics_page_summary,
     handler_get_topics_page_topics,
@@ -59,6 +63,17 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
             "/topics/{topic_id}/notes/official",
             get(handler_get_teachers_notes),
         )
+        .route(
+            "/topics/{topic_id}/overview",
+            get(handler_get_topic_overview),
+        )
+        .route("/topics/{topic_id}/issues", get(handler_get_topic_issues))
+        .route(
+            "/topics/{topic_id}/components",
+            get(handler_get_topic_components),
+        )
+        .route("/topics/{topic_id}/actions", get(handler_get_topic_actions))
+        .route("/topics/{topic_id}/trends", get(handler_get_topic_trends))
         .route(
             "/videos/{video_id}/offline-token",
             get(handler_get_offline_token_by_video_id),

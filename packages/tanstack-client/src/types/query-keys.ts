@@ -104,6 +104,21 @@ export const queryKeys = {
       [...queryKeys.liveClass.lists(), { page, limit }] as const,
   },
 
+  // Topic Detail
+  topicDetail: {
+    all: () => ['topicDetail'] as const,
+    overview: (topicId: string) =>
+      [...queryKeys.topicDetail.all(), 'overview', topicId] as const,
+    issues: (topicId: string) =>
+      [...queryKeys.topicDetail.all(), 'issues', topicId] as const,
+    components: (topicId: string) =>
+      [...queryKeys.topicDetail.all(), 'components', topicId] as const,
+    actions: (topicId: string) =>
+      [...queryKeys.topicDetail.all(), 'actions', topicId] as const,
+    trends: (topicId: string) =>
+      [...queryKeys.topicDetail.all(), 'trends', topicId] as const,
+  },
+
   // Assignments
   assignments: {
     all: () => ['assignments'] as const,

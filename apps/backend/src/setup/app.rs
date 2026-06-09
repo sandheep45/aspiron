@@ -169,6 +169,11 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
         registry.register("GET", "/api/v1/topics/{topic_id}");
         registry.register("GET", "/api/v1/topics/{topic_id}/videos");
         registry.register("GET", "/api/v1/topics/{topic_id}/notes/official");
+        registry.register("GET", "/api/v1/topics/{topic_id}/overview");
+        registry.register("GET", "/api/v1/topics/{topic_id}/issues");
+        registry.register("GET", "/api/v1/topics/{topic_id}/components");
+        registry.register("GET", "/api/v1/topics/{topic_id}/actions");
+        registry.register("GET", "/api/v1/topics/{topic_id}/trends");
         registry.register("GET", "/api/v1/videos/{video_id}/offline-token");
         registry.register("GET", "/api/v1/videos/{video_id}/playback-token");
         registry.register("GET", "/api/v1/notes");

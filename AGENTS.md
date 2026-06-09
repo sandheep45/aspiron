@@ -66,6 +66,23 @@
 - Pre-commit hook runs `just ci` via `lint-staged` — this includes `format → lint → build-all → check`
 - Pre-commit build includes ALL Rust + JS packages; can be slow. `--no-verify` to bypass (only if hook failure is pre-existing).
 
+## Topic Detail Page
+
+Added June 2026:
+
+- **Backend endpoints:** `GET /api/v1/topics/:topicId/overview`, `/issues`, `/components`, `/actions`, `/trends`
+  - Routes in `apps/backend/src/http/routes/content.rs`
+  - Handlers in `apps/backend/src/http/handlers/topic_detail.rs` (queries existing tables via AppState db)
+  - Response DTOs in `apps/backend/src/http/responses/topic_detail.rs`
+- **API client:** `topicDetailService` in `packages/api-client/src/services/admin/topic-detail.service.ts`
+- **TanStack hooks:** `useTopicOverviewQuery`, `useTopicIssuesQuery`, `useTopicComponentsQuery`, `useTopicActionsQuery`, `useTopicTrendsQuery` in `packages/tanstack-client/src/hooks/admin/topic-detail.ts`
+- **Query keys:** `queryKeys.topicDetail.*` in `packages/tanstack-client/src/types/query-keys.ts`
+- **MSW mocks:** Factory + handlers in `apps/web-admin/mock/factories/topic-detail.factory.ts` and `apps/web-admin/mock/handlers/topic-detail.handlers.ts`
+- **Frontend:** `TopicDetailPage` at `apps/web-admin/src/features/topic-detail/components/` with 10 sub-components (StatusBadge, SeverityBadge, TopicHealthCard, LearningIssueCard, ContentComponentCard, QuickActionsBar, PerformanceCharts, LoadingSkeleton)
+- **Charts:** Recharts `LineChart` for performance trends (4 chart cards: Recall, Practice Accuracy, Engagement, Completion)
+- **Page props:** `topicId`, `topicName`, `subjectName`, `chapterName`, `onBack` — no routing built in, designed as a composable component
+- **Overall status derivation:** Client-side logic maps recall_strength + dropoff_indicator + engagement_trend to Healthy / Needs Attention / Critical badges
+
 ## Content Dashboard
 
 Added June 2026:

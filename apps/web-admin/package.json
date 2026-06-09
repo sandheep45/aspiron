@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --host --port 3000",
+    "dev": "NODE_OPTIONS='--use-system-ca' vite dev --host --port 3000",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -36,6 +36,7 @@
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
+    "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "start-authjs": "^1.0.2",
     "tailwind-merge": "^2.6.0",
