@@ -1,5 +1,5 @@
 import { chaptersPageService } from '@aspiron/api-client'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ChaptersPage } from '@/features/chapters-page/components/chapters-page'
 
 export const Route = createFileRoute(
@@ -19,5 +19,15 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  return <ChaptersPage />
+  const navigate = useNavigate()
+
+  return (
+    <ChaptersPage
+      onBack={() =>
+        navigate({
+          to: '/content/subjects',
+        })
+      }
+    />
+  )
 }

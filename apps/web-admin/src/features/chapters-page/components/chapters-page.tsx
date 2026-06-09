@@ -4,7 +4,7 @@ import {
   useSubjectSummaryQuery,
 } from '@aspiron/tanstack-client'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { RefreshCw } from 'lucide-react'
+import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { InsightsSection } from '@/components/ui/insights-section'
@@ -13,7 +13,11 @@ import { SectionHeader } from '@/components/ui/section-header'
 import { ChapterSummaryCard } from '@/features/chapters-page/components/chapter-summary-card'
 import { ChaptersTable } from '@/features/chapters-page/components/chapters-table'
 
-export function ChaptersPage() {
+interface ChaptersPageProps {
+  onBack?: () => void
+}
+
+export function ChaptersPage({ onBack }: ChaptersPageProps) {
   const { subjectId } = useParams({
     from: '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/',
   })
@@ -86,6 +90,16 @@ export function ChaptersPage() {
 
   return (
     <div className='flex w-full min-w-0 flex-col gap-8 overflow-x-hidden pb-10'>
+      {/* Back navigation */}
+      <button
+        type='button'
+        onClick={onBack}
+        className='flex items-center gap-1.5 text-slate-400 text-sm transition-colors hover:text-white'
+      >
+        <ArrowLeft className='size-4' />
+        Back to Subjects
+      </button>
+
       {/* Header */}
       <header className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
