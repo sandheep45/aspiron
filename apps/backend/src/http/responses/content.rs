@@ -33,6 +33,10 @@ pub struct TopicResponse {
     #[schema(value_type = String)]
     pub chapter_id: Uuid,
     pub order_number: i32,
+    #[schema(value_type = String)]
+    pub subject_id: Uuid,
+    pub chapter_name: String,
+    pub subject_name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]

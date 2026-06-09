@@ -6,4 +6,7 @@ export type TopicDto = {
   name: string;
   chapter_id: string;
   order_number: number;
+  subject_id: string;
+  chapter_name: string;
+  subject_name: string;
 };

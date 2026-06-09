@@ -71,6 +71,9 @@ pub async fn handler_get_topics_by_chapter_id(
     Path(chapter_id): Path<Uuid>,
 ) -> Result<Json<Vec<TopicResponse>>, AppError> {
     let topics = get_topics::execute_get_topics(&*state.repo, chapter_id).await?;
+    let chapter = state.repo.get_chapter_by_id(chapter_id).await?;
+    let subject = state.repo.get_subject_by_id(chapter.subject_id).await?;
+    let subject_id = chapter.subject_id;
     Ok(Json(
         topics
             .into_iter()
@@ -79,6 +82,9 @@ pub async fn handler_get_topics_by_chapter_id(
                 name: t.name,
                 chapter_id: t.chapter_id,
                 order_number: t.order_number,
+                subject_id,
+                chapter_name: chapter.name.clone(),
+                subject_name: subject.name.clone(),
             })
             .collect(),
     ))
@@ -100,11 +106,16 @@ pub async fn handler_get_topic_by_id(
     Extension(state): Extension<ContentApplicationState>,
 ) -> Result<Json<TopicResponse>, AppError> {
     let topic = get_topic::execute_get_topic(&*state.repo, topic_id).await?;
+    let chapter = state.repo.get_chapter_by_id(topic.chapter_id).await?;
+    let subject = state.repo.get_subject_by_id(chapter.subject_id).await?;
     Ok(Json(TopicResponse {
         id: topic.id,
         name: topic.name,
         chapter_id: topic.chapter_id,
         order_number: topic.order_number,
+        subject_id: chapter.subject_id,
+        chapter_name: chapter.name,
+        subject_name: subject.name,
     }))
 }
 

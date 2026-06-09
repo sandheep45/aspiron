@@ -109,6 +109,16 @@ impl ContentRepository for SeaOrmContentRepository {
         Ok(map_subject_orm_to_domain(subject))
     }
 
+    async fn get_chapter_by_id(&self, chapter_id: Uuid) -> Result<Chapter, AppError> {
+        let chapter = content_chapter::Entity::find_by_id(chapter_id)
+            .one(&*self.db)
+            .await
+            .map_err(AppError::Database)?
+            .ok_or_else(|| AppError::not_found("Chapter not found"))?;
+
+        Ok(map_chapter_orm_to_domain(chapter))
+    }
+
     async fn get_topics_by_chapter_ids(
         &self,
         chapter_ids: Vec<Uuid>,

@@ -15,5 +15,6 @@ declare module '@tanstack/react-router' {
     breadcrumb?: string
     parentBreadcrumb?: string
     parentPath?: string
+    parentBreadcrumbs?: Array<{ label: string; href: string }>
   }
 }

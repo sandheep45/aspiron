@@ -33,9 +33,30 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
   })
 
   const leaf = matched[matched.length - 1]
+
+  // Inject parent breadcrumbs from loader data (array form)
+  const parentBreadcrumbs = leaf?.loaderData?.parentBreadcrumbs
+  if (
+    parentBreadcrumbs &&
+    parentBreadcrumbs.length > 0 &&
+    breadcrumbs.length > 0
+  ) {
+    const last = breadcrumbs.pop()
+    if (last) {
+      for (const parent of parentBreadcrumbs) {
+        breadcrumbs.push({
+          label: parent.label,
+          href: parent.href,
+          isLast: false,
+        })
+      }
+      breadcrumbs.push(last)
+    }
+  }
+
+  // Inject single parent breadcrumb (legacy, used by topics page)
   const parentBreadcrumb = leaf?.loaderData?.parentBreadcrumb
   const parentPath = leaf?.loaderData?.parentPath
-
   if (parentBreadcrumb && parentPath && breadcrumbs.length > 0) {
     const last = breadcrumbs.pop()
     if (last) {

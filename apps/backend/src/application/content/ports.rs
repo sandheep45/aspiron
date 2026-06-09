@@ -21,6 +21,7 @@ pub trait ContentRepository: Send + Sync {
     async fn get_offline_token(&self, video_id: Uuid) -> Result<OfflineToken, AppError>;
 
     async fn get_subject_by_id(&self, subject_id: Uuid) -> Result<Subject, AppError>;
+    async fn get_chapter_by_id(&self, chapter_id: Uuid) -> Result<Chapter, AppError>;
     async fn get_topics_by_chapter_ids(
         &self,
         chapter_ids: Vec<Uuid>,
