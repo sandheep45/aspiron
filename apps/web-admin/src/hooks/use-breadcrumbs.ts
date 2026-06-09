@@ -9,36 +9,48 @@ export interface BreadcrumbItem {
 export function useBreadcrumbs(): BreadcrumbItem[] {
   const matches = useMatches()
 
-  const breadcrumbs = matches
-    .filter((match) => {
-      const staticBreadcrumb = match.staticData?.breadcrumb
-      const loaderBreadcrumb = match.loaderData?.breadcrumb
-      return !!staticBreadcrumb || !!loaderBreadcrumb
-    })
-    .map((match, index, filteredMatches) => {
-      const staticBreadcrumb = match.staticData.breadcrumb
-      const loaderBreadcrumb = match.loaderData?.breadcrumb
+  const matched = matches.filter(
+    (m) => m.staticData?.breadcrumb || m.loaderData?.breadcrumb,
+  )
 
-      let label: string
+  const breadcrumbs: BreadcrumbItem[] = matched.map((match) => {
+    const staticBreadcrumb = match.staticData.breadcrumb
+    const loaderBreadcrumb = match.loaderData?.breadcrumb
 
-      if (typeof staticBreadcrumb === 'function') {
-        label = staticBreadcrumb(match)
-      } else if (typeof staticBreadcrumb === 'string') {
-        label = staticBreadcrumb
-      } else if (typeof loaderBreadcrumb === 'string') {
-        label = loaderBreadcrumb
-      } else {
-        label = ''
-      }
+    let label: string
 
-      const isLast = index === filteredMatches.length - 1
+    if (typeof staticBreadcrumb === 'function') {
+      label = staticBreadcrumb(match)
+    } else if (typeof staticBreadcrumb === 'string') {
+      label = staticBreadcrumb
+    } else if (typeof loaderBreadcrumb === 'string') {
+      label = loaderBreadcrumb
+    } else {
+      label = ''
+    }
 
-      return {
-        label,
-        href: match.pathname,
-        isLast,
-      }
-    })
+    return { label, href: match.pathname, isLast: false }
+  })
+
+  const leaf = matched[matched.length - 1]
+  const parentBreadcrumb = leaf?.loaderData?.parentBreadcrumb
+  const parentPath = leaf?.loaderData?.parentPath
+
+  if (parentBreadcrumb && parentPath && breadcrumbs.length > 0) {
+    const last = breadcrumbs.pop()
+    if (last) {
+      breadcrumbs.push({
+        label: parentBreadcrumb,
+        href: parentPath,
+        isLast: false,
+      })
+      breadcrumbs.push(last)
+    }
+  }
+
+  if (breadcrumbs.length > 0) {
+    breadcrumbs[breadcrumbs.length - 1].isLast = true
+  }
 
   return breadcrumbs
 }

@@ -13,5 +13,7 @@ declare module '@tanstack/react-router' {
 
   interface LoaderDataRouteOption {
     breadcrumb?: string
+    parentBreadcrumb?: string
+    parentPath?: string
   }
 }

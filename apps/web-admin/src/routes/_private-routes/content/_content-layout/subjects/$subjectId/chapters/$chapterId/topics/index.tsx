@@ -10,7 +10,11 @@ export const Route = createFileRoute(
       const summary = await topicsPageService.getChapterSummary({
         args: { chapterId: params.chapterId },
       })
-      return { breadcrumb: summary.chapter_name }
+      return {
+        breadcrumb: 'Topics',
+        parentBreadcrumb: summary.chapter_name,
+        parentPath: `/content/subjects/${params.subjectId}/chapters/${params.chapterId}/`,
+      }
     } catch {
       return { breadcrumb: 'Topics' }
     }
