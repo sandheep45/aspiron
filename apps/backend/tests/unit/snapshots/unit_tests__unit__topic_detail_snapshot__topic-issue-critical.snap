@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "action_label": "View Practice Data",
+  "description": "Average practice accuracy is 42% — students are struggling with application",
+  "id": "accuracy-low",
+  "recommendation": "Review question difficulty and provide step-by-step solution walkthroughs",
+  "severity": "critical",
+  "title": "Practice accuracy critically low"
+}

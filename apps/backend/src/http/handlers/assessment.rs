@@ -148,12 +148,16 @@ pub async fn handler_get_results_by_attempt_id(
 ) -> Result<Json<AttemptResultResponse>, AppError> {
     let attempt =
         get_attempt_results::execute_get_attempt_results(&*state.repo, attempt_id).await?;
+    let questions = get_questions::execute_get_questions(&*state.repo, attempt.quiz_id).await?;
+    let total_questions = questions.len();
+    let score_pct = attempt.score.value();
+    let correct_answers = (total_questions as f64 * score_pct as f64 / 100.0).round() as usize;
     Ok(Json(AttemptResultResponse {
         attempt_id: attempt.id,
-        total_questions: 0,
-        correct_answers: 0,
-        score_percent: attempt.score.value(),
-        passed: attempt.score.value() >= 60,
+        total_questions,
+        correct_answers,
+        score_percent: score_pct,
+        passed: score_pct >= 60,
     }))
 }
 

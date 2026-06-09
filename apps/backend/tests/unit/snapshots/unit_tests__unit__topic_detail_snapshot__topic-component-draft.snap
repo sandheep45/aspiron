@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "action": "Create Assignment",
+  "id": "assignments",
+  "name": "Assignments",
+  "performance": "Not assigned",
+  "status": "draft"
+}

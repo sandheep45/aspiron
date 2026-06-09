@@ -1,12 +1,51 @@
+use axum::{body::Body, http::Request};
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 use uuid::Uuid;
 
-use backend::entries::entities::{assessment_question, assessment_quiz, learning_recall_session};
+use backend::entries::entities::{
+    assessment_question, assessment_quiz, community_thread, learning_recall_session,
+};
 use backend::entries::entity_enums::learning_recall_session_status::LearningRecallSessionStatusEnum;
 
 use crate::fixtures::context::TestRecallSession;
+use crate::harness::TestApp;
+
+/// Extension trait adding cookie-authenticated POST to TestApp.
+pub trait TestAppExt {
+    async fn post_json_with_cookie(
+        &self,
+        path: &str,
+        body: serde_json::Value,
+        cookie: &str,
+    ) -> axum::http::Response<Body>;
+}
+
+impl TestAppExt for TestApp {
+    async fn post_json_with_cookie(
+        &self,
+        path: &str,
+        body: serde_json::Value,
+        cookie: &str,
+    ) -> axum::http::Response<Body> {
+        let req = Request::builder()
+            .method("POST")
+            .uri(path)
+            .header("content-type", "application/json")
+            .header("x-client-type", "BROWSER")
+            .header("cookie", cookie)
+            .body(Body::from(
+                serde_json::to_string(&body).expect("valid json"),
+            ))
+            .expect("valid request");
+        self.request(req).await
+    }
+}
 
 pub struct TestQuiz {
+    pub id: Uuid,
+}
+
+pub struct TestThread {
     pub id: Uuid,
 }
 
@@ -62,4 +101,25 @@ pub async fn create_test_recall_session(
     model.insert(db).await.expect("insert recall session");
 
     TestRecallSession { id }
+}
+
+pub async fn create_test_thread(
+    db: &DatabaseConnection,
+    user_id: Uuid,
+    topic_id: Uuid,
+    title: &str,
+) -> TestThread {
+    let id = Uuid::new_v4();
+    let now: sea_orm::prelude::DateTimeWithTimeZone = chrono::Utc::now().into();
+
+    let model = community_thread::ActiveModel {
+        id: Set(id),
+        user_id: Set(user_id),
+        topic_id: Set(topic_id),
+        title: Set(title.to_string()),
+        created_at: Set(now),
+    };
+    model.insert(db).await.expect("insert thread");
+
+    TestThread { id }
 }

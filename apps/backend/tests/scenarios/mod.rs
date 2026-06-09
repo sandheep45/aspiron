@@ -1,11 +1,16 @@
 mod chapters_page_flow;
 mod content_dashboard;
 pub mod context;
+mod daily_revision_workflow;
 pub mod helpers;
+mod note_sharing_workflow;
 mod pain_points_flow;
+mod permission_evolution;
 mod quiz_lifecycle;
+mod recall_session_completion;
 pub mod scenario_builder;
 mod student_onboarding;
 mod subjects_page_flow;
 mod teacher_content_upload;
+mod topic_detail_flow;
 mod topics_page_flow;

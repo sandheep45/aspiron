@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "action_label": "Schedule Revision",
+  "description": "Students show 37% decline in recall accuracy within the first week",
+  "id": "recall-weak",
+  "recommendation": "Schedule revision sessions at increasing intervals to reinforce retention",
+  "severity": "high",
+  "title": "Recall drops significantly after 5 days"
+}

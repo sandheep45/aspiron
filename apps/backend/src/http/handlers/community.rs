@@ -1,6 +1,10 @@
-use axum::Extension;
+use axum::extract::Path;
+use axum::{Extension, Json};
+use uuid::Uuid;
 
 use crate::application::community::CommunityApplicationState;
+use crate::http::payloads::community::{AttachNoteRequest, CreatePostRequest, CreateThreadRequest};
+use crate::http::responses::community::{PostResponse, ThreadResponse};
 use crate::middleware::auth::AuthUser;
 use crate::setup::error::AppError;
 
@@ -11,10 +15,20 @@ use crate::setup::error::AppError;
     responses((status = 200, description = "Create a community thread"))
 )]
 pub async fn handler_create_thread(
-    Extension(_state): Extension<CommunityApplicationState>,
-    Extension(_user): Extension<AuthUser>,
-) -> Result<axum::Json<bool>, AppError> {
-    Ok(axum::Json(true))
+    Extension(state): Extension<CommunityApplicationState>,
+    Extension(user): Extension<AuthUser>,
+    Json(payload): Json<CreateThreadRequest>,
+) -> Result<Json<ThreadResponse>, AppError> {
+    let thread = state
+        .repo
+        .create_thread(user.0, payload.title, payload.content, payload.topic_id)
+        .await?;
+    Ok(Json(ThreadResponse {
+        id: thread.id,
+        user_id: thread.user_id,
+        title: thread.title,
+        topic_id: thread.topic_id,
+    }))
 }
 
 #[utoipa::path(
@@ -25,9 +39,21 @@ pub async fn handler_create_thread(
     params(("topic_id" = String, Path, description = "Topic ID"))
 )]
 pub async fn handler_get_threads_by_topic(
-    Extension(_state): Extension<CommunityApplicationState>,
-) -> Result<axum::Json<bool>, AppError> {
-    Ok(axum::Json(true))
+    Extension(state): Extension<CommunityApplicationState>,
+    Path(topic_id): Path<Uuid>,
+) -> Result<Json<Vec<ThreadResponse>>, AppError> {
+    let threads = state.repo.get_threads_by_topic(topic_id).await?;
+    Ok(Json(
+        threads
+            .into_iter()
+            .map(|t| ThreadResponse {
+                id: t.id,
+                user_id: t.user_id,
+                title: t.title,
+                topic_id: t.topic_id,
+            })
+            .collect(),
+    ))
 }
 
 #[utoipa::path(
@@ -38,9 +64,16 @@ pub async fn handler_get_threads_by_topic(
     params(("thread_id" = String, Path, description = "Thread ID"))
 )]
 pub async fn handler_get_thread_by_id(
-    Extension(_state): Extension<CommunityApplicationState>,
-) -> Result<axum::Json<bool>, AppError> {
-    Ok(axum::Json(true))
+    Extension(state): Extension<CommunityApplicationState>,
+    Path(thread_id): Path<Uuid>,
+) -> Result<Json<ThreadResponse>, AppError> {
+    let thread = state.repo.get_thread_by_id(thread_id).await?;
+    Ok(Json(ThreadResponse {
+        id: thread.id,
+        user_id: thread.user_id,
+        title: thread.title,
+        topic_id: thread.topic_id,
+    }))
 }
 
 #[utoipa::path(
@@ -51,10 +84,21 @@ pub async fn handler_get_thread_by_id(
     params(("thread_id" = String, Path, description = "Thread ID"))
 )]
 pub async fn handler_create_post(
-    Extension(_state): Extension<CommunityApplicationState>,
-    Extension(_user): Extension<AuthUser>,
-) -> Result<axum::Json<bool>, AppError> {
-    Ok(axum::Json(true))
+    Extension(state): Extension<CommunityApplicationState>,
+    Extension(user): Extension<AuthUser>,
+    Path(thread_id): Path<Uuid>,
+    Json(payload): Json<CreatePostRequest>,
+) -> Result<Json<PostResponse>, AppError> {
+    let post = state
+        .repo
+        .create_post(user.0, thread_id, payload.content)
+        .await?;
+    Ok(Json(PostResponse {
+        id: post.id,
+        thread_id: post.thread_id,
+        user_id: post.user_id,
+        content: post.content,
+    }))
 }
 
 #[utoipa::path(
@@ -65,10 +109,18 @@ pub async fn handler_create_post(
     params(("thread_id" = String, Path, description = "Thread ID"))
 )]
 pub async fn handler_attach_note(
-    Extension(_state): Extension<CommunityApplicationState>,
+    Extension(state): Extension<CommunityApplicationState>,
     Extension(_user): Extension<AuthUser>,
-) -> Result<axum::Json<bool>, AppError> {
-    Ok(axum::Json(true))
+    Path(thread_id): Path<Uuid>,
+    Json(payload): Json<AttachNoteRequest>,
+) -> Result<Json<ThreadResponse>, AppError> {
+    let thread = state.repo.attach_note(thread_id, payload.note_id).await?;
+    Ok(Json(ThreadResponse {
+        id: thread.id,
+        user_id: thread.user_id,
+        title: thread.title,
+        topic_id: thread.topic_id,
+    }))
 }
 
 #[utoipa::path(
@@ -79,6 +131,6 @@ pub async fn handler_attach_note(
         (status = 200, description = "Get public threads")
     )
 )]
-pub async fn handler_public_threads() -> axum::Json<bool> {
-    axum::Json(true)
+pub async fn handler_public_threads() -> axum::Json<Vec<ThreadResponse>> {
+    axum::Json(vec![])
 }

@@ -543,6 +543,7 @@ export interface ContentDashboardSeedData {
   quizIds: string[]
   sessionIds: string[]
   answerIds: string[]
+  progressIds: string[]
 }
 
 export async function seedContentDashboardData(): Promise<ContentDashboardSeedData> {
@@ -576,18 +577,24 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
   ]
   const SESSION_BASE = '30000000-0000-0000-0000-00000000'
   const ANSWER_BASE = '30000000-0000-0000-0000-00000001'
+  const PROGRESS_BASE = '30000000-0000-0000-0000-00000002'
 
   // Compute IDs for cleanup
   const sessionIds: string[] = []
   const answerIds: string[] = []
+  const progressIds: string[] = []
   let sessionIdx = 0
   let answerIdx = 0
+  let progressIdx = 0
   const ANSWERS_PER_SESSION = 5
 
   for (let t = 0; t < TOPICS.length; t++) {
     for (let s = 0; s < STUDENT_IDS.length; s++) {
       const sid = `${SESSION_BASE}${String(60 + sessionIdx).padStart(4, '0')}`
       sessionIds.push(sid)
+      const pid = `${PROGRESS_BASE}${String(progressIdx).padStart(4, '0')}`
+      progressIds.push(pid)
+      progressIdx++
       for (let a = 0; a < ANSWERS_PER_SESSION; a++) {
         const aid = `${ANSWER_BASE}${String(answerIdx).padStart(4, '0')}`
         answerIds.push(aid)
@@ -607,6 +614,9 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
     'DELETE FROM learning_recall_sessions WHERE id = ANY($1::uuid[])',
     [sessionIds],
   )
+  await pool.query('DELETE FROM learning_progress WHERE id = ANY($1::uuid[])', [
+    progressIds,
+  ])
   await pool.query(
     'DELETE FROM assessment_quizzes WHERE id = ANY($1::uuid[])',
     [QUIZ_IDS],
@@ -736,8 +746,27 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
     }
   }
 
+  // Learning progress entries
+  const progressValues = [
+    // topic 0, topic 1, topic 2, topic 3 per student
+    [45, 60, 90, 25], // student 1
+    [75, 30, 50, 70], // student 2
+  ]
+  progressIdx = 0
+  for (let t = 0; t < TOPICS.length; t++) {
+    for (let s = 0; s < STUDENT_IDS.length; s++) {
+      const progressId = `${PROGRESS_BASE}${String(progressIdx).padStart(4, '0')}`
+      await pool.query(
+        `INSERT INTO learning_progress (id, topic_id, user_id, progress_percent, last_accessed_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [progressId, TOPICS[t].id, STUDENT_IDS[s], progressValues[s][t], now],
+      )
+      progressIdx++
+    }
+  }
+
   console.log(
-    `[e2e] Seeded content dashboard run ${runId.slice(0, 8)}: 1 subject, 3 topics, 2 quizzes, ${sessionIdx} sessions, ${answerIdx} answers`,
+    `[e2e] Seeded content dashboard run ${runId.slice(0, 8)}: 1 subject, 3 topics, 2 quizzes, ${sessionIdx} sessions, ${answerIdx} answers, ${progressIdx} progress entries`,
   )
 
   return {
@@ -754,6 +783,7 @@ export async function seedContentDashboardData(): Promise<ContentDashboardSeedDa
     quizIds: QUIZ_IDS,
     sessionIds,
     answerIds,
+    progressIds,
   }
 }
 
@@ -771,6 +801,9 @@ export async function cleanupContentDashboardData(
     'DELETE FROM learning_recall_sessions WHERE id = ANY($1::uuid[])',
     [data.sessionIds],
   )
+  await pool.query('DELETE FROM learning_progress WHERE id = ANY($1::uuid[])', [
+    data.progressIds,
+  ])
   await pool.query(
     'DELETE FROM assessment_quizzes WHERE id = ANY($1::uuid[])',
     [data.quizIds],

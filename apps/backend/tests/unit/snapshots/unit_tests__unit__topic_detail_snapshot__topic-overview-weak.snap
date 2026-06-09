@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "dropoff_indicator": "high",
+  "engagement_trend": "declining",
+  "practice_accuracy": 35.5,
+  "recall_strength": "weak"
+}

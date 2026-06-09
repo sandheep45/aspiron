@@ -199,4 +199,105 @@ describe('MSW', () => {
       expect(body[0]).toHaveProperty('description')
     }
   })
+
+  // -----------------------------------------------------------------------
+  // Topic Detail
+  // -----------------------------------------------------------------------
+
+  it('intercepts topic overview', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/overview')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('recall_strength')
+    expect(body).toHaveProperty('practice_accuracy')
+    expect(body).toHaveProperty('dropoff_indicator')
+    expect(body).toHaveProperty('engagement_trend')
+  })
+
+  it('intercepts topic issues', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/issues')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('title')
+      expect(body[0]).toHaveProperty('severity')
+      expect(body[0]).toHaveProperty('description')
+    }
+  })
+
+  it('intercepts topic components', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/components')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('name')
+      expect(body[0]).toHaveProperty('status')
+    }
+  })
+
+  it('intercepts topic actions', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/actions')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('label')
+      expect(body[0]).toHaveProperty('icon')
+    }
+  })
+
+  it('intercepts topic trends', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/trends')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('recall_trend')
+    expect(body).toHaveProperty('practice_accuracy_trend')
+    expect(body).toHaveProperty('engagement_trend')
+    expect(body).toHaveProperty('completion_trend')
+  })
+
+  it('returns 404 for unknown topic on all 5 endpoints', async () => {
+    const endpoints = [
+      '/api/v1/topics/unknown/overview',
+      '/api/v1/topics/unknown/issues',
+      '/api/v1/topics/unknown/components',
+      '/api/v1/topics/unknown/actions',
+      '/api/v1/topics/unknown/trends',
+    ]
+    for (const endpoint of endpoints) {
+      const response = await fetch(endpoint)
+      expect(response.status).toBe(404)
+      const body = await response.json()
+      expect(body.error.code).toBe('NOT_FOUND')
+    }
+  })
+
+  it('allows per-test topic overview override', async () => {
+    server.use(
+      http.get('*/api/v1/topics/:topicId/overview', () => {
+        return HttpResponse.json({
+          recall_strength: 'strong',
+          practice_accuracy: 95,
+          dropoff_indicator: 'low',
+          engagement_trend: 'growing',
+        })
+      }),
+    )
+
+    const response = await fetch('/api/v1/topics/custom/overview')
+    const body = await response.json()
+    expect(body.recall_strength).toBe('strong')
+    expect(body.practice_accuracy).toBe(95)
+  })
+
+  it('resets topic overview handler between tests', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/overview')
+    const body = await response.json()
+    expect(body.recall_strength).toBeTruthy()
+  })
 })

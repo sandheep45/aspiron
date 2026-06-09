@@ -76,6 +76,7 @@ format-rust:
 
 format-js:
     pnpm biome lint --write --unsafe .
+    pnpm biome format --write .
 
 # ==================================================
 # Linting

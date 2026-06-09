@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "action_label": "Schedule Revision",
+  "description": "This topic appears to be performing well across all metrics",
+  "id": "no-issues",
+  "recommendation": "Continue monitoring and consider adding enrichment content",
+  "severity": "low",
+  "title": "No significant issues detected"
+}

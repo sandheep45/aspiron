@@ -1,0 +1,46 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "completion_trend": [
+    {
+      "date": "2026-01-05",
+      "value": 100.0
+    }
+  ],
+  "engagement_trend": [
+    {
+      "date": "2026-01-01",
+      "value": 24.0
+    },
+    {
+      "date": "2026-01-08",
+      "value": 18.0
+    }
+  ],
+  "practice_accuracy_trend": [
+    {
+      "date": "2026-01-05",
+      "value": 55.0
+    },
+    {
+      "date": "2026-01-12",
+      "value": 48.0
+    }
+  ],
+  "recall_trend": [
+    {
+      "date": "2026-01-01",
+      "value": 72.0
+    },
+    {
+      "date": "2026-01-08",
+      "value": 58.0
+    },
+    {
+      "date": "2026-01-15",
+      "value": 45.0
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "action": "Manage Video",
+  "id": "video",
+  "name": "Video Lecture",
+  "performance": "62% completion rate",
+  "status": "published"
+}

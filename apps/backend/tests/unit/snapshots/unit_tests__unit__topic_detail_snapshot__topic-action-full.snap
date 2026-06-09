@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "description": "View the topic from a student's perspective",
+  "icon": "eye",
+  "id": "preview-as-student",
+  "label": "Preview As Student"
+}

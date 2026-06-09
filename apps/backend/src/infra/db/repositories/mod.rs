@@ -5,4 +5,5 @@ pub mod insights_repo;
 pub mod learning_repo;
 pub mod live_session_repo;
 pub mod notification_repo;
+pub mod rbac_repo;
 pub mod user_repo;

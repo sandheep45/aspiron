@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "description": null,
+  "icon": null,
+  "id": "simple-action",
+  "label": "Simple Action"
+}

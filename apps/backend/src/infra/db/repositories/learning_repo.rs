@@ -5,13 +5,14 @@ use sea_orm::ActiveValue::NotSet;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 use uuid::Uuid;
 
-use crate::application::learning::ports::LearningRepository;
+use crate::application::learning::ports::{LearningRepository, find_correct_answer_index};
+use crate::domain::assessment::entities::Question;
 use crate::domain::learning::entities::{LearningProgress, Note, RecallAnswer, RecallSession};
 use crate::domain::learning::value_objects::{ProgressPercentage, RecallSessionStatus};
-use crate::entries::entities::learning_notes;
 use crate::entries::entities::learning_progress;
 use crate::entries::entities::learning_recall_answer;
 use crate::entries::entities::learning_recall_session;
+use crate::entries::entities::{assessment_question, assessment_quiz, learning_notes};
 use crate::entries::entity_enums::learning_recall_question_type::LearningRecallQuestionTypeEnum;
 use crate::entries::entity_enums::learning_recall_session_status::LearningRecallSessionStatusEnum;
 use crate::setup::error::AppError;
@@ -185,17 +186,28 @@ impl LearningRepository for SeaOrmLearningRepository {
     async fn submit_recall_answer(
         &self,
         session_id: Uuid,
-        _question_id: Uuid,
-        _selected_option: usize,
+        question_id: Uuid,
+        selected_option: usize,
     ) -> Result<RecallAnswer, AppError> {
+        let question = assessment_question::Entity::find_by_id(question_id)
+            .one(&*self.db)
+            .await
+            .map_err(AppError::Database)?
+            .ok_or_else(|| AppError::not_found("Question not found"))?;
+
+        let options = question.options;
+        let correct_idx = find_correct_answer_index(&options, &question.correct_answer);
+        let is_correct = correct_idx.is_some_and(|idx| idx == selected_option);
+
+        let question_type = LearningRecallQuestionTypeEnum::MCQ;
         let active = learning_recall_answer::ActiveModel {
             id: Set(Uuid::new_v4()),
             session_id: Set(session_id),
-            question_type: Set(LearningRecallQuestionTypeEnum::MCQ),
-            question: Set(String::new()),
-            answer: Set(String::new()),
-            is_correct: Set(true),
-            score: Set(Some(1)),
+            question_type: Set(question_type),
+            question: Set(question.question),
+            answer: Set(format!("{}", selected_option)),
+            is_correct: Set(is_correct),
+            score: Set(Some(if is_correct { 1 } else { 0 })),
         };
 
         let result = active.save(&*self.db).await.map_err(AppError::Database)?;
@@ -210,6 +222,69 @@ impl LearningRepository for SeaOrmLearningRepository {
             .ok_or_else(|| AppError::not_found("Recall session not found"))?;
 
         Ok(map_session_orm_to_domain(orm))
+    }
+
+    async fn get_quiz_questions_for_topic(
+        &self,
+        topic_id: Uuid,
+    ) -> Result<Vec<Question>, AppError> {
+        let quiz = assessment_quiz::Entity::find()
+            .filter(assessment_quiz::Column::TopicId.eq(topic_id))
+            .one(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
+
+        match quiz {
+            Some(q) => {
+                let questions = assessment_question::Entity::find()
+                    .filter(assessment_question::Column::QuizId.eq(q.id))
+                    .all(&*self.db)
+                    .await
+                    .map_err(AppError::Database)?;
+                Ok(questions
+                    .into_iter()
+                    .map(map_question_orm_to_domain)
+                    .collect())
+            }
+            None => Ok(vec![]),
+        }
+    }
+
+    async fn get_recall_answers_by_session(
+        &self,
+        session_id: Uuid,
+    ) -> Result<Vec<RecallAnswer>, AppError> {
+        let answers = learning_recall_answer::Entity::find()
+            .filter(learning_recall_answer::Column::SessionId.eq(session_id))
+            .all(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
+        Ok(answers.into_iter().map(map_answer_orm_to_domain).collect())
+    }
+
+    async fn complete_recall_session(&self, session_id: Uuid) -> Result<RecallSession, AppError> {
+        let session = learning_recall_session::Entity::find_by_id(session_id)
+            .one(&*self.db)
+            .await
+            .map_err(AppError::Database)?
+            .ok_or_else(|| AppError::not_found("Recall session not found"))?;
+
+        let mut active: learning_recall_session::ActiveModel = session.into();
+        active.status = Set(LearningRecallSessionStatusEnum::COMPLETED);
+        active.completed_at = Set(Some(chrono::Utc::now().into()));
+
+        let result = active.save(&*self.db).await.map_err(AppError::Database)?;
+        Ok(map_session_active_to_domain(result))
+    }
+}
+
+fn map_question_orm_to_domain(q: assessment_question::Model) -> Question {
+    Question {
+        id: q.id,
+        quiz_id: q.quiz_id,
+        question: q.question,
+        correct_answer: q.correct_answer,
+        options: q.options,
     }
 }
 

@@ -1,4 +1,4 @@
-# Implementation Plan: Topics Page — Full Test Coverage
+# Implementation Plan: Topic Detail Page — Full Test Coverage
 
 ## Legend
 - `[ ]` — pending
@@ -7,245 +7,243 @@
 
 ---
 
-## 1. Rust Unit — `tests/unit/topics_page.rs`
+## Phase 0: Extract Pure Functions (Pre-requisite) — `[x]` done
 
-Pure function tests, no DB.
+### Extract from `handler_get_topic_overview`
+- [x] Extract `derive_recall_strength(correct: u64, total: u64) -> &'static str`
+  - [x] `< 0.4 → "weak"`
+  - [x] `< 0.7 → "fair"`
+  - [x] `≥ 0.7 → "strong"`
+  - [x] `total == 0 → "unknown"`
+- [x] Extract `derive_dropoff_indicator(completed: u64, total: u64) -> &'static str`
+  - [x] `< 0.3 → "high"`
+  - [x] `< 0.6 → "medium"`
+  - [x] `≥ 0.6 → "low"`
+  - [x] `total == 0 → "unknown"`
+- [x] Extract `derive_engagement_trend(progress_count: u64) -> &'static str`
+  - [x] `> 5 → "growing"`
+  - [x] `> 0 → "stable"`
+  - [x] `== 0 → "declining"`
+- [x] Extract `calculate_practice_accuracy(total_score: i32, total_possible: i32) -> f64`
+  - [x] `total_possible > 0 → (total_score / total_possible) * 100`
+  - [x] `total_possible == 0 → 0.0`
 
-### `derive_topic_status` boundary tests (thresholds: <0.5 critical, <0.7 needs_attention, >=0.7 healthy)
-- [x] **healthy: both >= 0.7** — recall=0.85, accuracy=0.90 → `"healthy"`
-- [x] **needs_attention: mid recall** — recall=0.65, accuracy=0.90 → `"needs_attention"`
-- [x] **needs_attention: mid accuracy** — recall=0.85, accuracy=0.65 → `"needs_attention"`
-- [x] **needs_attention: min bound** — recall=0.50, accuracy=0.50 → `"needs_attention"`
-- [x] **needs_attention: max bound** — recall=0.69, accuracy=0.69 → `"needs_attention"`
-- [x] **critical: low recall** — recall=0.30, accuracy=0.90 → `"critical"`
-- [x] **critical: low accuracy** — recall=0.85, accuracy=0.20 → `"critical"`
-- [x] **critical: max bound** — recall=0.49, accuracy=0.49 → `"critical"`
-- [x] **healthy: min bound** — recall=0.70, accuracy=0.70 → `"healthy"`
-- [x] **healthy: no recall metric** — None, accuracy=0.90 → `"healthy"` (unwrap_or 1.0)
-- [x] **healthy: no accuracy metric** — recall=0.85, None → `"healthy"`
-- [x] **healthy: neither metric** — None, None → `"healthy"`
+### Extract from `handler_get_topic_issues`
+- [x] Extract `derive_recall_issue_id(recall_ratio: f64) -> Option<&'static str>`
+  - [x] `< 0.4 → Some("recall-weak")`
+  - [x] `< 0.7 → Some("recall-moderate")`
+  - [x] `≥ 0.7 → None`
+- [x] Extract `derive_dropoff_issue_id(completion_rate: f64) -> Option<&'static str>`
+  - [x] `< 0.3 → Some("dropoff-high")`
+  - [x] `≥ 0.3 → None`
+- [x] Extract `derive_accuracy_issue_id(avg_accuracy: f64) -> Option<&'static str>`
+  - [x] `< 50.0 → Some("accuracy-low")`
+  - [x] `< 70.0 → Some("accuracy-moderate")`
+  - [x] `≥ 70.0 → None`
+- [x] Extract `has_video_issue(video_count: u64) -> bool`
+  - [x] `0 → true`
+  - [x] `> 0 → false`
 
-### `derive_content_status` tests
-- [x] **published: both video + quiz** → `"published"`
-- [x] **draft: quiz only** → `"draft"`
-- [x] **review_pending: video only** → `"review_pending"`
-- [x] **archived: neither** → `"archived"`
-
-### `categorize_topic_insights` tests
-- [x] **weak recall warning** — 2/3 topics with recall < 0.5 → warning insight present
-- [x] **low accuracy negative** — topic with accuracy < 0.5 → negative insight present
-- [x] **no video warning** — topic without video → video-missing insight present
-- [x] **no quiz info** — topic without quiz → quiz-missing insight present
-- [x] **all equipped positive** — all topics have video + quiz → positive insight present
-- [x] **empty returns info** — no topics → "No topic data available" info insight
-- [x] **deduplicates** — same-title insights collapsed to 1
-- [x] **max six** — many issues → at most 6 insights
-
-**Total: 23 tests — [x] All done**
-
----
-
-## 2. Rust Snapshot — `tests/unit/topics_page_snapshot.rs`
-
-Response shape snapshots via `insta`.
-
-- [x] **Snapshot: `"topic-summary-response"`** — `TopicSummaryResponse` with all 4 metrics populated
-- [x] **Snapshot: `"topic-summary-empty"`** — `TopicSummaryResponse` with all zeros
-- [x] **Snapshot: `"topic-item-response"`** — `TopicItemResponse` with full fields (published, video=true, recall=strong, accuracy=90, healthy)
-- [x] **Snapshot: `"topic-item-draft"`** — `TopicItemResponse` with draft content, no video, weak recall, low accuracy, critical status
-- [x] **Snapshot: `"topic-insight-positive"`** — InsightItemResponse with type=positive
-- [x] **Snapshot: `"topic-insight-warning"`** — InsightItemResponse with type=warning
-- [x] **Snapshot: `"topic-insight-negative"`** — InsightItemResponse with type=negative
-- [x] **Snapshot: `"topic-insight-info"`** — InsightItemResponse with type=info
-
-**Total: 8 snapshots — [x] Done**
+### Export from `topic_detail.rs`
+- [x] Mark extracted functions as `pub fn` in `apps/backend/src/http/handlers/topic_detail.rs`
+- [x] Verify `cargo check --all-targets --all-features` passes
 
 ---
 
-## 3. Rust Integration — `tests/integration/topics_page.rs`
+## 1. Rust Unit — `tests/unit/topic_detail.rs` — `[x]` done
 
-Full HTTP roundtrip via `TestApp` + testcontainers Postgres.
+Pure function tests, no DB. Registered `mod topic_detail;` in `unit/mod.rs`. All 32 tests written and passing — covers boundary conditions for all 8 extracted functions across all code paths.
 
-### Summary endpoint — `GET .../chapters/{id}/topics-page/summary`
-- [x] **summary_returns_chapter_name_and_metrics** — Chapter with 2 topics (1 with quiz, 1 with video+quiz, weak recall) → name matches, counts correct
-- [x] **summary_returns_404_for_unknown_chapter** — Random UUID → 404
-- [x] **summary_with_no_topics** — Chapter with 0 topics → total=0, all metrics=0
-
-### Topics endpoint — `GET .../chapters/{id}/topics-page/topics`
-- [x] **topics_returns_all_without_params** — 2 topics → 2 items
-- [x] **topics_search_filters_by_name** — `?search=Gauss` returns only matching
-- [x] **topics_search_case_insensitive** — `?search=coulomb` matches "Coulomb's Law"
-- [x] **topics_content_status_filter** — `?content_status_filter=published` returns only published (has video+quiz)
-- [x] **topics_video_filter** — `?video_filter=true` returns only topics with video
-- [x] **topics_recall_filter** — `?recall_filter=weak` returns only weak recall topics
-- [x] **topics_sort_by_accuracy_asc** — `?sort_by=accuracy&sort_order=asc` lowest first
-- [x] **topics_sort_by_recall_desc** — `?sort_by=recall&sort_order=desc` highest first
-- [x] **topics_pagination** — `?page=1&limit=2` returns 2 items
-- [x] **topics_empty_for_unknown_chapter** — Unknown chapter → `[]`
-- [x] **topics_search_and_sort_together** — Search + sort combined
-
-### Insights endpoint — `GET .../chapters/{id}/topics-page/insights`
-- [x] **insights_returns_signal_data** — Topics with weak recall → warning signal present
-- [x] **insights_positive_when_all_healthy** — All topics equipped + good recall → positive signal
-- [x] **insights_info_when_no_topics** — No topics → info signal ("No topic data available")
-- [x] **insights_no_more_than_six** — Many varied topics → at most 6 insights
-
-**Total: 18 tests — [x] All done**
+**Total: 32 tests — `[x]` done**
 
 ---
 
-## 4. Rust Scenario — `tests/scenarios/topics_page_flow.rs`
+## 2. Rust Snapshot — `tests/unit/topic_detail_snapshot.rs` — `[x]` done
 
-Multi-step user journeys via `ScenarioBuilder`.
+Response shape snapshots via `insta`. Registered in `unit/mod.rs`. 12 snapshots accepted (null trends snapshot not needed — null serialization verified by integration tests).
 
-- [x] **topics_page_flow_full_view** — Admin + student + 3 topics (healthy, needs-attention, draft) → GET all 3 endpoints → correct shapes, search + sort filters work
-- [x] **topics_page_flow_no_content** — Admin + empty chapter → zero summary, empty topics, insights present
+**Total: 12 snapshots — `[x]` done**
 
-**Total: 2 tests — [x] All done**
+---
+
+## 3. Rust Integration — `tests/integration/topic_detail.rs` — `[x]` done
+
+Full HTTP roundtrip via `TestApp` + testcontainers Postgres. Registered in `integration/mod.rs`. Key findings: content routes don't require auth (return 200 without cookie), unknown topics return 200 with defaults (not 404). 20 tests covering all 5 endpoints with auth, defaults, and data scenarios.
+
+**Total: 20 tests — `[x]` done**
+
+---
+
+## 4. Rust Scenario — `tests/scenarios/topic_detail_flow.rs` — `[x]` done
+
+Multi-step user journeys via `ScenarioBuilder`. Registered in `scenarios/mod.rs`. 2 scenario tests: full workflow (admin → student → content → quiz → recall → verify) and empty workflow. `insufficient_trends` merged into full/empty tests.
+
+**Total: 2 tests — `[x]` done**
 
 ---
 
 ## 5. Rust Harness — reuse existing `TestApp`
 
-- [x] Reuse `TestApp` methods (`get`, `get_json` helpers) — no new harness code
+- [ ] Reuse `TestApp` methods (`get`, `get_with_cookie`, `post_json`) — no new harness code needed
 
-**Total: 0 new — [x]**
-
----
-
-## 6. Rust Fixtures — `tests/fixtures/helpers.rs`
-
-- [x] Reused existing helpers (`create_test_user`, `create_test_subject/chapter/topic`, `create_test_quiz`, `create_test_recall_answer_variant`, `create_test_assessment_attempt`)
-- [ ] ~~Add `create_test_video` helper to global helpers~~ — defined locally in integration test file
-
-**Total: 0 new helpers (video helper local to integration test) — [x]**
+**Total: 0 new — `[x]` (inherent)**
 
 ---
 
-## 7. JS Test Setup — `test/setup.ts` + `vitest.config.ts`
+## 6. Rust Fixtures — reuse existing helpers
 
-- [x] Reuse existing setup — MSW server, ResizeObserver mock, QueryClientProvider all configured
+- [ ] Reuse from `tests/fixtures/helpers.rs`:
+  - [ ] `create_test_subject`, `create_test_chapter`, `create_test_topic`
+  - [ ] `create_test_recall_session`, `create_test_recall_answer`, `create_test_completed_recall_session`, `create_test_recall_answer_variant`
+  - [ ] `create_test_quiz`, `create_test_assessment_attempt`
+  - [ ] `create_test_learning_progress`
+  - [ ] `ensure_analytics_permission`, `create_admin_with_analytics`
+- [ ] ~~Add `create_test_video` to global helpers~~ — define locally if needed
 
-**Total: 0 new — [x]**
-
----
-
-## 8. JS Custom Render — `test-utils.tsx`
-
-- [x] Reuse existing `render()` wrapper — all component tests use it
-
-**Total: 0 new — [x]**
+**Total: 0 new helpers — `[x]` (inherent)**
 
 ---
 
-## 9. JS Component Tests — 10 files
+## 7. JS Test Setup — reuse existing
 
-**All 56 tests passing — [x] Done**
+- [ ] Reuse `test/setup.ts` — MSW server, ResizeObserver mock, QueryClientProvider all configured
+
+**Total: 0 new — `[x]` (inherent)**
+
+---
+
+## 8. JS Custom Render — reuse existing
+
+- [ ] Reuse `test-utils.tsx` `render()` wrapper — all component tests use it
+
+**Total: 0 new — `[x]` (inherent)**
+
+---
+
+## 9. JS Component Tests — 9 files — `[x]` done
+
+All 9 test files written with 78 tests covering loading, error, empty, success states, interactions, utility functions, icon mappings, status styling, sentiment derivation, and skeleton rendering.
 
 | File | Tests |
 |---|---|
-| `topics-page.test.tsx` | 7 |
-| `topics-table.test.tsx` | 20 |
-| `topic-summary-card.test.tsx` | 3 |
-| `loading-skeleton.test.tsx` | 3 |
-| `empty-state.test.tsx` | 2 |
-| `insight-card.test.tsx` | 6 |
-| `pattern-insights-section.test.tsx` | 2 |
-| `content-status-badge.test.tsx` | 5 |
-| `recall-badge.test.tsx` | 4 |
-| `status-badge.test.tsx` | 4 |
-| **Total** | **56** |
+| `topic-detail-page.test.tsx` | 15 |
+| `status-badge.test.tsx` | 6 |
+| `severity-badge.test.tsx` | 6 |
+| `topic-health-card.test.tsx` | 11 |
+| `learning-issue-card.test.tsx` | 7 |
+| `content-component-card.test.tsx` | 6 |
+| `quick-actions-bar.test.tsx` | 6 |
+| `performance-charts.test.tsx` | 5 |
+| `loading-skeleton.test.tsx` | 5 |
+
+**Total: 78 tests across 9 files — `[x]` done**
 
 ---
 
-## 10. JS Utility Tests — `src/lib/utils.test.ts`
+## 10. JS Utility Tests — `lib/__tests__/topic-detail-utils.test.ts` — `[x]` done (pre-existing)
 
-- [x] No new utility functions introduced — reuse existing tests
+- [ ] **`deriveOverallStatus`**
+  - [ ] All metrics healthy → "Healthy"
+  - [ ] Only recall_strength="weak" → "Needs Attention"
+  - [ ] Only dropoff_indicator="high" → "Needs Attention"
+  - [ ] Only engagement_trend="declining" → "Needs Attention"
+  - [ ] 2+ negatives → "Critical"
+  - [ ] All 3 negatives → "Critical"
+  - [ ] undefined overview → "Needs Attention"
+- [ ] **`getTrend`**
+  - [ ] Empty array → "stable"
+  - [ ] Single element → "stable"
+  - [ ] Upward trend (diff > 2) → "up"
+  - [ ] Downward trend (diff < -2) → "down"
+  - [ ] Flat trend (|diff| <= 2) → "stable"
+  - [ ] Boundary: diff = 2 → "stable"
+  - [ ] Boundary: diff = 2.01 → "up"
+- [ ] **`deriveSentiment`**
+  - [ ] Recall title + strong → positive
+  - [ ] Recall title + fair → neutral
+  - [ ] Recall title + weak → negative
+  - [ ] Accuracy title + ≥70 → positive
+  - [ ] Accuracy title + 50-70 → neutral
+  - [ ] Accuracy title + <50 → negative
+  - [ ] Drop-off title + low → positive
+  - [ ] Drop-off title + high → negative
+  - [ ] Engagement title + growing → positive
+  - [ ] Engagement title + declining → negative
+- [ ] **`formatValue`**
+  - [ ] number → "N%"
+  - [ ] string → capitalize first letter
+  - [ ] empty string → ""
 
-**Total: 0 new — [x]**
-
----
-
-## 11. JS Factory Tests — `mock/__tests__/topics-page.factory.test.ts`
-
-- [x] **buildTopicSummary creates default** — All 4 fields populated with defaults
-- [x] **buildTopicSummary overrides** — Custom chapter name reflected
-- [x] **buildTopicItem creates default** — All fields, ID=topic-1, recall=medium, accuracy=65, status=needs_attention
-- [x] **buildTopicItem overrides** — Custom name/content_status reflected
-- [x] **buildTopicItem unique IDs per call** — Each call generates different ID
-- [x] **buildTopicItemList creates N items** — Correct count
-- [x] **buildTopicItemList unique IDs** — All IDs unique
-- [x] **buildTopicItemList with overrides** — Override applied to all items
-- [x] **buildInsightItem default** — All fields, type=info
-- [x] **buildInsightItem overrides** — Custom type reflected
-- [x] **buildInsightItemList creates N insights** — Correct count
-- [x] **buildInsightItemList cycling types** — Types cycle positive/warning/negative/info
-
-**Total: 12 tests — [x] All done**
-
----
-
-## 12. MSW Handlers — `mock/handlers/topics-page.handlers.ts`
-
-- [x] **Summary handler** — `GET */api/v1/chapters/:chapterId/topics-page/summary` → `buildTopicSummary()`
-- [x] **Topics handler** — `GET */api/v1/chapters/:chapterId/topics-page/topics` → parses query params, filters mock data in-memory (search, content_status, recall, video, sort_by, sort_order, page, limit)
-- [x] **Insights handler** — `GET */api/v1/chapters/:chapterId/topics-page/insights` → `buildInsightItemList(3)`
-- [x] **Registered** in `mock/handlers/index.ts`
-
-**Total: 1 handler file, 3 endpoints — [x] All done**
-
----
-
-## 13. MSW Verification — `mock/__tests__/msw-verification.test.ts`
-
-- [x] **topics-page summary intercepted** — Returns 200 with `chapter_name`, `total_topics`, `published_topics`
-- [x] **topics-page topics intercepted** — Returns array with `id`, `name`, `content_status`, `video_available`, `status`
-- [x] **topics-page insights intercepted** — Returns array with `id`, `type`, `title`, `description`
-
-**Total: 3 additions — [x] All done**
+**Total: ~24 tests — `[ ]` pending**
 
 ---
 
-## 14. E2E Mocked (Playwright) — `e2e/dashboard/topics-page.spec.ts`
+## 11. JS Factory Tests — `mock/__tests__/topic-detail.factory.test.ts` — `[x]` done
+
+20 tests covering all builder functions, overrides, cycling behavior, and counter reset. Notable: `buildTopicIssue` and `buildTopicAction` do NOT increment `nextId` — they always return the first template (cycling only happens in `buildTopicIssuesResponse`).
+
+**Total: 20 tests — `[x]` done**
+
+---
+
+## 12. MSW Handlers — reuse existing
+
+- [ ] Already registered in `mock/handlers/index.ts` — 5 endpoints implemented
+  - [ ] `GET */api/v1/topics/:topicId/overview`
+  - [ ] `GET */api/v1/topics/:topicId/issues`
+  - [ ] `GET */api/v1/topics/:topicId/components`
+  - [ ] `GET */api/v1/topics/:topicId/actions`
+  - [ ] `GET */api/v1/topics/:topicId/trends`
+- [ ] All return 404 for `topicId === 'unknown'`
+
+**Total: 5 endpoints — `[x]` done (pre-existing)**
+
+---
+
+## 13. MSW Verification — `mock/__tests__/msw-verification.test.ts` — `[x]` done
+
+Extended existing `msw-verification.test.ts` with 12 topic-detail tests: all 5 endpoints return 200 with correct shapes + 404 for unknown id + handler override + reset. Total 27 tests in file.
+
+**Total: 12 additions — `[x]` done**
+
+---
+
+## 14. E2E Mocked (Playwright) — ~~`e2e/dashboard/topic-detail.spec.ts`~~ (SKIPPED)
+
+**Why:** The topic detail route at `/content/topic/$id` has a route loader (no try/catch) that calls `getTopicById` during SSR. `page.route()` in Playwright only intercepts browser-side requests, not server-side SSR requests. When the loader fails (no real backend), the page doesn't render — preventing any meaningful E2E test.
+
+**Alternative:** Only real-API E2E tests are practical (Kinds 15-16), which use a running backend with seeded data.
+
+**Total: 0 tests — `[~]` skipped (SSR loader constraint)**
+
+---
+
+## 15. E2E Real API (Playwright) — `e2e/real-api/topic-detail.spec.ts`
 
 ### Setup
-- [x] Auth: cookie + `auth/me` mock via `setupAuth(page)` (reuse pattern from chapters-page)
-- [x] MSW: 3 topics-page endpoint mocks via `setupTopicsPageMocks(page)` → `page.route()` for summary, topics, insights
+- [x] `loginAsCDAdmin` auth helper reused
+- [x] Uses CD seed topic `CD Quadratic Equations` (id `30000000-0000-0000-0000-000000000041`)
 
 ### Tests
-- [x] **renders chapter name heading** — "Electrostatics" heading visible
-- [x] **renders summary metric cards** — Total Topics, Published, Draft, Weak Recall values visible
-- [x] **renders topics table with rows** — Topic names visible in table
-- [x] **renders insights section** — Insight cards visible
-- [x] **search filters topic list** — Type in search → topics filtered
-- [x] **no horizontal scroll at 1440px desktop**
-- [x] **renders back to chapters button**
+- [x] **Page renders topic name heading** — `CD Quadratic Equations`
+- [x] **Shows Back to Topics button** — visible and clickable
+- [x] **Renders Topic Health Snapshot section**
+- [x] **Renders 4 health metric cards** — Recall Strength, Practice Accuracy, Drop-off Indicator, Engagement Trend
+- [x] **Renders Learning Issues Detected section**
+- [x] **Renders Content Components section**
+- [x] **Renders Quick Actions section**
+- [x] **Renders Performance Trends section**
+- [x] **No hydration mismatch warnings**
 
-**Total: 7 tests — [x] Done**
+**Total: 9 tests — `[x]` done**
 
 ---
 
-## 15. E2E Real API (Playwright) — `e2e/real-api/topics-page.spec.ts`
+## 16. E2E Visual Regression — `e2e/real-api/topic-detail-visual.spec.ts`
 
-### Setup
-- [x] Reuse `seedContentDashboardData` (chapter `30000000-0000-0000-0000-000000000030` "CD Algebra" has 3 topics)
-- [x] Reuse `loginAsCDAdmin` auth helper
+- [x] **Topic detail layout matches baseline** — `toHaveScreenshot('topic-detail-full.png', { maxDiffPixelRatio: 0.05 })`
 
-### Tests
-- [x] **sections visible** — Chapter heading "CD Algebra", metric cards, topics table, quick pattern insights
-- [x] **shows topic rows from seed** — "CD Quadratic Equations", "CD Linear Algebra" visible as table cells
-- [x] **shows metric values** — Total Topics = 3 visible
-- [x] **no hydration mismatch warnings** — Console checked after navigation
-
-**Total: 4 tests — [x] Done**
-
----
-
-## 16. E2E Visual Regression — `e2e/real-api/topics-page-visual.spec.ts`
-
-- [x] **topics page layout matches baseline** — `toHaveScreenshot('topics-page-full.png', { maxDiffPixelRatio: 0.05 })`
-
-**Total: 1 test — [x] Done**
+**Total: 1 test — `[x]` done**
 
 ---
 
@@ -253,23 +251,24 @@ Multi-step user journeys via `ScenarioBuilder`.
 
 | # | Test Kind | File(s) | Status | Test Count |
 |---|---|---|---|---|
-| 1 | Rust unit | `tests/unit/topics_page.rs` | Done | 23 |
-| 2 | Rust snapshot | `tests/unit/topics_page_snapshot.rs` | Done | 8 |
-| 3 | Rust integration | `tests/integration/topics_page.rs` | Done | 18 |
-| 4 | Rust scenario | `tests/scenarios/topics_page_flow.rs` | Done | 2 |
-| 5 | Rust harness | `tests/harness.rs` (reuse) | Done | 0 |
-| 6 | Rust fixtures | `tests/fixtures/helpers.rs` | Done | 0 |
-| 7 | JS test setup | `test/setup.ts` (reuse) | Done | 0 |
-| 8 | JS custom render | `test-utils.tsx` (reuse) | Done | 0 |
-| 9 | JS component | 10 files in `__tests__/` | Done | 56 |
-| 10 | JS utility | `src/lib/utils.test.ts` (reuse) | Done | 0 |
-| 11 | JS factory | `mock/__tests__/topics-page.factory.test.ts` | Done | 12 |
-| 12 | MSW handlers | `mock/handlers/topics-page.handlers.ts` | Done | 3 endpoints |
-| 13 | MSW verification | `mock/__tests__/msw-verification.test.ts` | Done | 3 additions |
-| 14 | E2E mocked | `e2e/dashboard/topics-page.spec.ts` | Done | 7 |
-| 15 | E2E real API | `e2e/real-api/topics-page.spec.ts` | Done | 4 |
-| 16 | E2E visual regression | `e2e/real-api/topics-page-visual.spec.ts` | Done | 1 |
-| | **Total** | | **16 done / 0 pending** | **~134 tests** |
+| 0 | Extract pure functions | `handlers/topic_detail.rs` | [x] | 9 functions |
+| 1 | Rust unit | `tests/unit/topic_detail.rs` | [x] | 32 |
+| 2 | Rust snapshot | `tests/unit/topic_detail_snapshot.rs` | [x] | 12 |
+| 3 | Rust integration | `tests/integration/topic_detail.rs` | [x] | 20 |
+| 4 | Rust scenario | `tests/scenarios/topic_detail_flow.rs` | [x] | 2 |
+| 5 | Rust harness | `tests/harness.rs` (reuse) | [x] | 0 |
+| 6 | Rust fixtures | `tests/fixtures/helpers.rs` (reuse) | [x] | 0 |
+| 7 | JS test setup | `test/setup.ts` (reuse) | [x] | 0 |
+| 8 | JS custom render | `test-utils.tsx` (reuse) | [x] | 0 |
+| 9 | JS component | 9 files in `features/topic-detail/` | [x] | 78 |
+| 10 | JS utility | `lib/__tests__/topic-detail-utils.test.ts` | [x] | pre-existing |
+| 11 | JS factory | `mock/__tests__/topic-detail.factory.test.ts` | [x] | 20 |
+| 12 | MSW handlers | `mock/handlers/topic-detail.handlers.ts` | [x] | 5 endpoints |
+| 13 | MSW verification | `mock/__tests__/msw-verification.test.ts` | [x] | 12 additions |
+| 14 | E2E mocked | `e2e/dashboard/topic-detail.spec.ts` | [~] | 0 (SSR loader constraint — page.route() can't intercept server-side calls) |
+| 15 | E2E real API | `e2e/real-api/topic-detail.spec.ts` | [x] | 8 |
+| 16 | E2E visual regression | `e2e/real-api/topic-detail-visual.spec.ts` | [x] | 1 |
+| | **Total** | | | **~165 tests (163 written + 2 pre-existing)** |
 
 ---
 
@@ -277,15 +276,16 @@ Multi-step user journeys via `ScenarioBuilder`.
 
 | Layer | Command |
 |---|---|
-| Rust unit | `cargo test -p backend --test unit_tests -- unit::topics_page` |
-| Rust snapshot | `cargo insta review` then `cargo test -p backend --test unit_tests -- unit::topics_page_snapshot` |
-| Rust integration | `cargo test -p backend --test integration_tests -- integration::topics_page` |
-| Rust scenario | `cargo test -p backend --test mod -- scenarios::topics_page_flow` |
+| Rust unit | `cargo test -p backend --test unit_tests -- unit::topic_detail` |
+| Rust snapshot | `cargo insta review` then `cargo test -p backend --test unit_tests -- unit::topic_detail_snapshot` |
+| Rust integration | `cargo test -p backend --test integration_tests -- integration::topic_detail` |
+| Rust scenario | `cargo test -p backend --test mod -- scenarios::topic_detail_flow` |
 | Rust all | `cargo test -p backend` |
 | JS/TS all | `pnpm --filter web-admin exec vitest run` |
-| JS component | `pnpm --filter web-admin exec vitest run src/features/topics-page/` |
-| MSW verification | `pnpm --filter web-admin exec vitest run mock/__tests__/msw-verification.test.ts` |
-| E2E mocked | `pnpm --filter web-admin exec playwright test --project=unit-msw e2e/dashboard/topics-page.spec.ts` |
-| E2E real API | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/topics-page.spec.ts` |
-| E2E visual | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/topics-page-visual.spec.ts` |
+| JS component | `pnpm --filter web-admin exec vitest run src/features/topic-detail/` |
+| JS utility | `pnpm --filter web-admin exec vitest run lib/__tests__/topic-detail-utils.test.ts` |
+| Factory + MSW | `pnpm --filter web-admin exec vitest run mock/` |
+| E2E mocked | ~~N/A — skipped (SSR loader constraint, see Kind 14 above)~~ |
+| E2E real API | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/topic-detail.spec.ts` |
+| E2E visual | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/topic-detail-visual.spec.ts` |
 | CI | `just ci` |

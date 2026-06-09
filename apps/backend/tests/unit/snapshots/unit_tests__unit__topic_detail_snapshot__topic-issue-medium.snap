@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/topic_detail_snapshot.rs
+expression: value
+---
+{
+  "action_label": "Open Content Review",
+  "description": "This topic has no video lecture — video content significantly improves engagement",
+  "id": "missing-video",
+  "recommendation": "Upload a video lecture to support visual learners",
+  "severity": "medium",
+  "title": "No video content available"
+}

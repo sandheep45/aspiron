@@ -9,4 +9,5 @@ pub mod insights;
 pub mod learning;
 pub mod live_session;
 pub mod notification;
+pub mod rbac;
 pub mod users;

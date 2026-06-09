@@ -2,6 +2,7 @@ use axum::extract::Path;
 use axum::{Extension, Json};
 use uuid::Uuid;
 
+use crate::application::learning::ports::find_correct_answer_index;
 use crate::application::learning::{
     LearningApplicationState, create_note, delete_note, get_all_notes, get_progress,
     get_recall_result, get_teachers_notes, start_recall_session, submit_recall_answer, update_note,
@@ -12,7 +13,8 @@ use crate::http::payloads::learning::{
     UpdateProgressRequest,
 };
 use crate::http::responses::learning::{
-    NoteResponse, ProgressResponse, RecallResultResponse, RecallSessionResponse,
+    NoteResponse, ProgressResponse, RecallQuestionResponse, RecallResultResponse,
+    RecallSessionResponse,
 };
 use crate::middleware::auth::AuthUser;
 use crate::setup::error::AppError;
@@ -206,10 +208,43 @@ pub async fn handler_start_recall(
     )
 )]
 pub async fn handler_get_recall_mcq_by_session_id(
-    Extension(_state): Extension<LearningApplicationState>,
-    Path(_session_id): Path<Uuid>,
-) -> Result<Json<Vec<String>>, AppError> {
-    Ok(Json(vec![]))
+    Extension(state): Extension<LearningApplicationState>,
+    Path(session_id): Path<Uuid>,
+) -> Result<Json<Vec<RecallQuestionResponse>>, AppError> {
+    let session = get_recall_result::execute_get_recall_result(&*state.repo, session_id).await?;
+    let questions = state
+        .repo
+        .get_quiz_questions_for_topic(session.topic_id)
+        .await?;
+
+    let response: Vec<RecallQuestionResponse> = questions
+        .into_iter()
+        .map(|q| {
+            let options = q
+                .options
+                .as_object()
+                .map(|obj| {
+                    let mut pairs: Vec<_> = obj.iter().collect();
+                    pairs.sort_by(|a, b| a.0.cmp(b.0));
+                    pairs
+                        .into_iter()
+                        .map(|(_, v)| v.as_str().unwrap_or("").to_string())
+                        .collect()
+                })
+                .unwrap_or_default();
+
+            let correct_idx = find_correct_answer_index(&q.options, &q.correct_answer).unwrap_or(0);
+
+            RecallQuestionResponse {
+                id: q.id,
+                question: q.question,
+                options,
+                correct_answer: correct_idx,
+            }
+        })
+        .collect();
+
+    Ok(Json(response))
 }
 
 #[utoipa::path(
@@ -238,12 +273,22 @@ pub async fn handler_submit_recall_mcq(
         .await?;
     }
 
-    let session = get_recall_result::execute_get_recall_result(&*state.repo, session_id).await?;
+    state.repo.complete_recall_session(session_id).await?;
+
+    let answers = state.repo.get_recall_answers_by_session(session_id).await?;
+    let total_questions = answers.len();
+    let correct_answers = answers.iter().filter(|a| a.is_correct).count();
+    let score_percent = if total_questions > 0 {
+        (correct_answers as f64 / total_questions as f64 * 100.0).round() as i32
+    } else {
+        0
+    };
+
     Ok(Json(RecallResultResponse {
-        session_id: session.id,
-        total_questions: payload.len(),
-        correct_answers: payload.len(),
-        score_percent: 100,
+        session_id,
+        total_questions,
+        correct_answers,
+        score_percent,
     }))
 }
 
@@ -262,12 +307,20 @@ pub async fn handler_get_recall_result_by_session_id(
     Extension(state): Extension<LearningApplicationState>,
     Path(session_id): Path<Uuid>,
 ) -> Result<Json<RecallResultResponse>, AppError> {
-    let session = get_recall_result::execute_get_recall_result(&*state.repo, session_id).await?;
+    let answers = state.repo.get_recall_answers_by_session(session_id).await?;
+    let total_questions = answers.len();
+    let correct_answers = answers.iter().filter(|a| a.is_correct).count();
+    let score_percent = if total_questions > 0 {
+        (correct_answers as f64 / total_questions as f64 * 100.0).round() as i32
+    } else {
+        0
+    };
+
     Ok(Json(RecallResultResponse {
-        session_id: session.id,
-        total_questions: 0,
-        correct_answers: 0,
-        score_percent: 0,
+        session_id,
+        total_questions,
+        correct_answers,
+        score_percent,
     }))
 }
 

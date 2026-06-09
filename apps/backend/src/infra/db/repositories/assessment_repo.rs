@@ -74,7 +74,7 @@ impl AssessmentRepository for SeaOrmAssessmentRepository {
     async fn submit_attempt(
         &self,
         attempt_id: Uuid,
-        _answers: Vec<(Uuid, String)>,
+        answers: Vec<(Uuid, String)>,
     ) -> Result<Attempt, AppError> {
         let attempt = assessment_attempt::Entity::find_by_id(attempt_id)
             .one(&*self.db)
@@ -82,9 +82,33 @@ impl AssessmentRepository for SeaOrmAssessmentRepository {
             .map_err(AppError::Database)?
             .ok_or_else(|| AppError::not_found("Attempt not found"))?;
 
+        let questions = assessment_question::Entity::find()
+            .filter(assessment_question::Column::QuizId.eq(attempt.quiz_id))
+            .all(&*self.db)
+            .await
+            .map_err(AppError::Database)?;
+
+        let total = questions.len() as i32;
+        let correct_count = answers
+            .iter()
+            .filter(|(qid, answer)| {
+                questions
+                    .iter()
+                    .find(|q| &q.id == qid)
+                    .map(|q| q.correct_answer == *answer)
+                    .unwrap_or(false)
+            })
+            .count() as i32;
+
+        let score = if total > 0 {
+            (correct_count as f64 / total as f64 * 100.0).round() as i32
+        } else {
+            0
+        };
+
         let mut active: assessment_attempt::ActiveModel = attempt.into();
         active.submitted_at = Set(Some(chrono::Utc::now().into()));
-        active.score = Set(100);
+        active.score = Set(score);
 
         let result = active.save(&*self.db).await.map_err(AppError::Database)?;
         Ok(map_attempt_active_to_domain(result))

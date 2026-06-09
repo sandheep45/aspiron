@@ -1,8 +1,18 @@
 use async_trait::async_trait;
 use uuid::Uuid;
 
+use crate::domain::assessment::entities::Question;
 use crate::domain::learning::entities::{LearningProgress, Note, RecallAnswer, RecallSession};
 use crate::setup::error::AppError;
+
+pub fn find_correct_answer_index(
+    options: &serde_json::Value,
+    correct_answer: &str,
+) -> Option<usize> {
+    let obj = options.as_object()?;
+    let keys: Vec<&str> = obj.keys().map(|k| k.as_str()).collect();
+    keys.iter().position(|k| *k == correct_answer)
+}
 
 #[async_trait]
 pub trait LearningRepository: Send + Sync {
@@ -46,4 +56,11 @@ pub trait LearningRepository: Send + Sync {
         selected_option: usize,
     ) -> Result<RecallAnswer, AppError>;
     async fn get_recall_result(&self, session_id: Uuid) -> Result<RecallSession, AppError>;
+    async fn get_quiz_questions_for_topic(&self, topic_id: Uuid)
+    -> Result<Vec<Question>, AppError>;
+    async fn get_recall_answers_by_session(
+        &self,
+        session_id: Uuid,
+    ) -> Result<Vec<RecallAnswer>, AppError>;
+    async fn complete_recall_session(&self, session_id: Uuid) -> Result<RecallSession, AppError>;
 }
