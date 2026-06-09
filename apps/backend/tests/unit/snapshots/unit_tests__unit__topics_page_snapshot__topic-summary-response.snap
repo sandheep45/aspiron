@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "chapter_name": "Electrostatics",
+  "draft_topics": 2,
+  "published_topics": 6,
+  "total_topics": 8,
+  "weak_topics": 1
+}

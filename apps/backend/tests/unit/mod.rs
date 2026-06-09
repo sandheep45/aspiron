@@ -13,3 +13,5 @@ mod recall_algorithm;
 mod scoring;
 mod subjects_page;
 mod subjects_page_snapshot;
+mod topics_page;
+mod topics_page_snapshot;

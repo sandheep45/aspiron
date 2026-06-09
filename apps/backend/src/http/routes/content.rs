@@ -23,6 +23,10 @@ use crate::http::handlers::learning::handler_get_teachers_notes;
 use crate::http::handlers::subjects_page::{
     handler_get_subjects_page, handler_get_subjects_page_signals, handler_get_subjects_page_summary,
 };
+use crate::http::handlers::topics_page::{
+    handler_get_topics_page_insights, handler_get_topics_page_summary,
+    handler_get_topics_page_topics,
+};
 use crate::infra::db::repositories::content_repo::SeaOrmContentRepository;
 use crate::infra::db::repositories::learning_repo::SeaOrmLearningRepository;
 use crate::setup::app::AppState;
@@ -95,6 +99,18 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         .route(
             "/subjects/{subject_id}/chapters-page/insights",
             get(handler_get_chapters_page_insights),
+        )
+        .route(
+            "/chapters/{chapter_id}/topics-page/summary",
+            get(handler_get_topics_page_summary),
+        )
+        .route(
+            "/chapters/{chapter_id}/topics-page/topics",
+            get(handler_get_topics_page_topics),
+        )
+        .route(
+            "/chapters/{chapter_id}/topics-page/insights",
+            get(handler_get_topics_page_insights),
         )
         .layer(axum::Extension(content_state))
         .layer(axum::Extension(learning_state))

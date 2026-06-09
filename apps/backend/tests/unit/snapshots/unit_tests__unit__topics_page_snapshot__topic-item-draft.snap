@@ -1,0 +1,14 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "content_status": "draft",
+  "id": "topic-2",
+  "last_activity": "Never",
+  "name": "Electric Field",
+  "practice_accuracy": 35.0,
+  "recall_strength": "weak",
+  "status": "critical",
+  "video_available": false
+}

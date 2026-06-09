@@ -1,4 +1,4 @@
-# Implementation Plan: Chapters Page — Tests
+# Implementation Plan: Topics Page — Full Test Coverage
 
 ## Legend
 - `[ ]` — pending
@@ -7,321 +7,269 @@
 
 ---
 
-## 1. Rust Unit — `tests/unit/chapters_page.rs`
+## 1. Rust Unit — `tests/unit/topics_page.rs`
 
 Pure function tests, no DB.
 
-### `derive_status` boundary tests
-- [x] **Test: `derive_status_healthy`** — recall=0.8, accuracy=0.75 → `"Healthy"`
-- [x] **Test: `derive_status_needs_attention`** — recall=0.6, accuracy=0.65 → `"Needs Attention"`
-- [x] **Test: `derive_status_critical`** — recall=0.4, accuracy=0.9 → `"Critical"`
-- [x] **Test: `derive_status_boundary_needs_attention`** — recall=0.5, accuracy=0.5 → `"Needs Attention"`
-- [x] **Test: `derive_status_boundary_healthy`** — recall=0.7, accuracy=0.7 → `"Healthy"`
-- [x] **Test: `derive_status_uses_recall_when_accuracy_none`** — recall=0.55, accuracy=None → `"Needs Attention"`
-- [x] **Test: `derive_status_uses_accuracy_when_recall_none`** — recall=None, accuracy=0.3 → `"Critical"`
-- [x] **Test: `derive_status_healthy_when_both_none`** — both None → `"Healthy"` (plus 2 more: `null_handling`, `min_of_two_logic`) = 10 tests
+### `derive_topic_status` boundary tests (thresholds: <0.5 critical, <0.7 needs_attention, >=0.7 healthy)
+- [x] **healthy: both >= 0.7** — recall=0.85, accuracy=0.90 → `"healthy"`
+- [x] **needs_attention: mid recall** — recall=0.65, accuracy=0.90 → `"needs_attention"`
+- [x] **needs_attention: mid accuracy** — recall=0.85, accuracy=0.65 → `"needs_attention"`
+- [x] **needs_attention: min bound** — recall=0.50, accuracy=0.50 → `"needs_attention"`
+- [x] **needs_attention: max bound** — recall=0.69, accuracy=0.69 → `"needs_attention"`
+- [x] **critical: low recall** — recall=0.30, accuracy=0.90 → `"critical"`
+- [x] **critical: low accuracy** — recall=0.85, accuracy=0.20 → `"critical"`
+- [x] **critical: max bound** — recall=0.49, accuracy=0.49 → `"critical"`
+- [x] **healthy: min bound** — recall=0.70, accuracy=0.70 → `"healthy"`
+- [x] **healthy: no recall metric** — None, accuracy=0.90 → `"healthy"` (unwrap_or 1.0)
+- [x] **healthy: no accuracy metric** — recall=0.85, None → `"healthy"`
+- [x] **healthy: neither metric** — None, None → `"healthy"`
 
-### Insight categorization tests
-- [ ] ~~**Test: `categorize_signal_positive`** — high avg coverage + low variance → `positive`~~ (insight logic is pure integration, no pure fn to unit test)
-- [ ] ~~**Test: `categorize_signal_warning`** — mixed performance → `warning`~~
-- [ ] ~~**Test: `categorize_signal_negative`** — low coverage + decreasing trend → `negative`~~
-- [ ] ~~**Test: `categorize_signal_info`** — trending up with room to grow → `info`~~
+### `derive_content_status` tests
+- [x] **published: both video + quiz** → `"published"`
+- [x] **draft: quiz only** → `"draft"`
+- [x] **review_pending: video only** → `"review_pending"`
+- [x] **archived: neither** → `"archived"`
 
-### Sort function tests
-- [ ] ~~**Test: `sort_chapters_by_coverage_desc`** — sorts descending by coverage~~ (handled entirely by DB/SQL, no pure fn to unit test)
-- [ ] ~~**Test: `sort_chapters_by_recall_asc`** — sorts ascending by recall (None last)~~
-- [ ] ~~**Test: `sort_chapters_by_status_priority`** — critical before needs_attention before healthy~~
+### `categorize_topic_insights` tests
+- [x] **weak recall warning** — 2/3 topics with recall < 0.5 → warning insight present
+- [x] **low accuracy negative** — topic with accuracy < 0.5 → negative insight present
+- [x] **no video warning** — topic without video → video-missing insight present
+- [x] **no quiz info** — topic without quiz → quiz-missing insight present
+- [x] **all equipped positive** — all topics have video + quiz → positive insight present
+- [x] **empty returns info** — no topics → "No topic data available" info insight
+- [x] **deduplicates** — same-title insights collapsed to 1
+- [x] **max six** — many issues → at most 6 insights
 
-**Total: 10 tests (5 planned not implemented — insight categorize + sort are integration-level)**
+**Total: 23 tests — [x] All done**
 
 ---
 
-## 2. Rust Snapshot — `tests/unit/chapters_page_snapshot.rs`
+## 2. Rust Snapshot — `tests/unit/topics_page_snapshot.rs`
 
 Response shape snapshots via `insta`.
 
-- [x] **Snapshot: `"chapter-summary-response"`** — `ChapterSummaryResponse` with all 4 metrics populated
-- [x] **Snapshot: `"chapter-item-response"`** — `ChapterItemResponse` with all fields including null recall/accuracy
-- [x] **Snapshot: `"chapter-item-null"`** — `ChapterItemResponse` with null recall/accuracy
-- [x] **Snapshot: `"insight-item-positive"`** — `InsightItemResponse` with `signal_type=positive`
-- [x] **Snapshot: `"insight-item-warning"`** — `InsightItemResponse` with `signal_type=warning`
-- [x] **Snapshot: `"insight-item-negative"`** — `InsightItemResponse` with `signal_type=negative`
-- [x] **Snapshot: `"insight-item-info"`** — `InsightItemResponse` with `signal_type=info`
-- [ ] ~~**Snapshot: `"chapters-query-params"`** — `ChaptersQueryParams` does not derive `Serialize`, snapshot removed~~
+- [x] **Snapshot: `"topic-summary-response"`** — `TopicSummaryResponse` with all 4 metrics populated
+- [x] **Snapshot: `"topic-summary-empty"`** — `TopicSummaryResponse` with all zeros
+- [x] **Snapshot: `"topic-item-response"`** — `TopicItemResponse` with full fields (published, video=true, recall=strong, accuracy=90, healthy)
+- [x] **Snapshot: `"topic-item-draft"`** — `TopicItemResponse` with draft content, no video, weak recall, low accuracy, critical status
+- [x] **Snapshot: `"topic-insight-positive"`** — InsightItemResponse with type=positive
+- [x] **Snapshot: `"topic-insight-warning"`** — InsightItemResponse with type=warning
+- [x] **Snapshot: `"topic-insight-negative"`** — InsightItemResponse with type=negative
+- [x] **Snapshot: `"topic-insight-info"`** — InsightItemResponse with type=info
 
-**Total: 6 snapshots (query-params not serializable)**
+**Total: 8 snapshots — [x] Done**
 
 ---
 
-## 3. Rust Integration — `tests/integration/chapters_page.rs`
+## 3. Rust Integration — `tests/integration/topics_page.rs`
 
 Full HTTP roundtrip via `TestApp` + testcontainers Postgres.
 
-### Auth & permissions
-- [x] **Test: `all_endpoints_require_auth`** — No cookie on 3 endpoints → 401 `AUTH`
-- [x] **Test: `all_endpoints_require_view_analytics`** — Authenticated but no `VIEW_ANALYTICS` → 403
+### Summary endpoint — `GET .../chapters/{id}/topics-page/summary`
+- [x] **summary_returns_chapter_name_and_metrics** — Chapter with 2 topics (1 with quiz, 1 with video+quiz, weak recall) → name matches, counts correct
+- [x] **summary_returns_404_for_unknown_chapter** — Random UUID → 404
+- [x] **summary_with_no_topics** — Chapter with 0 topics → total=0, all metrics=0
 
-### Summary endpoint — `GET .../chapters-page/summary`
-- [x] **Test: `summary_returns_subject_name_and_metrics`** — Subject with 3 chapters → name matches, total=3, counts correct
-- [x] **Test: `summary_returns_404_for_unknown_subject`** — Random UUID → 404 `NOT_FOUND`
-- [x] **Test: `summary_with_no_chapters`** — Subject with 0 chapters → total=0, all metrics=0
+### Topics endpoint — `GET .../chapters/{id}/topics-page/topics`
+- [x] **topics_returns_all_without_params** — 2 topics → 2 items
+- [x] **topics_search_filters_by_name** — `?search=Gauss` returns only matching
+- [x] **topics_search_case_insensitive** — `?search=coulomb` matches "Coulomb's Law"
+- [x] **topics_content_status_filter** — `?content_status_filter=published` returns only published (has video+quiz)
+- [x] **topics_video_filter** — `?video_filter=true` returns only topics with video
+- [x] **topics_recall_filter** — `?recall_filter=weak` returns only weak recall topics
+- [x] **topics_sort_by_accuracy_asc** — `?sort_by=accuracy&sort_order=asc` lowest first
+- [x] **topics_sort_by_recall_desc** — `?sort_by=recall&sort_order=desc` highest first
+- [x] **topics_pagination** — `?page=1&limit=2` returns 2 items
+- [x] **topics_empty_for_unknown_chapter** — Unknown chapter → `[]`
+- [x] **topics_search_and_sort_together** — Search + sort combined
 
-### Chapters endpoint — `GET .../chapters-page/chapters`
-- [x] **Test: `chapters_returns_all_without_params`** — 5 chapters → 5 items
-- [x] **Test: `chapters_search_filters_by_name`** — `?search=Mech` returns only matching chapters
-- [x] **Test: `chapters_search_case_insensitive`** — `?search=mech` returns same as `?search=Mech`
-- [x] **Test: `chapters_sort_by_coverage_desc`** — `?sort_by=coverage&sort_order=desc` highest first
-- [x] **Test: `chapters_sort_by_coverage_asc`** — `?sort_by=coverage&sort_order=asc` lowest first
-- [x] **Test: `chapters_sort_by_recall_desc`** — `?sort_by=recall` sorts by avg_recall descending
-- [x] **Test: `chapters_sort_by_accuracy_desc`** — `?sort_by=accuracy` sorts by practice_accuracy descending
-- [x] **Test: `chapters_sort_by_status`** — `?sort_by=status` sorts by derived status priority
-- [x] **Test: `chapters_pagination_page_1`** — `?page=1&limit=2` returns 2 items, correct page indicator
-- [x] **Test: `chapters_pagination_page_2`** — `?page=2&limit=2` returns next 2 items
-- [x] **Test: `chapters_pagination_last_page`** — Requesting beyond total → empty array
-- [x] **Test: `chapters_combined_search_sort_pagination`** — Search + sort + page all together
-- [x] **Test: `chapters_empty_for_subject_with_no_chapters`** — Subject with 0 chapters → `[]`
+### Insights endpoint — `GET .../chapters/{id}/topics-page/insights`
+- [x] **insights_returns_signal_data** — Topics with weak recall → warning signal present
+- [x] **insights_positive_when_all_healthy** — All topics equipped + good recall → positive signal
+- [x] **insights_info_when_no_topics** — No topics → info signal ("No topic data available")
+- [x] **insights_no_more_than_six** — Many varied topics → at most 6 insights
 
-### Insights endpoint — `GET .../chapters-page/insights`
-- [x] **Test: `insights_returns_signals`** — Chapters with varied metrics → signal array
-- [x] **Test: `insights_empty_when_no_chapters`** — No chapters → `[]`
-- [x] **Test: `insights_empty_when_all_healthy`** — All chapters healthy → `[]`
-
-**Total: 16 tests (5 search/sort combos not tested, plus insight count reduced — actual implementation)**
+**Total: 18 tests — [x] All done**
 
 ---
 
-## 4. Rust Scenario — `tests/scenarios/chapters_page_flow.rs`
+## 4. Rust Scenario — `tests/scenarios/topics_page_flow.rs`
 
 Multi-step user journeys via `ScenarioBuilder`.
 
-- [x] **Test: `scenario_admin_views_chapters_page`** — Create admin + subject + 3 chapters (varying recall/accuracy) → GET all 3 endpoints → correct shapes
-- [x] **Test: `scenario_chapters_page_no_content`** — Admin + subject with no chapters → empty chapters, zero summary, empty insights
-- [x] **Test: `scenario_chapters_page_permission_denied`** — Create student user → GET chapters page → 403
-- [x] **Test: `scenario_chapters_page_combined_search_sort`** — Search + sort + pagination combined
+- [x] **topics_page_flow_full_view** — Admin + student + 3 topics (healthy, needs-attention, draft) → GET all 3 endpoints → correct shapes, search + sort filters work
+- [x] **topics_page_flow_no_content** — Admin + empty chapter → zero summary, empty topics, insights present
 
-**Total: 4 tests**
+**Total: 2 tests — [x] All done**
 
 ---
 
 ## 5. Rust Harness — reuse existing `TestApp`
 
-No new code needed. Existing `TestApp` methods cover all needs.
-
-**Total: 0 new (reuse) — [x]**
-
----
-
-## 6. Rust Fixtures — `tests/fixtures/helpers.rs`
-
-- [x] Reused existing helpers (`create_test_user`, `create_test_subject/chapter/topic`, `ensure_analytics_permission`, `create_test_learning_progress`) — no new helpers needed
-- [x] `ensure_analytics_permission` patched to use `ActionTypeEnum::VIEW_ANALYTICS` + `role_permission` link
-
-**Total: 0 new helpers (existing helpers sufficient) — [x]**
-
----
-
-## 7. JS Test Setup — `test/setup.ts` + `vitest.config.ts`
-
-No new changes needed. Existing setup handles MSW server, ResizeObserver mock, QueryClientProvider, etc.
-
-**Total: 0 new (reuse) — [x]**
-
----
-
-## 8. JS Custom Render — `test-utils.tsx`
-
-No new changes needed. Existing `render()` wrapper with `QueryClientProvider` covers all component tests.
-
-**Total: 0 new (reuse) — [x]**
-
----
-
-## 9. JS Component Tests — 10 files
-
-### 9a. `chapters-page.test.tsx` — orchestrator (5 tests)
-- [x] **Test: `renders loading skeletons`** — All 3 hooks `isLoading: true` → skeletons visible
-- [x] **Test: `renders full content`** — All hooks return data → summary card, table rows, insight cards visible
-- [x] **Test: `renders error state with retry`** — Summary `isError: true` → retry button + error message
-- [x] **Test: `renders empty chapters and insights`** — Chapters=[], Insights=[] → "No chapters" + "No insights" text
-- [x] **Test: `refresh button refetches all 3 queries`** — Click refresh → refetch called on all 3 queries
-
-### 9b. `chapters-table.test.tsx` — table with search/sort/pagination (21 tests)
-- [x] Renders table with chapter names, progress bars, recall badges, status badges, accuracy %, topic counts, last updated, View Topics buttons
-- [x] View Topics click calls `onViewChapter` with correct id
-- [x] Search input calls `onSearchChange` on each keystroke
-- [x] Sort select calls `onSortByChange` when option selected
-- [x] Sort direction button calls `onSortOrderChange`
-- [x] Pagination info rendered, Previous/Next disabled on first/last page, enabled on middle pages
-- [x] Previous/Next buttons call `onPageChange` with correct page
-- [x] EmptyState shown when no chapters (different message with/without search)
-- [x] Practice accuracy rounded
-
-### 9c. `chapter-summary-card.test.tsx` — metric cards (3 tests)
-- [x] **Test: `renders all 4 metrics`** — Each label + value visible
-- [x] **Test: `renders zero values`** — All zeros → renders "0" correctly
-- [x] **Test: `renders large numbers`** — Large ints display correctly
-- [ ] ~~**Test: `handles null data`** — not applicable (component receives typed `ChapterSummary`)~~
-
-### 9d. `quick-insights-section.test.tsx` (2 tests)
-- [x] **Test: `renders insight cards`** — Each insight renders an InsightCard
-- [x] **Test: `renders null when empty`** — `[]` → returns null (no empty state message)
-
-### 9e. `insight-card.test.tsx` (6 tests)
-- [x] **Test: `renders title and description`** — Text visible
-- [x] **Test: `renders positive type`** — `type=positive` renders
-- [x] **Test: `renders warning type`** — `type=warning` renders
-- [x] **Test: `renders negative type`** — `type=negative` renders
-- [x] **Test: `renders info type`** — `type=info` renders
-- [x] **Test: `falls back to info for unknown type`** — `type=unknown` uses info styling
-
-### 9f. `recall-badge.test.tsx` (5 tests)
-- [x] **Test: `renders strong value`** — `"strong"` → renders "strong"
-- [x] **Test: `renders medium value`** — `"medium"` → renders "medium"
-- [x] **Test: `renders weak value`** — `"weak"` → renders "weak"
-- [x] **Test: `renders unknown value`** — `"unknown"` → default styling
-- [x] **Test: `capitalizes the value text`** — has `capitalize` CSS class
-
-### 9g. `status-badge.test.tsx` (4 tests)
-- [x] **Test: `renders healthy status`** → "Healthy"
-- [x] **Test: `renders needs_attention status`** → "Needs Attention"
-- [x] **Test: `renders critical status`** → "Critical"
-- [x] **Test: `renders unknown status as-is`** — unexpected string → renders unchanged
-
-### 9h. `loading-skeleton.test.tsx` (3 tests)
-- [x] **Test: `renders summary variant`** — 4 skeleton items with `animate-pulse`
-- [x] **Test: `renders table variant`** — 5 skeleton rows with `animate-pulse`
-- [x] **Test: `renders insights variant`** — 3 skeleton cards with `animate-pulse`
-
-### 9i. `coverage-progress.test.tsx` (7 tests)
-- [x] **Test: `renders percentage text`** — Shows "%" suffix
-- [x] **Test: `clamps value above 100`** — 150 → "100%"
-- [x] **Test: `clamps value below 0`** — -20 → "0%"
-- [x] **Test: `renders 0%`** — 0 → "0%"
-- [x] **Test: `renders 100%`** — 100 → "100%"
-- [x] **Test: `rounds decimal values`** — 74.7 → "75%"
-- [x] **Test: `renders fractional values at boundaries`** — 99.5 → "100%"
-
-### 9j. `empty-state.test.tsx` (2 tests)
-- [x] **Test: `renders title and description`** — Custom props rendered
-- [x] **Test: `renders with different text`** — Renders any title/description
-
-**Total: 58 tests (43 planned, +15 for edge cases not in original plan)**
-
----
-
-## 10. JS Utility Tests — `src/lib/utils.test.ts`
-
-No new tests needed. Chapters page does not introduce new utilities.
+- [x] Reuse `TestApp` methods (`get`, `get_json` helpers) — no new harness code
 
 **Total: 0 new — [x]**
 
 ---
 
-## 11. JS Factory Tests — `mock/__tests__/chapters-page.factory.test.ts`
+## 6. Rust Fixtures — `tests/fixtures/helpers.rs`
 
-- [x] **Test: `buildChapterSummary creates default summary`** — All fields populated with defaults
-- [x] **Test: `buildChapterSummary overrides fields`** — Custom subject name reflected
-- [x] **Test: `buildChapterItem creates default item`** — All fields populated
-- [x] **Test: `buildChapterItem overrides fields`** — Custom name/status reflected
-- [x] **Test: `buildChapterItem creates unique IDs per call`** — Each call generates different ID
-- [x] **Test: `buildChapterItemList creates N items`** — Correct count, unique IDs
-- [x] **Test: `buildInsightItem creates default insight`** — All fields, type=positive
-- [x] **Test: `buildInsightItem overrides fields`** — Custom type reflected
-- [x] **Test: `buildInsightItemList creates N insights`** — Correct count, unique IDs
-- [x] **Test: `buildInsightItemList creates items with valid types`** — All items in list have valid types
+- [x] Reused existing helpers (`create_test_user`, `create_test_subject/chapter/topic`, `create_test_quiz`, `create_test_recall_answer_variant`, `create_test_assessment_attempt`)
+- [ ] ~~Add `create_test_video` helper to global helpers~~ — defined locally in integration test file
 
-**Total: 10 tests**
+**Total: 0 new helpers (video helper local to integration test) — [x]**
 
 ---
 
-## 12. MSW Handlers — `mock/handlers/chapters-page.handlers.ts`
+## 7. JS Test Setup — `test/setup.ts` + `vitest.config.ts`
 
-- [x] **Create `chapters-page.handlers.ts`** with 3 endpoints:
-  - `GET */api/v1/subjects/:subjectId/chapters-page/summary` — Returns `buildChapterSummary()`
-  - `GET */api/v1/subjects/:subjectId/chapters-page/chapters` — Parses search/sort/page/limit, filters mock data
-  - `GET */api/v1/subjects/:subjectId/chapters-page/insights` — Returns `buildInsightItemList(3)`
-- [x] **Register** in `mock/handlers/index.ts`
+- [x] Reuse existing setup — MSW server, ResizeObserver mock, QueryClientProvider all configured
 
-**Total: 1 handler file, 3 endpoints**
+**Total: 0 new — [x]**
+
+---
+
+## 8. JS Custom Render — `test-utils.tsx`
+
+- [x] Reuse existing `render()` wrapper — all component tests use it
+
+**Total: 0 new — [x]**
+
+---
+
+## 9. JS Component Tests — 10 files
+
+**All 56 tests passing — [x] Done**
+
+| File | Tests |
+|---|---|
+| `topics-page.test.tsx` | 7 |
+| `topics-table.test.tsx` | 20 |
+| `topic-summary-card.test.tsx` | 3 |
+| `loading-skeleton.test.tsx` | 3 |
+| `empty-state.test.tsx` | 2 |
+| `insight-card.test.tsx` | 6 |
+| `pattern-insights-section.test.tsx` | 2 |
+| `content-status-badge.test.tsx` | 5 |
+| `recall-badge.test.tsx` | 4 |
+| `status-badge.test.tsx` | 4 |
+| **Total** | **56** |
+
+---
+
+## 10. JS Utility Tests — `src/lib/utils.test.ts`
+
+- [x] No new utility functions introduced — reuse existing tests
+
+**Total: 0 new — [x]**
+
+---
+
+## 11. JS Factory Tests — `mock/__tests__/topics-page.factory.test.ts`
+
+- [x] **buildTopicSummary creates default** — All 4 fields populated with defaults
+- [x] **buildTopicSummary overrides** — Custom chapter name reflected
+- [x] **buildTopicItem creates default** — All fields, ID=topic-1, recall=medium, accuracy=65, status=needs_attention
+- [x] **buildTopicItem overrides** — Custom name/content_status reflected
+- [x] **buildTopicItem unique IDs per call** — Each call generates different ID
+- [x] **buildTopicItemList creates N items** — Correct count
+- [x] **buildTopicItemList unique IDs** — All IDs unique
+- [x] **buildTopicItemList with overrides** — Override applied to all items
+- [x] **buildInsightItem default** — All fields, type=info
+- [x] **buildInsightItem overrides** — Custom type reflected
+- [x] **buildInsightItemList creates N insights** — Correct count
+- [x] **buildInsightItemList cycling types** — Types cycle positive/warning/negative/info
+
+**Total: 12 tests — [x] All done**
+
+---
+
+## 12. MSW Handlers — `mock/handlers/topics-page.handlers.ts`
+
+- [x] **Summary handler** — `GET */api/v1/chapters/:chapterId/topics-page/summary` → `buildTopicSummary()`
+- [x] **Topics handler** — `GET */api/v1/chapters/:chapterId/topics-page/topics` → parses query params, filters mock data in-memory (search, content_status, recall, video, sort_by, sort_order, page, limit)
+- [x] **Insights handler** — `GET */api/v1/chapters/:chapterId/topics-page/insights` → `buildInsightItemList(3)`
+- [x] **Registered** in `mock/handlers/index.ts`
+
+**Total: 1 handler file, 3 endpoints — [x] All done**
 
 ---
 
 ## 13. MSW Verification — `mock/__tests__/msw-verification.test.ts`
 
-- [x] **Test: `chapters-page summary returns 200`** — Fetch summary → 200 + correct shape
-- [x] **Test: `chapters-page chapters respects search param`** — `?search=mech` → filtered results
-- [x] **Test: `chapters-page insights returns array`** — Returns array of insight items
+- [x] **topics-page summary intercepted** — Returns 200 with `chapter_name`, `total_topics`, `published_topics`
+- [x] **topics-page topics intercepted** — Returns array with `id`, `name`, `content_status`, `video_available`, `status`
+- [x] **topics-page insights intercepted** — Returns array with `id`, `type`, `title`, `description`
 
-**Total: 3 tests (additions to existing file)**
-
----
-
-## 14. E2E Mocked (Playwright) — `e2e/content/chapters-page.spec.ts`
-
-### Setup
-- [x] Auth: cookie + `auth/me` mock via `setupAuth(page)`
-- [x] MSW: 3 chapters-page endpoint mocks via `setupChaptersPageMocks(page)`
-
-### Test assertions
-- [x] **Test: `renders subject name heading`** — "Physics" heading visible
-- [x] **Test: `renders summary metric cards`** — Total Chapters, Topics Published, Topics In Draft, Chapters With Weak Recall
-- [x] **Test: `renders chapters table with rows`** — All 5 chapter names visible in table
-- [x] **Test: `renders quick insights section`** — 3 insights (Strong Recall, Content Gaps, Low Accuracy) visible
-- [x] **Test: `search filters chapter list`** — Type "mech" → Mechanics visible, Thermodynamics not visible
-- [x] **Test: `pagination controls visible`** — Previous/Next buttons visible (disabled for 5 items ≤ 10 limit)
-- [x] **Test: `no horizontal scroll at 1440px`** — sidebar-inset scroll check
-- [x] **Test: `no horizontal scroll at 375px mobile`** — sidebar-inset scroll check
-
-**Total: 8 tests (navigation test uses direct URL, not click-through from subjects)**
+**Total: 3 additions — [x] All done**
 
 ---
 
-## 15. E2E Real API (Playwright) — `e2e/real-api/chapters-page.spec.ts`
+## 14. E2E Mocked (Playwright) — `e2e/dashboard/topics-page.spec.ts`
 
 ### Setup
-- [x] Reuse `loginAsCDAdmin` from `e2e/real-api/login.ts` (same user has VIEW_ANALYTICS)
-- [x] Add 2 extra chapters (CD Geometry, CD Trigonometry) + 1 extra topic to `seedContentDashboardData`
-- [x] `globalSetup.ts` / `globalTeardown.ts` already call `seedContentDashboardData` / `cleanupContentDashboardData`
+- [x] Auth: cookie + `auth/me` mock via `setupAuth(page)` (reuse pattern from chapters-page)
+- [x] MSW: 3 topics-page endpoint mocks via `setupTopicsPageMocks(page)` → `page.route()` for summary, topics, insights
 
 ### Tests
-- [x] **Test: `sections visible`** — Subject heading "CD Mathematics", metric cards, All Chapters, Quick Insights
-- [x] **Test: `shows chapter rows from seed`** — CD Algebra, CD Geometry, CD Trigonometry visible as table cells
-- [x] **Test: `shows metric values`** — Total Chapters shows "3"
-- [x] **Test: `no hydration mismatch warnings`** — Console checked after navigation
+- [x] **renders chapter name heading** — "Electrostatics" heading visible
+- [x] **renders summary metric cards** — Total Topics, Published, Draft, Weak Recall values visible
+- [x] **renders topics table with rows** — Topic names visible in table
+- [x] **renders insights section** — Insight cards visible
+- [x] **search filters topic list** — Type in search → topics filtered
+- [x] **no horizontal scroll at 1440px desktop**
+- [x] **renders back to chapters button**
 
-**Total: 4 tests (SSR content test skipped — real API SSR requires proper server state)**
+**Total: 7 tests — [x] Done**
 
 ---
 
-## 16. E2E Visual Regression — `e2e/real-api/chapters-page-visual.spec.ts`
+## 15. E2E Real API (Playwright) — `e2e/real-api/topics-page.spec.ts`
 
-- [x] **Test: `chapters page layout matches baseline`** — `toHaveScreenshot('chapters-page-full.png', { maxDiffPixelRatio: 0.05 })`
+### Setup
+- [x] Reuse `seedContentDashboardData` (chapter `30000000-0000-0000-0000-000000000030` "CD Algebra" has 3 topics)
+- [x] Reuse `loginAsCDAdmin` auth helper
 
-**Total: 1 test**
+### Tests
+- [x] **sections visible** — Chapter heading "CD Algebra", metric cards, topics table, quick pattern insights
+- [x] **shows topic rows from seed** — "CD Quadratic Equations", "CD Linear Algebra" visible as table cells
+- [x] **shows metric values** — Total Topics = 3 visible
+- [x] **no hydration mismatch warnings** — Console checked after navigation
+
+**Total: 4 tests — [x] Done**
+
+---
+
+## 16. E2E Visual Regression — `e2e/real-api/topics-page-visual.spec.ts`
+
+- [x] **topics page layout matches baseline** — `toHaveScreenshot('topics-page-full.png', { maxDiffPixelRatio: 0.05 })`
+
+**Total: 1 test — [x] Done**
 
 ---
 
 ## Summary Table
 
 | # | Test Kind | File(s) | Status | Test Count |
-|---|---|---|---|---|---|
-| 1 | Rust unit | `tests/unit/chapters_page.rs` | Done | 10 |
-| 2 | Rust snapshot | `tests/unit/chapters_page_snapshot.rs` | Done | 6 snapshots |
-| 3 | Rust integration | `tests/integration/chapters_page.rs` | Done | 16 |
-| 4 | Rust scenario | `tests/scenarios/chapters_page_flow.rs` | Done | 4 |
+|---|---|---|---|---|
+| 1 | Rust unit | `tests/unit/topics_page.rs` | Done | 23 |
+| 2 | Rust snapshot | `tests/unit/topics_page_snapshot.rs` | Done | 8 |
+| 3 | Rust integration | `tests/integration/topics_page.rs` | Done | 18 |
+| 4 | Rust scenario | `tests/scenarios/topics_page_flow.rs` | Done | 2 |
 | 5 | Rust harness | `tests/harness.rs` (reuse) | Done | 0 |
-| 6 | Rust fixtures | `tests/fixtures/helpers.rs` | Done | 0 (reused existing) |
+| 6 | Rust fixtures | `tests/fixtures/helpers.rs` | Done | 0 |
 | 7 | JS test setup | `test/setup.ts` (reuse) | Done | 0 |
 | 8 | JS custom render | `test-utils.tsx` (reuse) | Done | 0 |
-| 9 | JS component | 10 files in `__tests__/` | Done | 58 |
+| 9 | JS component | 10 files in `__tests__/` | Done | 56 |
 | 10 | JS utility | `src/lib/utils.test.ts` (reuse) | Done | 0 |
-| 11 | JS factory | `mock/__tests__/chapters-page.factory.test.ts` | Done | 11 |
-| 12 | MSW handlers | `mock/handlers/chapters-page.handlers.ts` | Done | 3 endpoints |
+| 11 | JS factory | `mock/__tests__/topics-page.factory.test.ts` | Done | 12 |
+| 12 | MSW handlers | `mock/handlers/topics-page.handlers.ts` | Done | 3 endpoints |
 | 13 | MSW verification | `mock/__tests__/msw-verification.test.ts` | Done | 3 additions |
-| 14 | E2E mocked | `e2e/dashboard/chapters-page.spec.ts` | Done | 8 |
-| 15 | E2E real API | `e2e/real-api/chapters-page.spec.ts` | Done | 4 |
-| 16 | E2E visual regression | `e2e/real-api/chapters-page-visual.spec.ts` | Done | 1 |
-| | **Total** | | **16/16 sections done** | **~121 tests** |
+| 14 | E2E mocked | `e2e/dashboard/topics-page.spec.ts` | Done | 7 |
+| 15 | E2E real API | `e2e/real-api/topics-page.spec.ts` | Done | 4 |
+| 16 | E2E visual regression | `e2e/real-api/topics-page-visual.spec.ts` | Done | 1 |
+| | **Total** | | **16 done / 0 pending** | **~134 tests** |
 
 ---
 
@@ -329,14 +277,15 @@ No new tests needed. Chapters page does not introduce new utilities.
 
 | Layer | Command |
 |---|---|
-| Rust unit | `cargo test -p backend --test unit_tests -- unit::chapters_page` |
-| Rust snapshot | `cargo insta review` then `cargo test -p backend --test unit_tests -- unit::chapters_page_snapshot` |
-| Rust integration | `cargo test -p backend --test integration_tests -- integration::chapters_page` |
-| Rust scenario | `cargo test -p backend --test scenarios -- scenarios::chapters_page_flow` |
+| Rust unit | `cargo test -p backend --test unit_tests -- unit::topics_page` |
+| Rust snapshot | `cargo insta review` then `cargo test -p backend --test unit_tests -- unit::topics_page_snapshot` |
+| Rust integration | `cargo test -p backend --test integration_tests -- integration::topics_page` |
+| Rust scenario | `cargo test -p backend --test mod -- scenarios::topics_page_flow` |
 | Rust all | `cargo test -p backend` |
 | JS/TS all | `pnpm --filter web-admin exec vitest run` |
-| MSW verification | `pnpm --filter web-admin exec vitest run mock/` |
-| E2E mocked | `pnpm --filter web-admin exec playwright test --project=unit-msw` |
-| E2E real API | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/chapters-page.spec.ts` |
-| E2E visual | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/chapters-page-visual.spec.ts` |
+| JS component | `pnpm --filter web-admin exec vitest run src/features/topics-page/` |
+| MSW verification | `pnpm --filter web-admin exec vitest run mock/__tests__/msw-verification.test.ts` |
+| E2E mocked | `pnpm --filter web-admin exec playwright test --project=unit-msw e2e/dashboard/topics-page.spec.ts` |
+| E2E real API | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/topics-page.spec.ts` |
+| E2E visual | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/topics-page-visual.spec.ts` |
 | CI | `just ci` |

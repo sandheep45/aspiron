@@ -12,6 +12,9 @@ use crate::application::content::chapters_page_types::{
     ChapterInsightData, ChapterSummaryData, ChapterWithMetrics, categorize_chapter_insights,
 };
 use crate::application::content::ports::ContentRepository;
+use crate::application::content::topics_page_types::{
+    TopicInsightData, TopicSummaryData, TopicWithMetrics, categorize_topic_insights,
+};
 use crate::domain::content::entities::{Chapter, Subject, Topic, Video};
 use crate::domain::content::value_objects::OfflineToken;
 use crate::entries::entities::{
@@ -434,6 +437,266 @@ impl ContentRepository for SeaOrmContentRepository {
     ) -> Result<Vec<ChapterInsightData>, AppError> {
         let metrics = self.get_chapters_with_metrics(subject_id).await?;
         Ok(categorize_chapter_insights(&metrics))
+    }
+
+    async fn get_topic_summary(&self, chapter_id: Uuid) -> Result<TopicSummaryData, AppError> {
+        let db = &*self.db;
+
+        let chapter = content_chapter::Entity::find_by_id(chapter_id)
+            .one(db)
+            .await
+            .map_err(AppError::Database)?
+            .ok_or_else(|| AppError::NotFound(format!("Chapter {chapter_id}")))?;
+
+        let topics = content_topic::Entity::find()
+            .filter(content_topic::Column::ChapterId.eq(chapter_id))
+            .all(db)
+            .await
+            .map_err(AppError::Database)?;
+
+        let total_topics = topics.len() as i64;
+
+        if total_topics == 0 {
+            return Ok(TopicSummaryData {
+                chapter_name: chapter.name,
+                total_topics: 0,
+                published_topics: 0,
+                draft_topics: 0,
+                weak_topics: 0,
+            });
+        }
+
+        let topic_ids: Vec<Uuid> = topics.iter().map(|t| t.id).collect();
+
+        let quiz_topic_ids: Vec<Uuid> = assessment_quiz::Entity::find()
+            .select_only()
+            .column(assessment_quiz::Column::TopicId)
+            .filter(assessment_quiz::Column::TopicId.is_in(topic_ids.clone()))
+            .distinct()
+            .into_tuple::<Uuid>()
+            .all(db)
+            .await
+            .unwrap_or_default();
+
+        let published_topics = topic_ids
+            .iter()
+            .filter(|id| quiz_topic_ids.contains(id))
+            .count() as i64;
+
+        let draft_topics = total_topics - published_topics;
+
+        let recall_session_topic_ids: Vec<Uuid> = learning_recall_session::Entity::find()
+            .select_only()
+            .column(learning_recall_session::Column::TopicId)
+            .filter(learning_recall_session::Column::TopicId.is_in(topic_ids.clone()))
+            .distinct()
+            .into_tuple::<Uuid>()
+            .all(db)
+            .await
+            .unwrap_or_default();
+
+        let mut weak_topics = 0i64;
+        for tid in &recall_session_topic_ids {
+            let correct = learning_recall_answer::Entity::find()
+                .inner_join(learning_recall_session::Entity)
+                .filter(learning_recall_session::Column::TopicId.eq(*tid))
+                .filter(learning_recall_answer::Column::IsCorrect.eq(true))
+                .count(db)
+                .await
+                .unwrap_or(0);
+
+            let total = learning_recall_answer::Entity::find()
+                .inner_join(learning_recall_session::Entity)
+                .filter(learning_recall_session::Column::TopicId.eq(*tid))
+                .count(db)
+                .await
+                .unwrap_or(0);
+
+            if total > 0 && (correct as f64 / total as f64) < 0.5 {
+                weak_topics += 1;
+            }
+        }
+
+        Ok(TopicSummaryData {
+            chapter_name: chapter.name,
+            total_topics,
+            published_topics,
+            draft_topics,
+            weak_topics,
+        })
+    }
+
+    async fn get_topics_with_metrics(
+        &self,
+        chapter_id: Uuid,
+    ) -> Result<Vec<TopicWithMetrics>, AppError> {
+        let db = &*self.db;
+
+        let topics = content_topic::Entity::find()
+            .filter(content_topic::Column::ChapterId.eq(chapter_id))
+            .order_by_asc(content_topic::Column::OrderNumber)
+            .all(db)
+            .await
+            .map_err(AppError::Database)?;
+
+        let topic_ids: Vec<Uuid> = topics.iter().map(|t| t.id).collect();
+
+        if topic_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let video_topic_ids: Vec<Uuid> = content_video::Entity::find()
+            .select_only()
+            .column(content_video::Column::TopicId)
+            .filter(content_video::Column::TopicId.is_in(topic_ids.clone()))
+            .distinct()
+            .into_tuple::<Uuid>()
+            .all(db)
+            .await
+            .unwrap_or_default();
+
+        let quiz_topic_ids: Vec<Uuid> = assessment_quiz::Entity::find()
+            .select_only()
+            .column(assessment_quiz::Column::TopicId)
+            .filter(assessment_quiz::Column::TopicId.is_in(topic_ids.clone()))
+            .distinct()
+            .into_tuple::<Uuid>()
+            .all(db)
+            .await
+            .unwrap_or_default();
+
+        let mut results = Vec::new();
+
+        for topic in &topics {
+            let has_video = video_topic_ids.contains(&topic.id);
+            let has_quiz = quiz_topic_ids.contains(&topic.id);
+
+            let session_ids: Vec<Uuid> = learning_recall_session::Entity::find()
+                .select_only()
+                .column(learning_recall_session::Column::Id)
+                .filter(learning_recall_session::Column::TopicId.eq(topic.id))
+                .into_tuple::<Uuid>()
+                .all(db)
+                .await
+                .unwrap_or_default();
+
+            let recall = if session_ids.is_empty() {
+                None
+            } else {
+                let correct = learning_recall_answer::Entity::find()
+                    .filter(learning_recall_answer::Column::SessionId.is_in(session_ids.clone()))
+                    .filter(learning_recall_answer::Column::IsCorrect.eq(true))
+                    .count(db)
+                    .await
+                    .unwrap_or(0);
+
+                let total = learning_recall_answer::Entity::find()
+                    .filter(learning_recall_answer::Column::SessionId.is_in(session_ids.clone()))
+                    .count(db)
+                    .await
+                    .unwrap_or(0);
+
+                if total > 0 {
+                    Some(correct as f64 / total as f64)
+                } else {
+                    None
+                }
+            };
+
+            let accuracy = if has_quiz {
+                let quiz_ids: Vec<Uuid> = assessment_quiz::Entity::find()
+                    .select_only()
+                    .column(assessment_quiz::Column::Id)
+                    .filter(assessment_quiz::Column::TopicId.eq(topic.id))
+                    .into_tuple::<Uuid>()
+                    .all(db)
+                    .await
+                    .unwrap_or_default();
+
+                if quiz_ids.is_empty() {
+                    None
+                } else {
+                    let attempts = assessment_attempt::Entity::find()
+                        .filter(assessment_attempt::Column::QuizId.is_in(quiz_ids))
+                        .all(db)
+                        .await
+                        .map_err(AppError::Database)?;
+
+                    if attempts.is_empty() {
+                        None
+                    } else {
+                        let total_score: i32 = attempts.iter().map(|a| a.score).sum();
+                        Some((total_score as f64 / attempts.len() as f64) / 100.0)
+                    }
+                }
+            } else {
+                None
+            };
+
+            let mut last_activity: Option<DateTime<Utc>> = None;
+
+            if has_quiz {
+                let latest_session = learning_recall_session::Entity::find()
+                    .filter(learning_recall_session::Column::TopicId.eq(topic.id))
+                    .order_by_desc(learning_recall_session::Column::CompletedAt)
+                    .one(db)
+                    .await
+                    .map_err(AppError::Database)?;
+
+                if let Some(session) = latest_session
+                    && let Some(completed) = session.completed_at
+                {
+                    let utc: DateTime<Utc> = completed.into();
+                    last_activity = Some(last_activity.map(|la| la.max(utc)).unwrap_or(utc));
+                }
+
+                let quiz_ids: Vec<Uuid> = assessment_quiz::Entity::find()
+                    .select_only()
+                    .column(assessment_quiz::Column::Id)
+                    .filter(assessment_quiz::Column::TopicId.eq(topic.id))
+                    .into_tuple::<Uuid>()
+                    .all(db)
+                    .await
+                    .unwrap_or_default();
+
+                if !quiz_ids.is_empty() {
+                    let latest_attempt = assessment_attempt::Entity::find()
+                        .filter(assessment_attempt::Column::QuizId.is_in(quiz_ids))
+                        .order_by_desc(assessment_attempt::Column::SubmittedAt)
+                        .one(db)
+                        .await
+                        .map_err(AppError::Database)?;
+
+                    if let Some(attempt) = latest_attempt
+                        && let Some(submitted) = attempt.submitted_at
+                    {
+                        let utc: DateTime<Utc> = submitted.into();
+                        last_activity = Some(last_activity.map(|la| la.max(utc)).unwrap_or(utc));
+                    }
+                }
+            }
+
+            results.push(TopicWithMetrics {
+                id: topic.id,
+                name: topic.name.clone(),
+                chapter_id: topic.chapter_id,
+                has_video,
+                has_quiz,
+                avg_recall: recall,
+                practice_accuracy: accuracy,
+                last_activity_at: last_activity,
+            });
+        }
+
+        Ok(results)
+    }
+
+    async fn get_topic_insights(
+        &self,
+        chapter_id: Uuid,
+    ) -> Result<Vec<TopicInsightData>, AppError> {
+        let metrics = self.get_topics_with_metrics(chapter_id).await?;
+        Ok(categorize_topic_insights(&metrics))
     }
 }
 

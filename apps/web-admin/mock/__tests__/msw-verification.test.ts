@@ -157,4 +157,46 @@ describe('MSW', () => {
       expect(body[0]).toHaveProperty('description')
     }
   })
+
+  it('intercepts topics-page summary', async () => {
+    const response = await fetch(
+      '/api/v1/chapters/chapter-1/topics-page/summary',
+    )
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body).toHaveProperty('chapter_name')
+    expect(body).toHaveProperty('total_topics')
+    expect(body).toHaveProperty('published_topics')
+  })
+
+  it('intercepts topics-page topics', async () => {
+    const response = await fetch(
+      '/api/v1/chapters/chapter-1/topics-page/topics',
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('name')
+      expect(body[0]).toHaveProperty('content_status')
+      expect(body[0]).toHaveProperty('video_available')
+      expect(body[0]).toHaveProperty('status')
+    }
+  })
+
+  it('intercepts topics-page insights', async () => {
+    const response = await fetch(
+      '/api/v1/chapters/chapter-1/topics-page/insights',
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('type')
+      expect(body[0]).toHaveProperty('title')
+      expect(body[0]).toHaveProperty('description')
+    }
+  })
 })

@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "description": "Every topic in this chapter has both video content and assessment quizzes.",
+  "id": "ins-1",
+  "title": "All topics fully equipped",
+  "type": "positive"
+}

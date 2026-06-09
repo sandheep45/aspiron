@@ -4,6 +4,9 @@ use uuid::Uuid;
 use crate::application::content::chapters_page_types::{
     ChapterInsightData, ChapterSummaryData, ChapterWithMetrics,
 };
+use crate::application::content::topics_page_types::{
+    TopicInsightData, TopicSummaryData, TopicWithMetrics,
+};
 use crate::domain::content::entities::{Chapter, Subject, Topic, Video};
 use crate::domain::content::value_objects::OfflineToken;
 use crate::setup::error::AppError;
@@ -31,4 +34,12 @@ pub trait ContentRepository: Send + Sync {
         &self,
         subject_id: Uuid,
     ) -> Result<Vec<ChapterInsightData>, AppError>;
+
+    async fn get_topic_summary(&self, chapter_id: Uuid) -> Result<TopicSummaryData, AppError>;
+    async fn get_topics_with_metrics(
+        &self,
+        chapter_id: Uuid,
+    ) -> Result<Vec<TopicWithMetrics>, AppError>;
+    async fn get_topic_insights(&self, chapter_id: Uuid)
+    -> Result<Vec<TopicInsightData>, AppError>;
 }

@@ -7,8 +7,12 @@ pub mod get_offline_token;
 pub mod get_subjects;
 pub mod get_topic;
 pub mod get_topics;
+pub mod get_topics_page_insights;
+pub mod get_topics_page_summary;
+pub mod get_topics_page_topics;
 pub mod get_videos;
 pub mod ports;
+pub mod topics_page_types;
 
 use std::sync::Arc;
 

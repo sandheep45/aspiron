@@ -30,6 +30,7 @@ import { Route as PrivateRoutesContentContentLayoutIndexRouteImport } from './ro
 import { Route as PrivateRoutesContentContentLayoutSubjectsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/index'
 import { Route as PrivateRoutesContentContentLayoutTopicIdRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id'
 import { Route as PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/$subjectId/chapters/index'
+import { Route as PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/index'
 
 const PrivateRoutesRoute = PrivateRoutesRouteImport.update({
   id: '/_private-routes',
@@ -152,6 +153,14 @@ const PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute =
       getParentRoute: () => PrivateRoutesContentContentLayoutRoute,
     } as any,
   )
+const PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute =
+  PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRouteImport.update(
+    {
+      id: '/subjects/$subjectId/chapters/$chapterId/topics/',
+      path: '/subjects/$subjectId/chapters/$chapterId/topics/',
+      getParentRoute: () => PrivateRoutesContentContentLayoutRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof PrivateRoutesIndexRoute
@@ -174,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
   '/content/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
   '/content/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
+  '/content/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PrivateRoutesIndexRoute
@@ -194,6 +204,7 @@ export interface FileRoutesByTo {
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
   '/content/subjects': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
   '/content/subjects/$subjectId/chapters': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
+  '/content/subjects/$subjectId/chapters/$chapterId/topics': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -218,6 +229,7 @@ export interface FileRoutesById {
   '/_private-routes/content/_content-layout/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
   '/_private-routes/content/_content-layout/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
   '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
+  '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -242,6 +254,7 @@ export interface FileRouteTypes {
     | '/content/topic/$id'
     | '/content/subjects/'
     | '/content/subjects/$subjectId/chapters/'
+    | '/content/subjects/$subjectId/chapters/$chapterId/topics/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -262,6 +275,7 @@ export interface FileRouteTypes {
     | '/content/topic/$id'
     | '/content/subjects'
     | '/content/subjects/$subjectId/chapters'
+    | '/content/subjects/$subjectId/chapters/$chapterId/topics'
   id:
     | '__root__'
     | '/_private-routes'
@@ -285,6 +299,7 @@ export interface FileRouteTypes {
     | '/_private-routes/content/_content-layout/topic/$id'
     | '/_private-routes/content/_content-layout/subjects/'
     | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/'
+    | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -442,6 +457,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRouteImport
       parentRoute: typeof PrivateRoutesContentContentLayoutRoute
     }
+    '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/': {
+      id: '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/'
+      path: '/subjects/$subjectId/chapters/$chapterId/topics'
+      fullPath: '/content/subjects/$subjectId/chapters/$chapterId/topics/'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutRoute
+    }
   }
 }
 
@@ -450,6 +472,7 @@ interface PrivateRoutesContentContentLayoutRouteChildren {
   PrivateRoutesContentContentLayoutTopicIdRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
   PrivateRoutesContentContentLayoutSubjectsIndexRoute: typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
   PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute: typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
+  PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute: typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
 }
 
 const PrivateRoutesContentContentLayoutRouteChildren: PrivateRoutesContentContentLayoutRouteChildren =
@@ -462,6 +485,8 @@ const PrivateRoutesContentContentLayoutRouteChildren: PrivateRoutesContentConten
       PrivateRoutesContentContentLayoutSubjectsIndexRoute,
     PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute:
       PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute,
+    PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute:
+      PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute,
   }
 
 const PrivateRoutesContentContentLayoutRouteWithChildren =

@@ -13,6 +13,7 @@ import { notificationHandlers } from './notification.handlers'
 import { painPointsHandlers } from './pain-points.handlers'
 import { subjectsPageHandlers } from './subjects-page.handlers'
 import { topicPerformanceHandlers } from './topic-performance.handlers'
+import { topicsPageHandlers } from './topics-page.handlers'
 import { upcomingClassesHandlers } from './upcoming-classes.handlers'
 
 export const handlers = [
@@ -31,5 +32,6 @@ export const handlers = [
   ...painPointsHandlers,
   ...subjectsPageHandlers,
   ...topicPerformanceHandlers,
+  ...topicsPageHandlers,
   ...upcomingClassesHandlers,
 ]

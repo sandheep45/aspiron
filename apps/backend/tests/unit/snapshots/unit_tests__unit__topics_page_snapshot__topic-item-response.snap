@@ -1,0 +1,14 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "content_status": "published",
+  "id": "topic-1",
+  "last_activity": "2 hours ago",
+  "name": "Coulomb's Law",
+  "practice_accuracy": 90.0,
+  "recall_strength": "strong",
+  "status": "healthy",
+  "video_available": true
+}

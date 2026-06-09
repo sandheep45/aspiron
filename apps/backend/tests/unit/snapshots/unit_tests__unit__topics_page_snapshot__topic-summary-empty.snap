@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "chapter_name": "Empty Chapter",
+  "draft_topics": 0,
+  "published_topics": 0,
+  "total_topics": 0,
+  "weak_topics": 0
+}

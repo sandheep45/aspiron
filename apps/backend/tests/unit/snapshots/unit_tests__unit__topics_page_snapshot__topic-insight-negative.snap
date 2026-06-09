@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "description": "Gauss Law shows practice accuracy below 50%.",
+  "id": "ins-3",
+  "title": "Practice accuracy concerns",
+  "type": "negative"
+}

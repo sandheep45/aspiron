@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "description": "Coulomb's Law, Electric Field have significantly lower recall rates.",
+  "id": "ins-2",
+  "title": "Topics with low recall",
+  "type": "warning"
+}

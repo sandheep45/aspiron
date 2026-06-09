@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/topics_page_snapshot.rs
+expression: value
+---
+{
+  "description": "Faraday's Law has no assessment quizzes configured.",
+  "id": "ins-4",
+  "title": "Topics without quizzes",
+  "type": "info"
+}

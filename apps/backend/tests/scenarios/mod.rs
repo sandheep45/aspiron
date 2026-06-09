@@ -8,3 +8,4 @@ pub mod scenario_builder;
 mod student_onboarding;
 mod subjects_page_flow;
 mod teacher_content_upload;
+mod topics_page_flow;
