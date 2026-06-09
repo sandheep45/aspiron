@@ -1,11 +1,11 @@
 import type { InsightItem } from '@aspiron/api-client'
-import { InsightCard } from '@/features/chapters-page/components/insight-card'
+import { InsightCard } from '@/components/ui/insight-card'
 
-interface QuickInsightsSectionProps {
+interface InsightsSectionProps {
   insights: InsightItem[]
 }
 
-export function QuickInsightsSection({ insights }: QuickInsightsSectionProps) {
+export function InsightsSection({ insights }: InsightsSectionProps) {
   if (insights.length === 0) {
     return null
   }

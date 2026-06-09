@@ -2,7 +2,9 @@ import type { TopicItem } from '@aspiron/api-client'
 import { ArrowRight, ChevronDown, ChevronUp, Search, Video } from 'lucide-react'
 import { useCallback } from 'react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
+import { RecallBadge } from '@/components/ui/recall-badge'
 import {
   Select,
   SelectContent,
@@ -10,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Table,
   TableBody,
@@ -19,9 +22,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ContentStatusBadge } from './content-status-badge'
-import { EmptyState } from './empty-state'
-import { RecallBadge } from './recall-badge'
-import { StatusBadge } from './status-badge'
 
 interface TopicsTableProps {
   topics: TopicItem[]

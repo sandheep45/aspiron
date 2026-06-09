@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { BookOpen } from 'lucide-react'
 import { describe, expect, it } from 'vitest'
-import { EmptyState } from '@/features/content-dashboard/components/empty-state'
+import { EmptyState } from '@/components/ui/empty-state'
 
 describe('EmptyState', () => {
   it('renders title and description', () => {

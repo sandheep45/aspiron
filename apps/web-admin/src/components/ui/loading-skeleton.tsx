@@ -1,7 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface LoadingSkeletonProps {
-  variant: 'summary' | 'table' | 'insights'
+  variant: 'summary' | 'table' | 'insights' | 'signals'
 }
 
 export function LoadingSkeleton({ variant }: LoadingSkeletonProps) {
@@ -40,6 +40,25 @@ export function LoadingSkeleton({ variant }: LoadingSkeletonProps) {
             <Skeleton className='h-5 w-20 rounded-full' />
             <Skeleton className='h-4 w-20' />
             <Skeleton className='h-6 w-28 rounded-lg' />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (variant === 'signals') {
+    return (
+      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className='flex flex-col gap-3 rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900/90 to-slate-900/50 p-5 backdrop-blur-sm'
+          >
+            <div className='flex items-center gap-2.5'>
+              <Skeleton className='size-7 rounded-lg' />
+              <Skeleton className='h-4 w-24' />
+            </div>
+            <Skeleton className='h-3 w-full' />
           </div>
         ))}
       </div>

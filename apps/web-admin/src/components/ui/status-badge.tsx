@@ -18,9 +18,11 @@ const statusLabels: Record<string, string> = {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
+  const normalized = status.toLowerCase().replace(/\s+/g, '_')
   const colorClass =
-    statusColors[status] || 'bg-slate-500/15 text-slate-400 border-slate-500/30'
-  const label = statusLabels[status] || status
+    statusColors[normalized] ||
+    'bg-slate-500/15 text-slate-400 border-slate-500/30'
+  const label = statusLabels[normalized] || status
 
   return (
     <Badge

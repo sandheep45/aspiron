@@ -1,15 +1,16 @@
 import type { LucideIcon } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface EmptyStateProps {
-  icon: LucideIcon
+  icon?: LucideIcon
   title: string
   description: string
   className?: string
 }
 
 export function EmptyState({
-  icon: Icon,
+  icon: Icon = Search,
   title,
   description,
   className,

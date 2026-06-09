@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { SectionHeader } from '@/components/ui/section-header'
 import { ContentAttentionTable } from '@/features/content-dashboard/components/content-attention-table'
 import {
@@ -269,19 +270,11 @@ export function ContentDashboardPage() {
             ))}
           </div>
         ) : (
-          <div className='flex flex-col items-center gap-3 rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900/60 to-slate-900/20 p-10 text-center backdrop-blur-sm'>
-            <div className='flex size-12 items-center justify-center rounded-full bg-slate-800/50'>
-              <BookOpen className='size-5 text-slate-500' />
-            </div>
-            <div>
-              <p className='font-medium text-slate-300 text-sm'>
-                No subjects found
-              </p>
-              <p className='mt-1 text-slate-500 text-xs'>
-                Subjects will appear once content is added.
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title='No subjects found'
+            description='Subjects will appear once content is added.'
+          />
         )}
       </section>
 

@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { ProgressBar } from '@/features/content-dashboard/components/progress-bar'
+import { ProgressBar } from '@/components/ui/progress-bar'
 
 describe('ProgressBar', () => {
   it('renders with the correct width', () => {

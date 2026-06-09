@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { InsightCard } from '@/features/topics-page/components/insight-card'
+import { InsightCard } from '@/components/ui/insight-card'
 
 describe('InsightCard', () => {
   it('renders title and description', () => {

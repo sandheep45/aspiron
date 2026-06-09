@@ -62,8 +62,8 @@ describe('ChaptersTable', () => {
 
   it('renders recall badges', () => {
     render(<ChaptersTable {...defaultProps} />)
-    expect(screen.getByText('strong')).toBeInTheDocument()
-    expect(screen.getByText('medium')).toBeInTheDocument()
+    expect(screen.getByText('Strong')).toBeInTheDocument()
+    expect(screen.getByText('Medium')).toBeInTheDocument()
   })
 
   it('renders status badges', () => {

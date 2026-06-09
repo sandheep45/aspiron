@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { StatusBadge } from '@/features/subjects-page/components/status-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 describe('StatusBadge', () => {
   it('renders Healthy', () => {

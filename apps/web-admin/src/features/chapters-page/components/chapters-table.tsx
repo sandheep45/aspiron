@@ -1,7 +1,10 @@
 import type { ChapterItem } from '@aspiron/api-client'
 import { ArrowRight, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
+import { ProgressBar } from '@/components/ui/progress-bar'
+import { RecallBadge } from '@/components/ui/recall-badge'
 import {
   Select,
   SelectContent,
@@ -9,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Table,
   TableBody,
@@ -17,10 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { CoverageProgress } from '@/features/chapters-page/components/coverage-progress'
-import { EmptyState } from '@/features/chapters-page/components/empty-state'
-import { RecallBadge } from '@/features/chapters-page/components/recall-badge'
-import { StatusBadge } from '@/features/chapters-page/components/status-badge'
 
 interface ChaptersTableProps {
   chapters: ChapterItem[]
@@ -146,7 +146,7 @@ export function ChaptersTable({
                       {Number(chapter.total_topics)} published
                     </TableCell>
                     <TableCell className='px-3 py-3.5'>
-                      <CoverageProgress value={chapter.coverage} />
+                      <ProgressBar value={chapter.coverage} showLabel />
                     </TableCell>
                     <TableCell className='px-3 py-3.5'>
                       <RecallBadge value={chapter.avg_recall} />

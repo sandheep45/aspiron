@@ -1,6 +1,7 @@
 import type { ContentDashboardAttentionItem } from '@aspiron/api-client'
 import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -117,19 +118,10 @@ export function ContentAttentionTable({
       </div>
 
       {items.length === 0 ? (
-        <div className='flex flex-col items-center gap-3 rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900/60 to-slate-900/20 p-10 text-center backdrop-blur-sm'>
-          <div className='flex size-12 items-center justify-center rounded-full bg-slate-800/50'>
-            <Search className='size-5 text-slate-500' />
-          </div>
-          <div>
-            <p className='font-medium text-slate-300 text-sm'>
-              No items need attention
-            </p>
-            <p className='mt-1 text-slate-500 text-xs'>
-              Try adjusting your search or filters.
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          title='No items need attention'
+          description='Try adjusting your search or filters.'
+        />
       ) : (
         <>
           <div className='overflow-hidden rounded-xl border border-white/5'>

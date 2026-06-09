@@ -7,11 +7,11 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { InsightsSection } from '@/components/ui/insights-section'
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
 import { SectionHeader } from '@/components/ui/section-header'
 import { ChapterSummaryCard } from '@/features/chapters-page/components/chapter-summary-card'
 import { ChaptersTable } from '@/features/chapters-page/components/chapters-table'
-import { LoadingSkeleton } from '@/features/chapters-page/components/loading-skeleton'
-import { QuickInsightsSection } from '@/features/chapters-page/components/quick-insights-section'
 
 export function ChaptersPage() {
   const { subjectId } = useParams({
@@ -193,7 +193,7 @@ export function ChaptersPage() {
             </Button>
           </div>
         ) : insights.data && insights.data.length > 0 ? (
-          <QuickInsightsSection insights={insights.data} />
+          <InsightsSection insights={insights.data} />
         ) : (
           <p className='text-center text-slate-500 text-xs'>
             No insights available yet.

@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { LoadingSkeleton } from '@/features/subjects-page/components/loading-skeleton'
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
 
 describe('LoadingSkeleton', () => {
   it('renders summary variant', () => {

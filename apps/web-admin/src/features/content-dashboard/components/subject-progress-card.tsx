@@ -1,5 +1,5 @@
 import type { ContentDashboardSubjectProgress } from '@aspiron/api-client'
-import { ProgressBar } from '@/features/content-dashboard/components/progress-bar'
+import { ProgressBar } from '@/components/ui/progress-bar'
 
 interface SubjectProgressCardProps {
   subject: ContentDashboardSubjectProgress

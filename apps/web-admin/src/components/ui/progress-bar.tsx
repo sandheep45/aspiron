@@ -3,16 +3,17 @@ import { cn } from '@/lib/utils'
 interface ProgressBarProps {
   value: number
   className?: string
+  showLabel?: boolean
 }
 
-export function ProgressBar({ value, className }: ProgressBarProps) {
+export function ProgressBar({ value, className, showLabel }: ProgressBarProps) {
   const clampedValue = Math.min(100, Math.max(0, value))
 
-  return (
+  const bar = (
     <div
       className={cn(
         'relative h-2 w-full overflow-hidden rounded-full bg-slate-800',
-        className,
+        showLabel && 'flex-1',
       )}
     >
       <div
@@ -21,4 +22,17 @@ export function ProgressBar({ value, className }: ProgressBarProps) {
       />
     </div>
   )
+
+  if (showLabel) {
+    return (
+      <div className={cn('flex items-center gap-3', className)}>
+        {bar}
+        <span className='w-10 text-right font-mono text-slate-400 text-xs tabular-nums'>
+          {Math.round(clampedValue)}%
+        </span>
+      </div>
+    )
+  }
+
+  return bar
 }

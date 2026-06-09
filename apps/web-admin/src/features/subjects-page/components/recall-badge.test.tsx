@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { RecallBadge } from '@/features/subjects-page/components/recall-badge'
+import { RecallBadge } from '@/components/ui/recall-badge'
 
 describe('RecallBadge', () => {
   it('renders Strong for 0.8+', () => {

@@ -1,6 +1,6 @@
 import type { ServiceOptions } from '@/client/axios-instance'
 
-export type ServiceMethodArguments<T extends object> = {
+export type ServiceMethodArguments<T extends object | undefined | undefined> = {
   args?: T
   options?: ServiceOptions
 }

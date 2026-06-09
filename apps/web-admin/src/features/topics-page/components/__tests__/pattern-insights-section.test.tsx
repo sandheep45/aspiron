@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { PatternInsightsSection } from '@/features/topics-page/components/pattern-insights-section'
+import { InsightsSection } from '@/components/ui/insights-section'
 
-describe('PatternInsightsSection', () => {
+describe('InsightsSection', () => {
   it('renders insight cards', () => {
     const insights = [
       {
@@ -18,7 +18,7 @@ describe('PatternInsightsSection', () => {
         description: 'Some topics have low recall rates.',
       },
     ]
-    render(<PatternInsightsSection insights={insights} />)
+    render(<InsightsSection insights={insights} />)
     expect(screen.getByText('All topics fully equipped')).toBeInTheDocument()
     expect(screen.getByText('Low recall topics')).toBeInTheDocument()
     expect(
@@ -30,7 +30,7 @@ describe('PatternInsightsSection', () => {
   })
 
   it('renders null when empty', () => {
-    const { container } = render(<PatternInsightsSection insights={[]} />)
+    const { container } = render(<InsightsSection insights={[]} />)
     expect(container.innerHTML).toBe('')
   })
 })

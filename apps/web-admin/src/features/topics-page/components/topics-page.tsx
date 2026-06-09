@@ -7,9 +7,9 @@ import { useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { InsightsSection } from '@/components/ui/insights-section'
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
 import { useDebounceValue } from '@/hooks/use-debounce-value'
-import { LoadingSkeleton } from './loading-skeleton'
-import { PatternInsightsSection } from './pattern-insights-section'
 import { TopicSummaryCard } from './topic-summary-card'
 import { TopicsTable } from './topics-table'
 
@@ -263,7 +263,7 @@ export function TopicsPage({ onBack, onViewTopic }: TopicsPageProps) {
             </button>
           </div>
         ) : insights ? (
-          <PatternInsightsSection insights={insights} />
+          <InsightsSection insights={insights} />
         ) : null}
       </section>
     </div>

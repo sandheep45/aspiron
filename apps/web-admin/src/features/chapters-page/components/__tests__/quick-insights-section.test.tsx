@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { QuickInsightsSection } from '@/features/chapters-page/components/quick-insights-section'
+import { InsightsSection } from '@/components/ui/insights-section'
 
-describe('QuickInsightsSection', () => {
+describe('InsightsSection', () => {
   it('renders insight cards', () => {
     const insights = [
       {
@@ -18,7 +18,7 @@ describe('QuickInsightsSection', () => {
         description: 'Thermodynamics has low coverage',
       },
     ]
-    render(<QuickInsightsSection insights={insights} />)
+    render(<InsightsSection insights={insights} />)
     expect(screen.getByText('Strong Recall')).toBeInTheDocument()
     expect(screen.getByText('Low Coverage')).toBeInTheDocument()
     expect(
@@ -30,7 +30,7 @@ describe('QuickInsightsSection', () => {
   })
 
   it('renders null when empty', () => {
-    const { container } = render(<QuickInsightsSection insights={[]} />)
+    const { container } = render(<InsightsSection insights={[]} />)
     expect(container.innerHTML).toBe('')
   })
 })

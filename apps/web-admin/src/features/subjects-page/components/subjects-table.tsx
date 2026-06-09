@@ -1,6 +1,10 @@
 import type { SubjectPageItem } from '@aspiron/api-client'
-import { ArrowRight, Search } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { ProgressBar } from '@/components/ui/progress-bar'
+import { RecallBadge } from '@/components/ui/recall-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Table,
   TableBody,
@@ -9,9 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ProgressBar } from '@/features/content-dashboard/components/progress-bar'
-import { RecallBadge } from '@/features/subjects-page/components/recall-badge'
-import { StatusBadge } from '@/features/subjects-page/components/status-badge'
 
 interface SubjectsTableProps {
   subjects: SubjectPageItem[]
@@ -24,19 +25,10 @@ export function SubjectsTable({
 }: SubjectsTableProps) {
   if (subjects.length === 0) {
     return (
-      <div className='flex flex-col items-center gap-3 rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900/60 to-slate-900/20 p-10 text-center backdrop-blur-sm'>
-        <div className='flex size-12 items-center justify-center rounded-full bg-slate-800/50'>
-          <Search className='size-5 text-slate-500' />
-        </div>
-        <div>
-          <p className='font-medium text-slate-300 text-sm'>
-            No subjects found
-          </p>
-          <p className='mt-1 text-slate-500 text-xs'>
-            Subjects will appear once content is added.
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        title='No subjects found'
+        description='Subjects will appear once content is added.'
+      />
     )
   }
 
