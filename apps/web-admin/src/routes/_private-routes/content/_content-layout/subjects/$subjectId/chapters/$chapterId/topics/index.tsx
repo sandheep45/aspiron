@@ -1,4 +1,4 @@
-import { topicsPageService } from '@aspiron/api-client'
+import { chaptersPageService, topicsPageService } from '@aspiron/api-client'
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { TopicsPage } from '@/features/topics-page/components/topics-page'
 
@@ -7,13 +7,26 @@ export const Route = createFileRoute(
 )({
   loader: async ({ params }) => {
     try {
-      const summary = await topicsPageService.getChapterSummary({
-        args: { chapterId: params.chapterId },
-      })
+      const [subjectSummary, chapterSummary] = await Promise.all([
+        chaptersPageService.getSubjectSummary({
+          args: { subjectId: params.subjectId },
+        }),
+        topicsPageService.getChapterSummary({
+          args: { chapterId: params.chapterId },
+        }),
+      ])
       return {
         breadcrumb: 'Topics',
-        parentBreadcrumb: summary.chapter_name,
-        parentPath: `/content/subjects/${params.subjectId}/chapters/${params.chapterId}/`,
+        parentBreadcrumbs: [
+          {
+            label: subjectSummary.subject_name,
+            href: `/content/subjects`,
+          },
+          {
+            label: chapterSummary.chapter_name,
+            href: `/content/subjects/${params.subjectId}/chapters`,
+          },
+        ],
       }
     } catch {
       return { breadcrumb: 'Topics' }
