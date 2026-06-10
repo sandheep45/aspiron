@@ -8,6 +8,10 @@ interface QuickActionsBarProps {
   onGenerateAiSummary: () => void
   onExportNotes: () => void
   onDuplicateNotes: () => void
+  previewDisabled?: boolean
+  generateDisabled?: boolean
+  exportDisabled?: boolean
+  duplicateDisabled?: boolean
 }
 
 export function QuickActionsBar({
@@ -17,6 +21,10 @@ export function QuickActionsBar({
   onGenerateAiSummary,
   onExportNotes,
   onDuplicateNotes,
+  previewDisabled,
+  generateDisabled,
+  exportDisabled,
+  duplicateDisabled,
 }: QuickActionsBarProps) {
   return (
     <div className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900/90 to-slate-900/50 p-5 backdrop-blur-sm'>
@@ -26,6 +34,7 @@ export function QuickActionsBar({
           size='sm'
           className='h-auto flex-col gap-1.5 py-3'
           onClick={onPreviewAsStudent}
+          disabled={previewDisabled}
         >
           <Eye className='size-4' />
           <span className='font-normal text-[0.625rem]'>
@@ -55,6 +64,7 @@ export function QuickActionsBar({
           size='sm'
           className='h-auto flex-col gap-1.5 py-3'
           onClick={onGenerateAiSummary}
+          disabled={generateDisabled}
         >
           <Sparkles className='size-4' />
           <span className='font-normal text-[0.625rem]'>
@@ -66,6 +76,7 @@ export function QuickActionsBar({
           size='sm'
           className='h-auto flex-col gap-1.5 py-3'
           onClick={onExportNotes}
+          disabled={exportDisabled}
         >
           <Download className='size-4' />
           <span className='font-normal text-[0.625rem]'>Export Notes</span>
@@ -75,6 +86,7 @@ export function QuickActionsBar({
           size='sm'
           className='h-auto flex-col gap-1.5 py-3'
           onClick={onDuplicateNotes}
+          disabled={duplicateDisabled}
         >
           <Copy className='size-4' />
           <span className='font-normal text-[0.625rem]'>Duplicate Notes</span>

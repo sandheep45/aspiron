@@ -40,6 +40,30 @@ const typeColors: Record<string, string> = {
   'Research Paper': 'text-emerald-400 bg-emerald-500/10',
 }
 
+function isUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value)
+}
+
+function getDisplaySource(ref: Reference): string {
+  if (ref.source && !isUrl(ref.source)) return ref.source
+  return 'Uploaded File'
+}
+
+function _getFileName(url: string): string {
+  try {
+    const segments = new URL(url).pathname.split('/')
+    const last = segments[segments.length - 1] ?? ''
+    const idx = last.indexOf('_')
+    if (idx > 0 && idx < last.length - 1) {
+      const uuid = last.slice(0, idx)
+      if (/^[a-f0-9-]{36}$/i.test(uuid)) return last.slice(idx + 1)
+    }
+    return last
+  } catch {
+    return url
+  }
+}
+
 interface ReferencesTableProps {
   references: Reference[] | undefined
   loading: boolean
@@ -52,7 +76,6 @@ interface ReferencesTableProps {
   }) => Promise<void>
   onDelete: (referenceId: string) => Promise<void>
   onToggleVisibility: (referenceId: string) => Promise<void>
-  isAdding: boolean
   isDeleting: boolean
 }
 
@@ -63,7 +86,6 @@ export function ReferencesTable({
   onAdd,
   onDelete,
   onToggleVisibility,
-  isAdding,
   isDeleting,
 }: ReferencesTableProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -74,23 +96,22 @@ export function ReferencesTable({
         <div className='flex items-center justify-end'>
           <div className='h-7 w-28 animate-pulse rounded bg-slate-800' />
         </div>
-        <div className='animate-pulse space-y-3'>
-          <div className='flex gap-4 rounded-lg bg-slate-800/30 p-3'>
-            <div className='h-3 w-1/3 rounded bg-slate-700' />
-            <div className='h-3 w-1/4 rounded bg-slate-700' />
-            <div className='h-3 w-20 rounded bg-slate-700' />
-            <div className='h-3 w-16 rounded bg-slate-700' />
-            <div className='h-3 w-24 rounded bg-slate-700' />
-          </div>
+        <div className='animate-pulse space-y-2'>
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className='flex gap-4 rounded-lg p-3'>
-              <div className='h-3 w-1/3 rounded bg-slate-800' />
-              <div className='h-3 w-1/4 rounded bg-slate-800' />
-              <div className='h-3 w-20 rounded bg-slate-800' />
-              <div className='h-3 w-16 rounded bg-slate-800' />
+            <div
+              key={i}
+              className='flex items-center gap-4 rounded-lg bg-slate-800/30 px-4'
+              style={{ height: 76 }}
+            >
+              <div className='size-8 shrink-0 rounded-lg bg-slate-700' />
+              <div className='flex min-w-0 flex-1 flex-col gap-1.5'>
+                <div className='h-3.5 w-3/5 rounded bg-slate-700' />
+                <div className='h-3 w-1/4 rounded bg-slate-700' />
+              </div>
+              <div className='h-5 w-8 rounded bg-slate-700' />
               <div className='flex gap-2'>
-                <div className='size-6 rounded bg-slate-800' />
-                <div className='size-6 rounded bg-slate-800' />
+                <div className='size-7 rounded bg-slate-700' />
+                <div className='size-7 rounded bg-slate-700' />
               </div>
             </div>
           ))}
@@ -111,15 +132,25 @@ export function ReferencesTable({
       {!references || references.length === 0 ? (
         <EmptyState
           icon={FileSearch}
-          title='No references linked'
-          description='Add external resources to supplement the topic content.'
+          title='No External References'
+          description='Add your first supporting resource for students.'
+          actions={
+            <Button
+              variant='brand'
+              size='sm'
+              onClick={() => setDialogOpen(true)}
+            >
+              <Plus className='size-3.5' />
+              Add Reference
+            </Button>
+          }
         />
       ) : (
         <Table>
           <TableHeader>
             <TableRow className='border-white/5'>
               <TableHead className='text-[0.625rem] text-slate-400'>
-                Title
+                Resource
               </TableHead>
               <TableHead className='text-[0.625rem] text-slate-400'>
                 Source
@@ -127,10 +158,10 @@ export function ReferencesTable({
               <TableHead className='text-[0.625rem] text-slate-400'>
                 Type
               </TableHead>
-              <TableHead className='text-[0.625rem] text-slate-400'>
+              <TableHead className='w-20 text-center text-[0.625rem] text-slate-400'>
                 Visibility
               </TableHead>
-              <TableHead className='w-24 text-[0.625rem] text-slate-400'>
+              <TableHead className='w-24 text-right text-[0.625rem] text-slate-400'>
                 Actions
               </TableHead>
             </TableRow>
@@ -141,13 +172,41 @@ export function ReferencesTable({
               const typeColor =
                 typeColors[ref.reference_type] ??
                 'text-slate-400 bg-slate-500/10'
+              const sourceLabel = getDisplaySource(ref)
+
               return (
-                <TableRow key={ref.id} className='border-white/5'>
-                  <TableCell className='font-medium text-white text-xs'>
-                    {ref.title}
+                <TableRow
+                  key={ref.id}
+                  className='border-white/5 transition-colors hover:bg-white/[0.02]'
+                  style={{ height: 76 }}
+                >
+                  <TableCell>
+                    <div className='flex items-center gap-3'>
+                      <div
+                        className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${typeColor}`}
+                      >
+                        <TypeIcon className='size-4' />
+                      </div>
+                      <div className='flex min-w-0 flex-col gap-0.5'>
+                        <span className='truncate font-medium text-sm text-white'>
+                          {ref.title}
+                        </span>
+                        <a
+                          href={ref.url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center gap-1 text-[0.625rem] text-sky-400 transition-colors hover:text-sky-300'
+                        >
+                          <ExternalLink className='size-3 shrink-0' />
+                          Open link
+                        </a>
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell className='text-slate-400 text-xs'>
-                    {ref.source}
+                  <TableCell>
+                    <span className='text-slate-400 text-xs'>
+                      {sourceLabel}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <span
@@ -157,7 +216,7 @@ export function ReferencesTable({
                       {ref.reference_type}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className='text-center'>
                     <Switch
                       size='sm'
                       checked={ref.visible}
@@ -165,25 +224,18 @@ export function ReferencesTable({
                     />
                   </TableCell>
                   <TableCell>
-                    <div className='flex items-center gap-1'>
-                      <a
-                        href={ref.url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='flex size-6 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
-                      >
-                        <ExternalLink className='size-3' />
-                      </a>
+                    <div className='flex items-center justify-end gap-1'>
                       <Button
                         variant='ghost'
-                        size='icon-xs'
+                        size='icon-sm'
                         onClick={() => onDelete(ref.id)}
                         disabled={isDeleting}
+                        className='hover:bg-red-500/10 hover:text-red-400'
                       >
                         {isDeleting ? (
-                          <Loader2 className='size-3 animate-spin' />
+                          <Loader2 className='size-3.5 animate-spin' />
                         ) : (
-                          <Trash2 className='size-3 text-red-400' />
+                          <Trash2 className='size-3.5' />
                         )}
                       </Button>
                     </div>
@@ -202,7 +254,6 @@ export function ReferencesTable({
           await onAdd(data)
           setDialogOpen(false)
         }}
-        isSubmitting={isAdding}
       />
     </div>
   )

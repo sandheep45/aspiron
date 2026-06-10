@@ -7,6 +7,7 @@ interface EmptyStateProps {
   title: string
   description: string
   className?: string
+  actions?: React.ReactNode
 }
 
 export function EmptyState({
@@ -14,6 +15,7 @@ export function EmptyState({
   title,
   description,
   className,
+  actions,
 }: EmptyStateProps) {
   return (
     <div
@@ -29,6 +31,7 @@ export function EmptyState({
         <p className='font-medium text-slate-300 text-sm'>{title}</p>
         <p className='mt-1 text-slate-500 text-xs'>{description}</p>
       </div>
+      {actions && <div className='mt-1'>{actions}</div>}
     </div>
   )
 }

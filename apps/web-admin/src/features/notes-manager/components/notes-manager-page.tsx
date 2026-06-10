@@ -12,7 +12,8 @@ import {
   useUpdateTeacherNotesMutation,
 } from '@aspiron/tanstack-client'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { SectionHeader } from '@/components/ui/section-header'
 import { AiNotesReview } from '@/features/notes-manager/components/ai-notes-review'
@@ -28,12 +29,6 @@ interface NotesManagerPageProps {
 }
 
 export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
-  const [isSaving, setIsSaving] = useState(false)
-  const [isPublishing, setIsPublishing] = useState(false)
-  const [isUnpublishing, setIsUnpublishing] = useState(false)
-  const [isApproving, setIsApproving] = useState<string | null>(null)
-  const [isDeletingRef, setIsDeletingRef] = useState<string | null>(null)
-
   const overview = useNotesOverviewQuery({ args: { topicId } })
   const teacherNotes = useTeacherNotesQuery({ args: { topicId } })
   const aiNotes = useAiNotesQuery({ args: { topicId } })
@@ -55,38 +50,38 @@ export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
   }, [overview, teacherNotes, aiNotes, references])
 
   const handleSave = async (content: string) => {
-    setIsSaving(true)
     try {
       await updateMutation.mutateAsync({ topicId, content })
-    } finally {
-      setIsSaving(false)
+      toast.success('Notes saved')
+    } catch {
+      toast.error('Failed to save notes')
     }
   }
 
   const handlePublish = async () => {
-    setIsPublishing(true)
     try {
       await publishMutation.mutateAsync({ topicId })
-    } finally {
-      setIsPublishing(false)
+      toast.success('Notes published')
+    } catch {
+      toast.error('Failed to publish notes')
     }
   }
 
   const handleUnpublish = async () => {
-    setIsUnpublishing(true)
     try {
       await unpublishMutation.mutateAsync({ topicId })
-    } finally {
-      setIsUnpublishing(false)
+      toast.success('Notes unpublished')
+    } catch {
+      toast.error('Failed to unpublish notes')
     }
   }
 
   const handleApproveAiNote = async (noteId: string) => {
-    setIsApproving(noteId)
     try {
       await approveMutation.mutateAsync({ topicId, noteId })
-    } finally {
-      setIsApproving(null)
+      toast.success('AI note approved')
+    } catch {
+      toast.error('Failed to approve AI note')
     }
   }
 
@@ -116,23 +111,33 @@ export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
     referenceType: string
     url: string
   }) => {
-    await createRefMutation.mutateAsync({
-      topicId,
-      ...data,
-    })
+    try {
+      await createRefMutation.mutateAsync({
+        topicId,
+        ...data,
+      })
+      toast.success('Reference added')
+    } catch {
+      toast.error('Failed to add reference')
+    }
   }
 
   const handleDeleteReference = async (referenceId: string) => {
-    setIsDeletingRef(referenceId)
     try {
       await deleteRefMutation.mutateAsync({ topicId, referenceId })
-    } finally {
-      setIsDeletingRef(null)
+      toast.success('Reference deleted')
+    } catch {
+      toast.error('Failed to delete reference')
     }
   }
 
   const handleToggleVisibility = async (referenceId: string) => {
-    await toggleVisibilityMutation.mutateAsync({ topicId, referenceId })
+    try {
+      await toggleVisibilityMutation.mutateAsync({ topicId, referenceId })
+      toast.success('Visibility updated')
+    } catch {
+      toast.error('Failed to update visibility')
+    }
   }
 
   const status = teacherNotes.data?.status ?? 'draft'
@@ -251,9 +256,9 @@ export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
             onPublish={handlePublish}
             onUnpublish={handleUnpublish}
             onPreview={() => {}}
-            isSaving={isSaving}
-            isPublishing={isPublishing}
-            isUnpublishing={isUnpublishing}
+            isSaving={updateMutation.isPending}
+            isPublishing={publishMutation.isPending}
+            isUnpublishing={unpublishMutation.isPending}
           />
         )}
       </section>
@@ -271,7 +276,7 @@ export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
           onApprove={handleApproveAiNote}
           onEdit={handleEditAiNote}
           onReject={handleRejectAiNote}
-          isApproving={isApproving !== null}
+          isApproving={approveMutation.isPending}
         />
       </section>
 
@@ -289,8 +294,7 @@ export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
           onAdd={handleAddReference}
           onDelete={handleDeleteReference}
           onToggleVisibility={handleToggleVisibility}
-          isAdding={createRefMutation.isPending}
-          isDeleting={isDeletingRef !== null}
+          isDeleting={deleteRefMutation.isPending}
         />
       </section>
 
@@ -308,6 +312,10 @@ export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
           onGenerateAiSummary={() => {}}
           onExportNotes={() => {}}
           onDuplicateNotes={() => {}}
+          previewDisabled
+          generateDisabled
+          exportDisabled
+          duplicateDisabled
         />
       </section>
     </div>

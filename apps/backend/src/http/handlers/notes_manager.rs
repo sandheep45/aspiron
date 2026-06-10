@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use crate::entries::entities::learning_notes;
 use crate::entries::entity_enums::content_owner_types::ContentOwnerTypeEnum;
+use crate::entries::entity_enums::external_reference_type::ExternalReferenceTypeEnum;
 use crate::entries::entity_enums::notes_content_type::NotesContentTypeEnum;
 use crate::entries::entity_enums::trust_level::TrustLevelEnum;
 use crate::http::payloads::notes_manager::{CreateReferencePayload, UpdateTeacherNotePayload};
@@ -16,6 +17,17 @@ use crate::http::responses::notes_manager::{
 };
 use crate::setup::app::AppState;
 use crate::setup::error::AppError;
+
+fn parse_external_reference_type(s: &str) -> ExternalReferenceTypeEnum {
+    match s {
+        "PDF" => ExternalReferenceTypeEnum::Pdf,
+        "Document" => ExternalReferenceTypeEnum::Document,
+        "URL" => ExternalReferenceTypeEnum::Url,
+        "Video" => ExternalReferenceTypeEnum::Video,
+        "Research Paper" => ExternalReferenceTypeEnum::ResearchPaper,
+        _ => ExternalReferenceTypeEnum::Url,
+    }
+}
 
 pub async fn handler_get_notes_overview(
     State(app_state): State<AppState>,
@@ -289,7 +301,10 @@ pub async fn handler_get_references(
             id: r.id.to_string(),
             title: r.content.unwrap_or_default(),
             source: r.external_url.clone().unwrap_or_default(),
-            reference_type: r.external_type.clone().unwrap_or_else(|| "URL".to_string()),
+            reference_type: r
+                .external_type
+                .map(|t| t.to_string())
+                .unwrap_or_else(|| "URL".to_string()),
             url: r.external_url.unwrap_or_default(),
             visible: r.is_public,
         })
@@ -319,7 +334,7 @@ pub async fn handler_create_reference(
         content_type: Set(NotesContentTypeEnum::EXTERNAL),
         content: Set(Some(payload.title)),
         external_url: Set(Some(payload.url)),
-        external_type: Set(Some(payload.reference_type)),
+        external_type: Set(Some(parse_external_reference_type(&payload.reference_type))),
         is_public: Set(true),
         trust_level: Set(TrustLevelEnum::USER),
         created_at: Set(now),
@@ -446,7 +461,10 @@ pub async fn handler_toggle_reference_visibility(
         id: updated.id.to_string(),
         title: updated.content.unwrap_or_default(),
         source: updated.external_url.clone().unwrap_or_default(),
-        reference_type: updated.external_type.unwrap_or_else(|| "URL".to_string()),
+        reference_type: updated
+            .external_type
+            .map(|t| t.to_string())
+            .unwrap_or_else(|| "URL".to_string()),
         url: updated.external_url.unwrap_or_default(),
         visible: updated.is_public,
     }))

@@ -13,4 +13,5 @@ pub mod rbac;
 pub mod subjects_page;
 pub mod topic_detail;
 pub mod topics_page;
+pub mod upload;
 pub mod users;

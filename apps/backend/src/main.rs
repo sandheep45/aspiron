@@ -25,6 +25,12 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let state = app::AppState::new(Arc::new(config.clone()), db);
 
+    if let Some(ref s3) = state.s3_client
+        && let Err(e) = backend::infra::storage::ensure_bucket_exists(s3, &config.s3.bucket).await
+    {
+        tracing::warn!("Failed to ensure S3 bucket exists: {e}");
+    }
+
     let app = app::create_app(&config, state.clone()).with_state(state.clone());
     app::print_routes();
 

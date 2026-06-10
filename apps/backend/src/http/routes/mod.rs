@@ -8,6 +8,7 @@ pub mod learning;
 pub mod live_session;
 pub mod notification;
 pub mod rbac;
+pub mod upload;
 pub mod users;
 
 use crate::setup::app::AppState;
@@ -25,4 +26,5 @@ pub fn api_v1_router(app_state: &AppState) -> axum::Router<AppState> {
         .merge(notification::router(app_state))
         .merge(insights::router(app_state))
         .merge(rbac::router(app_state))
+        .merge(upload::router(app_state))
 }

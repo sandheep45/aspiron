@@ -8,6 +8,7 @@ pub struct Config {
     pub logging: LoggingConfig,
     pub cors: CorsConfig,
     pub ssl: SslConfig,
+    pub s3: S3Config,
 }
 
 #[derive(Debug, Clone)]
@@ -79,6 +80,15 @@ pub struct LoggingConfig {
 }
 
 #[derive(Debug, Clone)]
+pub struct S3Config {
+    pub endpoint: Option<String>,
+    pub region: String,
+    pub bucket: String,
+    pub access_key_id: Option<String>,
+    pub secret_access_key: Option<String>,
+}
+
+#[derive(Debug, Clone)]
 pub struct CorsConfig {
     pub origins: Vec<String>,
 }
@@ -116,6 +126,13 @@ impl Config {
             ssl: SslConfig {
                 cert_path: String::new(),
                 key_path: String::new(),
+            },
+            s3: S3Config {
+                endpoint: None,
+                region: "us-east-1".to_string(),
+                bucket: "test-uploads".to_string(),
+                access_key_id: None,
+                secret_access_key: None,
             },
         }
     }
@@ -198,6 +215,19 @@ impl Config {
                     .split(',')
                     .map(|s| s.to_string())
                     .collect(),
+            },
+            s3: S3Config {
+                endpoint: std::env::var("S3_ENDPOINT").ok(),
+                region: std::env::var("S3_REGION").unwrap_or_else(|_| {
+                    eprintln!("S3_REGION not set, using 'us-east-1'");
+                    "us-east-1".to_string()
+                }),
+                bucket: std::env::var("S3_BUCKET").unwrap_or_else(|_| {
+                    eprintln!("S3_BUCKET not set, using 'aspiron-uploads'");
+                    "aspiron-uploads".to_string()
+                }),
+                access_key_id: std::env::var("AWS_ACCESS_KEY_ID").ok(),
+                secret_access_key: std::env::var("AWS_SECRET_ACCESS_KEY").ok(),
             },
             ssl: SslConfig::from_manifest_dir(),
         }

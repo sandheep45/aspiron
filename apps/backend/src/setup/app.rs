@@ -10,6 +10,7 @@ use crate::{
     http::routes::api_v1_router,
     setup::{config::Config, openapi, openapi::ApiDoc},
 };
+use aws_sdk_s3::Client as S3Client;
 use sea_orm::DatabaseConnection;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use utoipa::OpenApi;
@@ -82,13 +83,16 @@ pub struct RouteInfo {
 pub struct AppState {
     pub config: Arc<Config>,
     pub db: Arc<DatabaseConnection>,
+    pub s3_client: Option<Arc<S3Client>>,
 }
 
 impl AppState {
     pub fn new(config: Arc<Config>, db: DatabaseConnection) -> Self {
+        let s3_client = crate::infra::storage::build_s3_client(&config.s3);
         Self {
             config,
             db: Arc::new(db),
+            s3_client: Some(Arc::new(s3_client)),
         }
     }
 }
@@ -192,6 +196,7 @@ pub fn create_app(config: &Config, app_state: AppState) -> axum::Router<AppState
         registry.register("GET", "/api/v1/notifications");
         registry.register("POST", "/api/v1/notifications/status");
         registry.register("GET", "/api/v1/admin/insights");
+        registry.register("PUT", "/api/v1/upload/file");
     }
 
     router

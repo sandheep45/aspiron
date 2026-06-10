@@ -72,7 +72,7 @@ function LiveClassesGridSkeleton() {
 
 export function LiveClassesPage() {
   const [page, setPage] = useState(1)
-  const [limit] = useState(9)
+  const limit = 9
 
   const { data, isLoading, isError, error, refetch } = useUpcomingClassesQuery({
     args: { page, limit },

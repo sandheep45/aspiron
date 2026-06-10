@@ -120,7 +120,7 @@ const sortFieldMap: Record<string, TopicPerformanceSortBy> = {
 
 export function PainPointsPage() {
   const [page, setPage] = useState(1)
-  const [limit] = useState(20)
+  const limit = 20
 
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'practice_accuracy', desc: false },

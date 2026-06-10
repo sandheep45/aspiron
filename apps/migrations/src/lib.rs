@@ -12,6 +12,7 @@ use crate::entities::migration::{
     m20260120_00016_create_user_profiles_table,
     m20260327_000001_add_score_to_learning_recall_answers,
     m20260525_000001_create_live_session_attendees,
+    m20260610_000001_add_external_reference_type_enum,
 };
 
 pub mod entities;
@@ -44,6 +45,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260120_00016_create_user_profiles_table::Migration),
             Box::new(m20260327_000001_add_score_to_learning_recall_answers::Migration),
             Box::new(m20260525_000001_create_live_session_attendees::Migration),
+            Box::new(m20260610_000001_add_external_reference_type_enum::Migration),
         ]
     }
 }

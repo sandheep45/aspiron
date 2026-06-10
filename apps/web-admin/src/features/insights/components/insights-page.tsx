@@ -88,7 +88,7 @@ function InsightsTableSkeleton() {
 
 export function InsightsPage() {
   const [page, setPage] = useState(1)
-  const [limit] = useState(20)
+  const limit = 20
   const [severityFilter, setSeverityFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
 

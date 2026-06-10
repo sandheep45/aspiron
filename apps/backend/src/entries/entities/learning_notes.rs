@@ -1,6 +1,6 @@
 use crate::entries::entity_enums::{
-    content_owner_types::ContentOwnerTypeEnum, notes_content_type::NotesContentTypeEnum,
-    trust_level::TrustLevelEnum,
+    content_owner_types::ContentOwnerTypeEnum, external_reference_type::ExternalReferenceTypeEnum,
+    notes_content_type::NotesContentTypeEnum, trust_level::TrustLevelEnum,
 };
 use sea_orm::prelude::DateTimeWithTimeZone;
 use sea_orm::*;
@@ -19,7 +19,7 @@ pub struct Model {
     pub content_type: NotesContentTypeEnum,
     pub content: Option<String>,
     pub external_url: Option<String>,
-    pub external_type: Option<String>,
+    pub external_type: Option<ExternalReferenceTypeEnum>,
     pub is_public: bool,
     pub trust_level: TrustLevelEnum,
     pub created_at: DateTimeWithTimeZone,

@@ -49,6 +49,9 @@ ts-rs = { version = "*", features = [
 ] }
 time = { version = "0.3.47", features = ["serde"] }
 strum = { version = "*", features = ["derive"] }
+aws-sdk-s3 = "*"
+aws-config = "*"
+aws-types = "*"
 [dev-dependencies]
 rstest = "*"
 wiremock = "*"
