@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/notes_manager_snapshot.rs
+expression: value
+---
+{
+  "ai_notes_status": "none",
+  "external_references_count": 0,
+  "student_engagement": 0,
+  "teacher_notes_status": "draft"
+}

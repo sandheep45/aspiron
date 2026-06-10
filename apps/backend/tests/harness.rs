@@ -130,6 +130,37 @@ impl TestApp {
         self.request(req).await
     }
 
+    /// Convenience: send a PUT request with a JSON body.
+    #[allow(dead_code)]
+    pub async fn put_json(
+        &self,
+        path: &str,
+        body: serde_json::Value,
+    ) -> axum::http::Response<Body> {
+        let req = Request::builder()
+            .method("PUT")
+            .uri(path)
+            .header("content-type", "application/json")
+            .header("x-client-type", "BROWSER")
+            .body(Body::from(
+                serde_json::to_string(&body).expect("valid json"),
+            ))
+            .expect("valid request");
+        self.request(req).await
+    }
+
+    /// Convenience: send a DELETE request.
+    #[allow(dead_code)]
+    pub async fn delete_request(&self, path: &str) -> axum::http::Response<Body> {
+        let req = Request::builder()
+            .method("DELETE")
+            .uri(path)
+            .header("x-client-type", "BROWSER")
+            .body(Body::empty())
+            .expect("valid request");
+        self.request(req).await
+    }
+
     /// Convenience: send a GET request with a cookie.
     pub async fn get_with_cookie(&self, path: &str, cookie: &str) -> axum::http::Response<Body> {
         let req = Request::builder()

@@ -9,6 +9,7 @@ import { insightsHandlers } from './insights.handlers'
 import { learningHandlers } from './learning.handlers'
 import { liveSessionHandlers } from './live-session.handlers'
 import { notesHandlers } from './notes.handlers'
+import { notesManagerHandlers } from './notes-manager.handlers'
 import { notificationHandlers } from './notification.handlers'
 import { painPointsHandlers } from './pain-points.handlers'
 import { subjectsPageHandlers } from './subjects-page.handlers'
@@ -29,6 +30,7 @@ export const handlers = [
   ...learningHandlers,
   ...liveSessionHandlers,
   ...notesHandlers,
+  ...notesManagerHandlers,
   ...notificationHandlers,
   ...painPointsHandlers,
   ...subjectsPageHandlers,

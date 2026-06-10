@@ -4,6 +4,7 @@ mod content_dashboard;
 mod content_dashboard_snapshot;
 mod error_snapshot;
 mod jwt;
+mod notes_manager_snapshot;
 mod notification_rules;
 mod openapi_snapshot;
 mod pain_points;

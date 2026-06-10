@@ -1,10 +1,12 @@
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, NotSet, QueryFilter, Set,
+};
 use uuid::Uuid;
 
 use backend::entries::entities::{
     assessment_attempt, assessment_quiz, content_chapter, content_subject, content_topic,
-    learning_progress, learning_recall_answer, learning_recall_session, permission, role,
-    role_permission, user, user_profile, user_role,
+    learning_notes, learning_progress, learning_recall_answer, learning_recall_session, permission,
+    role, role_permission, user, user_profile, user_role,
 };
 use backend::entries::entity_enums::action_types::ActionTypeEnum;
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
@@ -13,7 +15,14 @@ use backend::entries::entity_enums::learning_recall_session_status::LearningReca
 use backend::entries::entity_enums::resource_types::ResourceTypeEnum;
 use backend::entries::entity_enums::user_types::UserTypeEnums;
 
-use crate::fixtures::context::{TestChapter, TestRecallSession, TestSubject, TestTopic, TestUser};
+use backend::entries::entity_enums::content_owner_types::ContentOwnerTypeEnum;
+use backend::entries::entity_enums::external_reference_type::ExternalReferenceTypeEnum;
+use backend::entries::entity_enums::notes_content_type::NotesContentTypeEnum;
+use backend::entries::entity_enums::trust_level::TrustLevelEnum;
+
+use crate::fixtures::context::{
+    TestChapter, TestNote, TestRecallSession, TestSubject, TestTopic, TestUser,
+};
 
 /// Ensure a role exists in the roles table. Creates it if missing.
 /// Returns the role ID.
@@ -325,4 +334,124 @@ pub async fn ensure_analytics_permission(db: &DatabaseConnection) -> Uuid {
     }
 
     id
+}
+
+/// Create a test teacher note for a topic.
+pub async fn create_test_teacher_note(
+    db: &DatabaseConnection,
+    topic_id: Uuid,
+    content: &str,
+    status: &str,
+) -> TestNote {
+    let id = Uuid::new_v4();
+    let now: sea_orm::prelude::DateTimeWithTimeZone = chrono::Utc::now().into();
+
+    let trust_level = match status {
+        "published" => TrustLevelEnum::OFFICIAL,
+        "pending_review" => TrustLevelEnum::AI,
+        _ => TrustLevelEnum::USER,
+    };
+
+    let model = learning_notes::ActiveModel {
+        id: Set(id),
+        topic_id: Set(topic_id),
+        owner_type: Set(ContentOwnerTypeEnum::TEACHER),
+        owner_id: NotSet,
+        video_id: NotSet,
+        video_timestamp: NotSet,
+        content_type: Set(NotesContentTypeEnum::INLINE),
+        content: Set(Some(content.to_string())),
+        external_url: NotSet,
+        external_type: NotSet,
+        is_public: Set(true),
+        trust_level: Set(trust_level),
+        created_at: Set(now),
+        updated_at: Set(now),
+        deleted_at: NotSet,
+    };
+    model.insert(db).await.expect("insert teacher note");
+
+    TestNote { id }
+}
+
+/// Create a test AI note for a topic.
+pub async fn create_test_ai_note(
+    db: &DatabaseConnection,
+    topic_id: Uuid,
+    _title: &str,
+    content: &str,
+    status: &str,
+) -> TestNote {
+    let id = Uuid::new_v4();
+    let now: sea_orm::prelude::DateTimeWithTimeZone = chrono::Utc::now().into();
+
+    let trust_level = match status {
+        "approved" => TrustLevelEnum::OFFICIAL,
+        _ => TrustLevelEnum::AI,
+    };
+
+    let model = learning_notes::ActiveModel {
+        id: Set(id),
+        topic_id: Set(topic_id),
+        owner_type: Set(ContentOwnerTypeEnum::AI),
+        owner_id: NotSet,
+        video_id: NotSet,
+        video_timestamp: NotSet,
+        content_type: Set(NotesContentTypeEnum::INLINE),
+        content: Set(Some(format!("<p>{}</p>", content))),
+        external_url: NotSet,
+        external_type: NotSet,
+        is_public: Set(true),
+        trust_level: Set(trust_level),
+        created_at: Set(now),
+        updated_at: Set(now),
+        deleted_at: NotSet,
+    };
+    model.insert(db).await.expect("insert ai note");
+
+    TestNote { id }
+}
+
+/// Create a test external reference for a topic.
+pub async fn create_test_reference(
+    db: &DatabaseConnection,
+    topic_id: Uuid,
+    title: &str,
+    _source: &str,
+    ref_type: &str,
+    url: &str,
+    visible: bool,
+) -> TestNote {
+    let id = Uuid::new_v4();
+    let now: sea_orm::prelude::DateTimeWithTimeZone = chrono::Utc::now().into();
+
+    let external_type = match ref_type {
+        "PDF" => ExternalReferenceTypeEnum::Pdf,
+        "Document" => ExternalReferenceTypeEnum::Document,
+        "URL" => ExternalReferenceTypeEnum::Url,
+        "Video" => ExternalReferenceTypeEnum::Video,
+        "Research Paper" => ExternalReferenceTypeEnum::ResearchPaper,
+        _ => ExternalReferenceTypeEnum::Url,
+    };
+
+    let model = learning_notes::ActiveModel {
+        id: Set(id),
+        topic_id: Set(topic_id),
+        owner_type: Set(ContentOwnerTypeEnum::TEACHER),
+        owner_id: NotSet,
+        video_id: NotSet,
+        video_timestamp: NotSet,
+        content_type: Set(NotesContentTypeEnum::EXTERNAL),
+        content: Set(Some(title.to_string())),
+        external_url: Set(Some(url.to_string())),
+        external_type: Set(Some(external_type)),
+        is_public: Set(visible),
+        trust_level: Set(TrustLevelEnum::USER),
+        created_at: Set(now),
+        updated_at: Set(now),
+        deleted_at: NotSet,
+    };
+    model.insert(db).await.expect("insert reference");
+
+    TestNote { id }
 }

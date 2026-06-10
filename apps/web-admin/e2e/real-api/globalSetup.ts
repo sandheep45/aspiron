@@ -1,7 +1,6 @@
 import { writeFileSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { pool } from './db'
 import { seedContentDashboardData, seedData } from './seed'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -20,6 +19,4 @@ export default async function globalSetup() {
   console.log(
     `[e2e] Seeded run: ${seedResult.user.email}, cd: ${cdSeedResult.adminUser.email}`,
   )
-
-  await pool.end()
 }

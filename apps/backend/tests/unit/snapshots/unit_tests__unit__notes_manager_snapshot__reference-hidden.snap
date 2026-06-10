@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/notes_manager_snapshot.rs
+expression: value
+---
+{
+  "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+  "reference_type": "Research Paper",
+  "source": "https://example.com/draft-paper",
+  "title": "Draft Research Paper",
+  "url": "https://example.com/draft-paper",
+  "visible": false
+}

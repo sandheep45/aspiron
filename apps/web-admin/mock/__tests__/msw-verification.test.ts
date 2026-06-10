@@ -300,4 +300,54 @@ describe('MSW', () => {
     const body = await response.json()
     expect(body.recall_strength).toBeTruthy()
   })
+
+  // ── Notes Manager endpoints ──────────────────────────────────────────────
+
+  it('intercepts notes overview endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/notes/overview')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('teacher_notes_status')
+    expect(body).toHaveProperty('ai_notes_status')
+    expect(body).toHaveProperty('external_references_count')
+    expect(body).toHaveProperty('student_engagement')
+  })
+
+  it('intercepts teacher notes endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/notes')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('id')
+    expect(body).toHaveProperty('content')
+    expect(body).toHaveProperty('status')
+  })
+
+  it('intercepts ai-notes endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/ai-notes')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+  })
+
+  it('intercepts references endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/references')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+  })
+
+  it('returns 404 for unknown topic notes', async () => {
+    const response = await fetch('/api/v1/topics/unknown/notes/overview')
+    expect(response.status).toBe(404)
+  })
+
+  it('returns 404 for unknown topic ai-notes', async () => {
+    const response = await fetch('/api/v1/topics/unknown/ai-notes')
+    expect(response.status).toBe(404)
+  })
+
+  it('returns 404 for unknown topic references', async () => {
+    const response = await fetch('/api/v1/topics/unknown/references')
+    expect(response.status).toBe(404)
+  })
 })

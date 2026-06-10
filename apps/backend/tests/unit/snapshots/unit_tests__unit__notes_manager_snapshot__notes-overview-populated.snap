@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/notes_manager_snapshot.rs
+expression: value
+---
+{
+  "ai_notes_status": "approved",
+  "external_references_count": 5,
+  "student_engagement": 78,
+  "teacher_notes_status": "published"
+}

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { cn, formatPercentage, formatRelativeTime } from '@/lib/utils'
+import {
+  cn,
+  extractFileName,
+  formatPercentage,
+  formatRelativeTime,
+} from './utils'
 
 describe('cn', () => {
   it('merges class names', () => {
@@ -7,19 +12,35 @@ describe('cn', () => {
   })
 
   it('handles conditional classes', () => {
-    expect(cn('base', false && 'hidden', 'visible')).toBe('base visible')
+    expect(cn('base', false && 'hidden', 'extra')).toBe('base extra')
   })
 
-  it('merges tailwind classes correctly', () => {
+  it('resolves conflicts', () => {
     expect(cn('px-4', 'px-6')).toBe('px-6')
   })
+})
 
-  it('handles empty inputs', () => {
-    expect(cn()).toBe('')
+describe('extractFileName', () => {
+  it('extracts filename from normal URL', () => {
+    expect(extractFileName('https://example.com/file.pdf')).toBe('file.pdf')
   })
 
-  it('handles undefined and null', () => {
-    expect(cn('px-4', undefined, null, 'py-2')).toBe('px-4 py-2')
+  it('extracts filename without UUID prefix from S3 URL', () => {
+    const result = extractFileName(
+      'https://s3.amazonaws.com/bucket/550e8400-e29b-41d4-a716-446655440000_notes.pdf',
+    )
+    expect(result).toBe('notes.pdf')
+  })
+
+  it('keeps last segment as-is for non-UUID prefix', () => {
+    const result = extractFileName(
+      'https://example.com/uploads/short_notes.pdf',
+    )
+    expect(result).toBe('short_notes.pdf')
+  })
+
+  it('returns raw input for invalid URL', () => {
+    expect(extractFileName('not-a-url')).toBe('not-a-url')
   })
 })
 

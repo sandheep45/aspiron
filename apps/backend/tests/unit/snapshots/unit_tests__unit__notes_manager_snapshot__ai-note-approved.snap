@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/notes_manager_snapshot.rs
+expression: value
+---
+{
+  "content": "<p>Approved AI notes content</p>",
+  "generated_at": "2026-06-01T07:00:00Z",
+  "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+  "status": "approved",
+  "title": "AI Generated Notes"
+}

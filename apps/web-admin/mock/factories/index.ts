@@ -1,4 +1,5 @@
 export * from './content-dashboard.factory'
+export * from './notes-manager.factory'
 export * from './pain-points.factory'
 export * from './quiz.factory'
 export * from './recall-session.factory'

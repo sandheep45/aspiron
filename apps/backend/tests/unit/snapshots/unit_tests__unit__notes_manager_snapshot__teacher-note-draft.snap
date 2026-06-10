@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/notes_manager_snapshot.rs
+expression: value
+---
+{
+  "content": "<p>Draft teacher notes content</p>",
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "draft",
+  "updated_at": "2026-06-01T12:00:00Z"
+}

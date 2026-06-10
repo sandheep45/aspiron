@@ -20,3 +20,7 @@ pub struct TestTopic {
 pub struct TestRecallSession {
     pub id: Uuid,
 }
+
+pub struct TestNote {
+    pub id: Uuid,
+}

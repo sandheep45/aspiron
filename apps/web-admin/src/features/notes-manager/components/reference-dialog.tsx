@@ -14,6 +14,7 @@ import {
 import { SelectContent, SelectItem } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { referenceFormOption } from '@/features/notes-manager/form-option'
+import { extractFileName } from '@/lib/utils'
 
 interface ReferenceDialogProps {
   open: boolean
@@ -33,24 +34,6 @@ const referenceTypes = [
   { value: 'Video', label: 'Video' },
   { value: 'Research Paper', label: 'Research Paper' },
 ]
-
-function extractFileName(url: string): string {
-  try {
-    const segments = new URL(url).pathname.split('/')
-    const last = segments[segments.length - 1] ?? ''
-    // Strip UUID prefix if present (e.g., "uuid_filename.ext" -> "filename.ext")
-    const underscoreIdx = last.indexOf('_')
-    if (underscoreIdx > 0 && underscoreIdx < last.length - 1) {
-      const uuid = last.slice(0, underscoreIdx)
-      if (/^[a-f0-9-]{36}$/i.test(uuid)) {
-        return last.slice(underscoreIdx + 1)
-      }
-    }
-    return last
-  } catch {
-    return url
-  }
-}
 
 export function ReferenceDialog({
   open,

@@ -7,7 +7,7 @@ export const Route = createFileRoute(
 )({
   component: RouteComponent,
   loader: async ({ params, context: { queryClient } }) => {
-    const _data = await queryClient.ensureQueryData({
+    const data = await queryClient.ensureQueryData({
       queryKey: ['getTopicById', params.id],
       queryFn: () =>
         contentTopicService.getTopicById({
@@ -17,6 +17,21 @@ export const Route = createFileRoute(
 
     return {
       topicId: params.id,
+      breadcrumb: 'Notes',
+      parentBreadcrumbs: [
+        {
+          label: data.subject_name,
+          href: `/content/subjects`,
+        },
+        {
+          label: data.chapter_name,
+          href: `/content/subjects/${data.subject_id}/chapters`,
+        },
+        {
+          label: data.name,
+          href: `/content/topic/${params.id}`,
+        },
+      ],
     }
   },
 })

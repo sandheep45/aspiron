@@ -19,6 +19,17 @@ export const Route = createFileRoute(
       subjectId: data.subject_id,
       chapterId: data.chapter_id,
       topicName: data.name,
+      breadcrumb: data.name,
+      parentBreadcrumbs: [
+        {
+          label: data.subject_name,
+          href: `/content/subjects`,
+        },
+        {
+          label: data.chapter_name,
+          href: `/content/subjects/${data.subject_id}/chapters`,
+        },
+      ],
     }
   },
 })

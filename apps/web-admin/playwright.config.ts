@@ -7,6 +7,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'list',
+  globalSetup: './e2e/real-api/globalSetup.ts',
+  globalTeardown: './e2e/real-api/globalTeardown.ts',
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -46,8 +48,6 @@ export default defineConfig({
     {
       name: 'real-api',
       testDir: './e2e/real-api',
-      globalSetup: './e2e/real-api/globalSetup.ts',
-      globalTeardown: './e2e/real-api/globalTeardown.ts',
       use: {
         ...devices['Desktop Chrome'],
         baseURL: 'https://local.aspiron.test:3000',

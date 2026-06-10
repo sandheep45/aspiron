@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/notes_manager_snapshot.rs
+expression: value
+---
+{
+  "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+  "reference_type": "URL",
+  "source": "https://khanacademy.org/math/quadratics",
+  "title": "Khan Academy - Quadratic Equations",
+  "url": "https://khanacademy.org/math/quadratics",
+  "visible": true
+}

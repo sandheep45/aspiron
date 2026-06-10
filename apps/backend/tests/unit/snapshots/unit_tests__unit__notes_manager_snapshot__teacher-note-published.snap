@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/notes_manager_snapshot.rs
+expression: value
+---
+{
+  "content": "<p>Published teacher notes with formatting</p>",
+  "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "status": "published",
+  "updated_at": "2026-06-02T08:30:00Z"
+}

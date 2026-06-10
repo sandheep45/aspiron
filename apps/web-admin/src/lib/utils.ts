@@ -39,3 +39,20 @@ export function formatPercentage(
   if (value == null) return '\u2014'
   return `${(value * 100).toFixed(decimals)}%`
 }
+
+export function extractFileName(url: string): string {
+  try {
+    const segments = new URL(url).pathname.split('/')
+    const last = segments[segments.length - 1] ?? ''
+    const underscoreIdx = last.indexOf('_')
+    if (underscoreIdx > 0 && underscoreIdx < last.length - 1) {
+      const uuid = last.slice(0, underscoreIdx)
+      if (/^[a-f0-9-]{36}$/i.test(uuid)) {
+        return last.slice(underscoreIdx + 1)
+      }
+    }
+    return last
+  } catch {
+    return url
+  }
+}
