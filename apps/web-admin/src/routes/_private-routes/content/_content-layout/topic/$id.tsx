@@ -1,6 +1,5 @@
 import { contentTopicService } from '@aspiron/api-client'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { TopicDetailPage } from '@/features/topic-detail'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
   '/_private-routes/content/_content-layout/topic/$id',
@@ -35,18 +34,5 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  const navigate = useNavigate()
-  const { id } = Route.useParams()
-  const { subjectId, chapterId, topicName } = Route.useLoaderData()
-
-  const handleBack = () => {
-    navigate({
-      to: '/content/subjects/$subjectId/chapters/$chapterId/topics',
-      params: { subjectId, chapterId },
-    })
-  }
-
-  return (
-    <TopicDetailPage topicId={id} topicName={topicName} onBack={handleBack} />
-  )
+  return <Outlet />
 }

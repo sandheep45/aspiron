@@ -18,6 +18,7 @@ interface ContentComponentCardProps {
   performance: string
   action: string
   className?: string
+  onActionClick?: (id: string) => void
 }
 
 const componentIcons: Record<string, typeof Play> = {
@@ -63,6 +64,7 @@ export function ContentComponentCard({
   performance,
   action,
   className,
+  onActionClick,
 }: ContentComponentCardProps) {
   const Icon = componentIcons[id] ?? componentIcons.default
   const statusStyle = statusStyles[status.toLowerCase()] ?? defaultStatusStyle
@@ -100,7 +102,12 @@ export function ContentComponentCard({
         <span>{performance}</span>
       </div>
 
-      <Button variant='outline' size='sm' className='w-full text-xs'>
+      <Button
+        variant='outline'
+        size='sm'
+        className='w-full text-xs'
+        onClick={() => onActionClick?.(id)}
+      >
         {action}
       </Button>
     </div>

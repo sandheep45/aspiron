@@ -3,6 +3,7 @@
 export * from '@/services/admin/chapters-page.service'
 export * from '@/services/admin/content-dashboard.service'
 export * from '@/services/admin/insight.service'
+export * from '@/services/admin/notes-manager.service'
 export * from '@/services/admin/pain-point.service'
 export * from '@/services/admin/subjects-page.service'
 export * from '@/services/admin/topic-detail.service'

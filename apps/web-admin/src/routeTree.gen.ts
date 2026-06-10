@@ -29,6 +29,8 @@ import { Route as PrivateRoutesLiveClassesCreateIndexRouteImport } from './route
 import { Route as PrivateRoutesContentContentLayoutIndexRouteImport } from './routes/_private-routes/content/_content-layout/index'
 import { Route as PrivateRoutesContentContentLayoutSubjectsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/index'
 import { Route as PrivateRoutesContentContentLayoutTopicIdRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id'
+import { Route as PrivateRoutesContentContentLayoutTopicIdIndexRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/index'
+import { Route as PrivateRoutesContentContentLayoutTopicIdNotesRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/notes'
 import { Route as PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/$subjectId/chapters/index'
 import { Route as PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/index'
 
@@ -145,6 +147,18 @@ const PrivateRoutesContentContentLayoutTopicIdRoute =
     path: '/topic/$id',
     getParentRoute: () => PrivateRoutesContentContentLayoutRoute,
   } as any)
+const PrivateRoutesContentContentLayoutTopicIdIndexRoute =
+  PrivateRoutesContentContentLayoutTopicIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
+  } as any)
+const PrivateRoutesContentContentLayoutTopicIdNotesRoute =
+  PrivateRoutesContentContentLayoutTopicIdNotesRouteImport.update({
+    id: '/notes',
+    path: '/notes',
+    getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
+  } as any)
 const PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute =
   PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRouteImport.update(
     {
@@ -180,8 +194,10 @@ export interface FileRoutesByFullPath {
   '/auth/': typeof AuthAuthLayoutIndexRoute
   '/content/': typeof PrivateRoutesContentContentLayoutIndexRoute
   '/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
-  '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
+  '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRouteWithChildren
   '/content/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
+  '/content/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  '/content/topic/$id/': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/content/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/content/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
 }
@@ -201,8 +217,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthAuthLayoutIndexRoute
   '/content': typeof PrivateRoutesContentContentLayoutIndexRoute
   '/live-classes/create': typeof PrivateRoutesLiveClassesCreateIndexRoute
-  '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
   '/content/subjects': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
+  '/content/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/content/subjects/$subjectId/chapters': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/content/subjects/$subjectId/chapters/$chapterId/topics': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
 }
@@ -226,8 +243,10 @@ export interface FileRoutesById {
   '/auth/_auth-layout/': typeof AuthAuthLayoutIndexRoute
   '/_private-routes/content/_content-layout/': typeof PrivateRoutesContentContentLayoutIndexRoute
   '/_private-routes/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
-  '/_private-routes/content/_content-layout/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRoute
+  '/_private-routes/content/_content-layout/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRouteWithChildren
   '/_private-routes/content/_content-layout/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
+  '/_private-routes/content/_content-layout/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  '/_private-routes/content/_content-layout/topic/$id/': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
 }
@@ -253,6 +272,8 @@ export interface FileRouteTypes {
     | '/live-classes/create/'
     | '/content/topic/$id'
     | '/content/subjects/'
+    | '/content/topic/$id/notes'
+    | '/content/topic/$id/'
     | '/content/subjects/$subjectId/chapters/'
     | '/content/subjects/$subjectId/chapters/$chapterId/topics/'
   fileRoutesByTo: FileRoutesByTo
@@ -272,8 +293,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/content'
     | '/live-classes/create'
-    | '/content/topic/$id'
     | '/content/subjects'
+    | '/content/topic/$id/notes'
+    | '/content/topic/$id'
     | '/content/subjects/$subjectId/chapters'
     | '/content/subjects/$subjectId/chapters/$chapterId/topics'
   id:
@@ -298,6 +320,8 @@ export interface FileRouteTypes {
     | '/_private-routes/live-classes/create/'
     | '/_private-routes/content/_content-layout/topic/$id'
     | '/_private-routes/content/_content-layout/subjects/'
+    | '/_private-routes/content/_content-layout/topic/$id/notes'
+    | '/_private-routes/content/_content-layout/topic/$id/'
     | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/'
     | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/'
   fileRoutesById: FileRoutesById
@@ -450,6 +474,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdRouteImport
       parentRoute: typeof PrivateRoutesContentContentLayoutRoute
     }
+    '/_private-routes/content/_content-layout/topic/$id/': {
+      id: '/_private-routes/content/_content-layout/topic/$id/'
+      path: '/'
+      fullPath: '/content/topic/$id/'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdIndexRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+    }
+    '/_private-routes/content/_content-layout/topic/$id/notes': {
+      id: '/_private-routes/content/_content-layout/topic/$id/notes'
+      path: '/notes'
+      fullPath: '/content/topic/$id/notes'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdNotesRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+    }
     '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/': {
       id: '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/'
       path: '/subjects/$subjectId/chapters'
@@ -467,9 +505,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface PrivateRoutesContentContentLayoutTopicIdRouteChildren {
+  PrivateRoutesContentContentLayoutTopicIdNotesRoute: typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  PrivateRoutesContentContentLayoutTopicIdIndexRoute: typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
+}
+
+const PrivateRoutesContentContentLayoutTopicIdRouteChildren: PrivateRoutesContentContentLayoutTopicIdRouteChildren =
+  {
+    PrivateRoutesContentContentLayoutTopicIdNotesRoute:
+      PrivateRoutesContentContentLayoutTopicIdNotesRoute,
+    PrivateRoutesContentContentLayoutTopicIdIndexRoute:
+      PrivateRoutesContentContentLayoutTopicIdIndexRoute,
+  }
+
+const PrivateRoutesContentContentLayoutTopicIdRouteWithChildren =
+  PrivateRoutesContentContentLayoutTopicIdRoute._addFileChildren(
+    PrivateRoutesContentContentLayoutTopicIdRouteChildren,
+  )
+
 interface PrivateRoutesContentContentLayoutRouteChildren {
   PrivateRoutesContentContentLayoutIndexRoute: typeof PrivateRoutesContentContentLayoutIndexRoute
-  PrivateRoutesContentContentLayoutTopicIdRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+  PrivateRoutesContentContentLayoutTopicIdRoute: typeof PrivateRoutesContentContentLayoutTopicIdRouteWithChildren
   PrivateRoutesContentContentLayoutSubjectsIndexRoute: typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
   PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute: typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute: typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
@@ -480,7 +536,7 @@ const PrivateRoutesContentContentLayoutRouteChildren: PrivateRoutesContentConten
     PrivateRoutesContentContentLayoutIndexRoute:
       PrivateRoutesContentContentLayoutIndexRoute,
     PrivateRoutesContentContentLayoutTopicIdRoute:
-      PrivateRoutesContentContentLayoutTopicIdRoute,
+      PrivateRoutesContentContentLayoutTopicIdRouteWithChildren,
     PrivateRoutesContentContentLayoutSubjectsIndexRoute:
       PrivateRoutesContentContentLayoutSubjectsIndexRoute,
     PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute:

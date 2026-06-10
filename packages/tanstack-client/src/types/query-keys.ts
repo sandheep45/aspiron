@@ -1,13 +1,7 @@
-/**
- * Query key definitions for consistent caching
- */
-
 export const queryKeys = {
-  // Authentication
   auth: {
     currentUser: () => ['auth', 'currentUser'] as const,
   },
-
   admin: {
     insights: () => ['insights'] as const,
     lists: () => [...queryKeys.admin.insights(), 'list'] as const,
@@ -20,8 +14,6 @@ export const queryKeys = {
     painPointsTopicDetail: (id: string) =>
       ['painPoints', 'detail', id] as const,
   },
-
-  // Users
   users: {
     all: () => ['users'] as const,
     lists: () => [...queryKeys.users.all(), 'list'] as const,
@@ -30,14 +22,11 @@ export const queryKeys = {
     details: () => [...queryKeys.users.all(), 'detail'] as const,
     detail: (id: string) => [...queryKeys.users.details(), id] as const,
   },
-
   contents: {
     topics: {
       getTopicById: (topicId: string) => ['getTopicById', topicId],
     },
   },
-
-  // Topics Page
   topicsPage: {
     all: () => ['topicsPage'] as const,
     chapter: (chapterId: string) =>
@@ -52,8 +41,6 @@ export const queryKeys = {
     insights: (chapterId: string) =>
       [...queryKeys.topicsPage.all(), 'insights', chapterId] as const,
   },
-
-  // Chapters Page
   chaptersPage: {
     all: () => ['chaptersPage'] as const,
     subject: (subjectId: string) =>
@@ -68,16 +55,12 @@ export const queryKeys = {
     insights: (subjectId: string) =>
       [...queryKeys.chaptersPage.all(), 'insights', subjectId] as const,
   },
-
-  // Subjects Page
   subjectsPage: {
     all: () => ['subjectsPage'] as const,
     subjects: () => [...queryKeys.subjectsPage.all(), 'subjects'] as const,
     summary: () => [...queryKeys.subjectsPage.all(), 'summary'] as const,
     signals: () => [...queryKeys.subjectsPage.all(), 'signals'] as const,
   },
-
-  // Content Dashboard
   contentDashboard: {
     summary: () => ['contentDashboard', 'summary'] as const,
     attention: (params?: Record<string, unknown>) =>
@@ -85,8 +68,6 @@ export const queryKeys = {
     subjects: () => ['contentDashboard', 'subjects'] as const,
     signals: () => ['contentDashboard', 'signals'] as const,
   },
-
-  // Courses
   courses: {
     all: () => ['courses'] as const,
     lists: () => [...queryKeys.courses.all(), 'list'] as const,
@@ -95,16 +76,12 @@ export const queryKeys = {
     details: () => [...queryKeys.courses.all(), 'detail'] as const,
     detail: (id: string) => [...queryKeys.courses.details(), id] as const,
   },
-
-  // Live classes
   liveClass: {
     all: () => ['liveClass'] as const,
     lists: () => [...queryKeys.liveClass.all(), 'list'] as const,
     list: (page: number, limit: number) =>
       [...queryKeys.liveClass.lists(), { page, limit }] as const,
   },
-
-  // Topic Detail
   topicDetail: {
     all: () => ['topicDetail'] as const,
     overview: (topicId: string) =>
@@ -118,8 +95,17 @@ export const queryKeys = {
     trends: (topicId: string) =>
       [...queryKeys.topicDetail.all(), 'trends', topicId] as const,
   },
-
-  // Assignments
+  notesManager: {
+    all: () => ['notesManager'] as const,
+    overview: (topicId: string) =>
+      [...queryKeys.notesManager.all(), 'overview', topicId] as const,
+    teacherNotes: (topicId: string) =>
+      [...queryKeys.notesManager.all(), 'teacherNotes', topicId] as const,
+    aiNotes: (topicId: string) =>
+      [...queryKeys.notesManager.all(), 'aiNotes', topicId] as const,
+    references: (topicId: string) =>
+      [...queryKeys.notesManager.all(), 'references', topicId] as const,
+  },
   assignments: {
     all: () => ['assignments'] as const,
     lists: () => [...queryKeys.assignments.all(), 'list'] as const,

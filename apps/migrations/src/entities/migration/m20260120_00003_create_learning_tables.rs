@@ -50,7 +50,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(LearningNotesTableIdentifier::OwnerType)
-                            .string()
+                            .custom("content_owner_type")
                             .not_null(),
                     )
                     .col(ColumnDef::new(LearningNotesTableIdentifier::OwnerId).uuid())

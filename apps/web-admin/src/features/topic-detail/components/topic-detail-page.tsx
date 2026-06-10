@@ -33,6 +33,7 @@ interface TopicDetailPageProps {
   topicId: string
   topicName: string
   onBack: () => void
+  onActionClick?: (componentId: string) => void
 }
 
 function deriveOverallStatus(
@@ -59,6 +60,7 @@ export function TopicDetailPage({
   topicId,
   topicName,
   onBack,
+  onActionClick,
 }: TopicDetailPageProps) {
   const overview = useTopicOverviewQuery({ args: { topicId } })
   const issues = useTopicIssuesQuery({ args: { topicId } })
@@ -257,7 +259,11 @@ export function TopicDetailPage({
         ) : components.data && components.data.length > 0 ? (
           <div className='grid gap-4 sm:grid-cols-2'>
             {components.data.map((component) => (
-              <ContentComponentCard key={component.id} {...component} />
+              <ContentComponentCard
+                key={component.id}
+                {...component}
+                onActionClick={onActionClick}
+              />
             ))}
           </div>
         ) : (

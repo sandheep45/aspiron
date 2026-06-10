@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use axum::{Router, routing::get};
+use axum::{
+    Router,
+    routing::{delete, get, post},
+};
 
 use crate::application::content::ContentApplicationState;
 use crate::application::content::ports::ContentRepository;
@@ -20,6 +23,12 @@ use crate::http::handlers::content_dashboard::{
     handler_get_content_dashboard_subjects, handler_get_content_dashboard_summary,
 };
 use crate::http::handlers::learning::handler_get_teachers_notes;
+use crate::http::handlers::notes_manager::{
+    handler_approve_ai_notes, handler_create_reference, handler_delete_reference,
+    handler_get_ai_notes, handler_get_notes_overview, handler_get_references,
+    handler_get_teacher_notes, handler_publish_teacher_notes, handler_toggle_reference_visibility,
+    handler_unpublish_teacher_notes, handler_update_teacher_note,
+};
 use crate::http::handlers::subjects_page::{
     handler_get_subjects_page, handler_get_subjects_page_signals, handler_get_subjects_page_summary,
 };
@@ -126,6 +135,39 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         .route(
             "/chapters/{chapter_id}/topics-page/insights",
             get(handler_get_topics_page_insights),
+        )
+        .route(
+            "/topics/{topic_id}/notes/overview",
+            get(handler_get_notes_overview),
+        )
+        .route(
+            "/topics/{topic_id}/notes",
+            get(handler_get_teacher_notes).put(handler_update_teacher_note),
+        )
+        .route(
+            "/topics/{topic_id}/notes/publish",
+            post(handler_publish_teacher_notes),
+        )
+        .route(
+            "/topics/{topic_id}/notes/unpublish",
+            post(handler_unpublish_teacher_notes),
+        )
+        .route("/topics/{topic_id}/ai-notes", get(handler_get_ai_notes))
+        .route(
+            "/topics/{topic_id}/ai-notes/{note_id}/approve",
+            post(handler_approve_ai_notes),
+        )
+        .route(
+            "/topics/{topic_id}/references",
+            get(handler_get_references).post(handler_create_reference),
+        )
+        .route(
+            "/topics/{topic_id}/references/{reference_id}",
+            delete(handler_delete_reference),
+        )
+        .route(
+            "/topics/{topic_id}/references/{reference_id}/toggle",
+            post(handler_toggle_reference_visibility),
         )
         .layer(axum::Extension(content_state))
         .layer(axum::Extension(learning_state))
