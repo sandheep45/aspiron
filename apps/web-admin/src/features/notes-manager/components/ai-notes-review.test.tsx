@@ -4,8 +4,28 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { AiNotesReview } from '@/features/notes-manager/components/ai-notes-review'
 
+const createMockEditor = (overrides?: Record<string, unknown>) => ({
+  chain: () => ({
+    focus: () => ({
+      toggleBold: () => ({ run: vi.fn() }),
+      toggleItalic: () => ({ run: vi.fn() }),
+      toggleUnderline: () => ({ run: vi.fn() }),
+      toggleHeading: () => ({ run: vi.fn() }),
+      toggleBulletList: () => ({ run: vi.fn() }),
+      toggleOrderedList: () => ({ run: vi.fn() }),
+      undo: () => ({ run: vi.fn() }),
+      redo: () => ({ run: vi.fn() }),
+    }),
+  }),
+  isActive: vi.fn(() => false),
+  getHTML: vi.fn(() => '<p>Mock content</p>'),
+  getText: vi.fn(() => 'Mock content'),
+  getJSON: vi.fn(() => ({ type: 'doc', content: [] })),
+  ...overrides,
+})
+
 vi.mock('@tiptap/react', () => ({
-  useEditor: () => null,
+  useEditor: vi.fn(() => createMockEditor()),
   EditorContent: () => <div data-testid='editor-content' />,
 }))
 
@@ -154,7 +174,6 @@ describe('AiNotesReview', () => {
       />,
     )
     const approveButtons = screen.getAllByText('Approve & Publish')
-    // Second note is already approved → its button disabled
     expect(approveButtons[1]).toBeDisabled()
   })
 })

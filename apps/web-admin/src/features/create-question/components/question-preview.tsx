@@ -1,10 +1,7 @@
-import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import { CheckCircle2 } from 'lucide-react'
 import { useMemo } from 'react'
+import { useFormContext } from '@/components/forms/form-core'
 
 interface QuestionPreviewProps {
-  question: string
   questionType: string
   choices?: string[]
   assertionReason?: {
@@ -14,11 +11,12 @@ interface QuestionPreviewProps {
 }
 
 export function QuestionPreview({
-  question,
   questionType,
   choices,
   assertionReason,
 }: QuestionPreviewProps) {
+  const form = useFormContext()
+
   const difficultyBadge = useMemo(() => {
     return questionType === 'Easy'
       ? 'bg-emerald-500/10 text-emerald-400'
@@ -43,6 +41,8 @@ export function QuestionPreview({
         return questionType
     }
   }, [questionType])
+
+  const question = form.getFieldValue('question_text')
 
   if (!question) {
     return (
@@ -72,7 +72,9 @@ export function QuestionPreview({
         </div>
       </div>
 
-      <ReadOnlyContent content={question} />
+      <form.AppField name='question_text'>
+        {(field) => <field.FormTiptapEditor editable={false} hideToolbar />}
+      </form.AppField>
 
       {assertionReason && (
         <div className='flex flex-col gap-3 rounded-xl border border-white/5 bg-slate-950/60 p-4'>
@@ -97,43 +99,20 @@ export function QuestionPreview({
         <div className='flex flex-col gap-2'>
           {choices.map((choice, i) => {
             const letter = String.fromCharCode(65 + i)
-            const isSelected = false
             return (
               <div
                 key={i}
-                className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
-                  isSelected
-                    ? 'border-purple-500/30 bg-purple-500/5 text-purple-300'
-                    : 'border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-300'
-                }`}
+                className='flex items-center gap-3 rounded-lg border border-white/5 px-3 py-2.5 text-slate-400 text-sm transition-colors hover:border-white/10 hover:text-slate-300'
               >
                 <span className='flex size-6 items-center justify-center rounded-md bg-slate-800 font-mono text-xs'>
                   {letter}
                 </span>
                 <span>{choice}</span>
-                {isSelected && (
-                  <CheckCircle2 className='ml-auto size-4 text-purple-400' />
-                )}
               </div>
             )
           })}
         </div>
       )}
     </div>
-  )
-}
-
-function ReadOnlyContent({ content }: { content: string }) {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: content ? JSON.parse(content) : '',
-    editable: false,
-  })
-  if (!editor) return null
-  return (
-    <EditorContent
-      editor={editor}
-      className='prose prose-invert max-w-none text-slate-200 text-sm leading-relaxed [&_p]:my-0.5'
-    />
   )
 }

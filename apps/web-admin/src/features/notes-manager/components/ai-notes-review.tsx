@@ -1,6 +1,4 @@
 import type { AiNote } from '@aspiron/api-client'
-import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
 import {
   AlertTriangle,
   CheckCircle,
@@ -9,6 +7,8 @@ import {
   RotateCcw,
   Sparkles,
 } from 'lucide-react'
+import { useMemo } from 'react'
+import { useAppForm } from '@/components/forms/form-core'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { StatusBadge } from '@/features/notes-manager/components/status-badge'
@@ -22,22 +22,6 @@ interface AiNotesReviewProps {
   isApproving: boolean
 }
 
-function AiNotePreview({ content }: { content: string }) {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content,
-    editable: false,
-  })
-
-  if (!editor) return null
-
-  return (
-    <div className='tiptap-editor overflow-hidden rounded-lg border border-white/5 bg-slate-950/40'>
-      <EditorContent editor={editor} />
-    </div>
-  )
-}
-
 export function AiNotesReview({
   notes,
   loading,
@@ -46,6 +30,14 @@ export function AiNotesReview({
   onReject,
   isApproving,
 }: AiNotesReviewProps) {
+  const defaultValues = useMemo(
+    () =>
+      Object.fromEntries((notes ?? []).map((n) => [`note_${n.id}`, n.content])),
+    [notes],
+  )
+
+  const form = useAppForm({ defaultValues })
+
   if (loading) {
     return (
       <div className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900/90 to-slate-900/50 p-6 backdrop-blur-sm'>
@@ -86,63 +78,73 @@ export function AiNotesReview({
         </p>
       </div>
 
-      <div className='space-y-4'>
-        {notes.map((note) => (
-          <div
-            key={note.id}
-            className='overflow-hidden rounded-xl border border-white/5 bg-slate-950/40'
-          >
-            <div className='flex items-center justify-between border-white/5 border-b px-4 py-3'>
-              <div className='flex items-center gap-2'>
-                <span className='font-medium text-white text-xs'>
-                  {note.title}
+      <form.AppForm>
+        <div className='space-y-4'>
+          {notes.map((note) => (
+            <div
+              key={note.id}
+              className='overflow-hidden rounded-xl border border-white/5 bg-slate-950/40'
+            >
+              <div className='flex items-center justify-between border-white/5 border-b px-4 py-3'>
+                <div className='flex items-center gap-2'>
+                  <span className='font-medium text-white text-xs'>
+                    {note.title}
+                  </span>
+                  <StatusBadge status={note.status} />
+                </div>
+                <span className='text-[0.625rem] text-slate-500'>
+                  Generated:{' '}
+                  {new Date(note.generated_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </span>
-                <StatusBadge status={note.status} />
               </div>
-              <span className='text-[0.625rem] text-slate-500'>
-                Generated:{' '}
-                {new Date(note.generated_at).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </span>
-            </div>
 
-            <div className='px-4 py-3'>
-              <AiNotePreview content={note.content} />
-            </div>
+              <div className='px-4 py-3'>
+                <form.AppField name={`note_${note.id}`}>
+                  {(field) => (
+                    <field.FormTiptapEditor editable={false} hideToolbar />
+                  )}
+                </form.AppField>
+              </div>
 
-            <div className='flex items-center justify-end gap-2 border-white/5 border-t px-4 py-3'>
-              <Button
-                variant='brand'
-                size='xs'
-                onClick={() => onApprove(note.id)}
-                disabled={isApproving || note.status === 'approved'}
-              >
-                {isApproving ? (
-                  <Loader2 className='size-3 animate-spin' />
-                ) : (
-                  <CheckCircle className='size-3' />
-                )}
-                Approve &amp; Publish
-              </Button>
-              <Button variant='outline' size='xs' onClick={() => onEdit(note)}>
-                <Edit className='size-3' />
-                Edit Before Publishing
-              </Button>
-              <Button
-                variant='ghost'
-                size='xs'
-                onClick={() => onReject(note.id)}
-              >
-                <RotateCcw className='size-3' />
-                Reject &amp; Regenerate
-              </Button>
+              <div className='flex items-center justify-end gap-2 border-white/5 border-t px-4 py-3'>
+                <Button
+                  variant='brand'
+                  size='xs'
+                  onClick={() => onApprove(note.id)}
+                  disabled={isApproving || note.status === 'approved'}
+                >
+                  {isApproving ? (
+                    <Loader2 className='size-3 animate-spin' />
+                  ) : (
+                    <CheckCircle className='size-3' />
+                  )}
+                  Approve &amp; Publish
+                </Button>
+                <Button
+                  variant='outline'
+                  size='xs'
+                  onClick={() => onEdit(note)}
+                >
+                  <Edit className='size-3' />
+                  Edit Before Publishing
+                </Button>
+                <Button
+                  variant='ghost'
+                  size='xs'
+                  onClick={() => onReject(note.id)}
+                >
+                  <RotateCcw className='size-3' />
+                  Reject &amp; Regenerate
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </form.AppForm>
     </div>
   )
 }

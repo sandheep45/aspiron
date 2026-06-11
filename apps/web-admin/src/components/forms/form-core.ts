@@ -10,6 +10,7 @@ import { FormSelect } from '@/components/forms/field-elements/form-select'
 import { FormSlider } from '@/components/forms/field-elements/form-slider'
 import { FormSwitch } from '@/components/forms/field-elements/form-switch'
 import { FormTextarea } from '@/components/forms/field-elements/form-textarea'
+import { FormTiptapEditor } from '@/components/forms/field-elements/form-tiptap-editor'
 import { FormToggle } from '@/components/forms/field-elements/form-toggle'
 import { SubmitButton } from '@/components/forms/form-elements/submit-button'
 
@@ -21,6 +22,7 @@ export const { useAppForm, useTypedAppFormContext, withFieldGroup, withForm } =
     fieldComponents: {
       FormInput,
       FormTextarea,
+      FormTiptapEditor,
       FormSelect,
       FormCheckbox,
       FormSwitch,

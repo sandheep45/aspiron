@@ -271,6 +271,7 @@ export function NotesManagerPage({ topicId, onBack }: NotesManagerPageProps) {
           description='Review AI-generated notes before publishing'
         />
         <AiNotesReview
+          key={aiNotes.dataUpdatedAt}
           notes={aiNotes.data}
           loading={aiNotes.isLoading}
           onApprove={handleApproveAiNote}

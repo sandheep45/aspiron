@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { QuestionPreview } from '@/features/create-question/components/question-preview'
-import { RichTextEditor } from '@/features/create-question/components/rich-text-editor'
 import { ValidationPanel } from '@/features/create-question/components/validation-panel'
 import { createQuestionFormOption } from '@/features/create-question/form-option'
 
@@ -39,10 +38,6 @@ export function CreateQuestionPage({
   onBack,
 }: CreateQuestionPageProps) {
   const [showPreview, setShowPreview] = useState(false)
-  const [editorContent, setEditorContent] = useState('')
-  const [explanationContent, setExplanationContent] = useState('')
-  const [mistakesContent, setMistakesContent] = useState('')
-  const [hintsContent, setHintsContent] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
 
@@ -64,14 +59,14 @@ export function CreateQuestionPage({
     ...createQuestionFormOption,
     onSubmit: async ({ value, formApi }) => {
       const payload: CreateQuestionRequest = {
-        question: editorContent || value.correct_answer,
+        question: value.question_text || value.correct_answer,
         question_type: value.question_type,
         difficulty: value.difficulty,
         correct_answer: value.correct_answer,
         status: value.status || 'Draft',
-        explanation: explanationContent || undefined,
-        common_mistakes: mistakesContent || undefined,
-        hints: hintsContent || undefined,
+        explanation: value.explanation || undefined,
+        common_mistakes: value.common_mistakes || undefined,
+        hints: value.hints || undefined,
         learning_objective: value.learning_objective || undefined,
         estimated_time: value.estimated_time || undefined,
         tags: tags.length > 0 ? tags : undefined,
@@ -115,10 +110,6 @@ export function CreateQuestionPage({
           onSuccess: (response) => {
             toast.success(`Question created: ${response.identifier}`)
             formApi.reset()
-            setEditorContent('')
-            setExplanationContent('')
-            setMistakesContent('')
-            setHintsContent('')
             setTags([])
             onBack()
           },
@@ -142,7 +133,7 @@ export function CreateQuestionPage({
     const checks: Array<{ label: string; pass: boolean; message: string }> = []
     checks.push({
       label: 'Question Statement',
-      pass: !!editorContent,
+      pass: !!form.getFieldValue('question_text'),
       message: 'Question statement must not be empty',
     })
     checks.push({
@@ -182,7 +173,7 @@ export function CreateQuestionPage({
 
     checks.push({
       label: 'Explanation',
-      pass: !!explanationContent,
+      pass: !!form.getFieldValue('explanation'),
       message: 'Adding an explanation helps student understanding',
     })
     checks.push({
@@ -192,7 +183,7 @@ export function CreateQuestionPage({
     })
 
     return checks
-  }, [editorContent, explanationContent, questionType, form])
+  }, [form, questionType])
 
   const allPass = useMemo(
     () => qualityChecks.every((c) => c.pass),
@@ -236,33 +227,31 @@ export function CreateQuestionPage({
         </div>
       </header>
 
-      {showPreview && (
-        <QuestionPreview
-          question={editorContent}
-          questionType={questionType}
-          choices={
-            questionType === 'MCQ' || questionType === 'Multiple Select'
-              ? [
-                  form.getFieldValue('choices_a'),
-                  form.getFieldValue('choices_b'),
-                  form.getFieldValue('choices_c'),
-                  form.getFieldValue('choices_d'),
-                ].filter(Boolean)
-              : undefined
-          }
-          assertionReason={
-            questionType === 'Assertion Reason'
-              ? {
-                  assertion:
-                    form.getFieldValue('assertion_reason_assertion') || '',
-                  reason: form.getFieldValue('assertion_reason_reason') || '',
-                }
-              : undefined
-          }
-        />
-      )}
-
       <form.AppForm>
+        {showPreview && (
+          <QuestionPreview
+            questionType={questionType}
+            choices={
+              questionType === 'MCQ' || questionType === 'Multiple Select'
+                ? [
+                    form.getFieldValue('choices_a'),
+                    form.getFieldValue('choices_b'),
+                    form.getFieldValue('choices_c'),
+                    form.getFieldValue('choices_d'),
+                  ].filter(Boolean)
+                : undefined
+            }
+            assertionReason={
+              questionType === 'Assertion Reason'
+                ? {
+                    assertion:
+                      form.getFieldValue('assertion_reason_assertion') || '',
+                    reason: form.getFieldValue('assertion_reason_reason') || '',
+                  }
+                : undefined
+            }
+          />
+        )}
         <form onSubmit={handleSubmit} className='flex flex-col gap-8'>
           {/* Section 1: Question Metadata */}
           <section>
@@ -430,12 +419,14 @@ export function CreateQuestionPage({
             <h2 className='mb-4 font-medium text-slate-300 text-sm uppercase tracking-wide'>
               Question Statement <span className='text-red-400'>*</span>
             </h2>
-            <RichTextEditor
-              content={editorContent}
-              onChange={setEditorContent}
-              placeholder='Write the question statement here...'
-              minHeight='200px'
-            />
+            <form.AppField name='question_text'>
+              {(field) => (
+                <field.FormTiptapEditor
+                  placeholder='Write the question statement here...'
+                  minHeight={200}
+                />
+              )}
+            </form.AppField>
             <p className='mt-1 text-slate-500 text-xs'>
               Use the rich editor above for formatted content
             </p>
@@ -762,11 +753,11 @@ export function CreateQuestionPage({
                 <span className='text-slate-400 text-xs'>
                   Step-by-Step Explanation
                 </span>
-                <RichTextEditor
-                  content={explanationContent}
-                  onChange={setExplanationContent}
-                  placeholder='Walk through the solution step by step...'
-                />
+                <form.AppField name='explanation'>
+                  {(field) => (
+                    <field.FormTiptapEditor placeholder='Walk through the solution step by step...' />
+                  )}
+                </form.AppField>
               </div>
 
               <div className='grid gap-5 md:grid-cols-2'>
@@ -774,19 +765,19 @@ export function CreateQuestionPage({
                   <span className='text-slate-400 text-xs'>
                     Common Mistakes
                   </span>
-                  <RichTextEditor
-                    content={mistakesContent}
-                    onChange={setMistakesContent}
-                    placeholder='Highlight typical errors students make...'
-                  />
+                  <form.AppField name='common_mistakes'>
+                    {(field) => (
+                      <field.FormTiptapEditor placeholder='Highlight typical errors students make...' />
+                    )}
+                  </form.AppField>
                 </div>
                 <div className='flex flex-col gap-1.5'>
                   <span className='text-slate-400 text-xs'>Hints</span>
-                  <RichTextEditor
-                    content={hintsContent}
-                    onChange={setHintsContent}
-                    placeholder='Provide progressive hints...'
-                  />
+                  <form.AppField name='hints'>
+                    {(field) => (
+                      <field.FormTiptapEditor placeholder='Provide progressive hints...' />
+                    )}
+                  </form.AppField>
                 </div>
               </div>
             </div>

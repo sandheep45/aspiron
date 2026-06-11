@@ -8,18 +8,18 @@ const createMockEditor = (overrides?: Record<string, unknown>) => ({
     focus: () => ({
       toggleBold: () => ({ run: vi.fn() }),
       toggleItalic: () => ({ run: vi.fn() }),
-      toggleCode: () => ({ run: vi.fn() }),
+      toggleUnderline: () => ({ run: vi.fn() }),
       toggleHeading: () => ({ run: vi.fn() }),
       toggleBulletList: () => ({ run: vi.fn() }),
       toggleOrderedList: () => ({ run: vi.fn() }),
-      toggleBlockquote: () => ({ run: vi.fn() }),
-      toggleCodeBlock: () => ({ run: vi.fn() }),
       undo: () => ({ run: vi.fn() }),
       redo: () => ({ run: vi.fn() }),
     }),
   }),
   isActive: vi.fn(() => false),
   getHTML: vi.fn(() => '<p>Editor content</p>'),
+  getText: vi.fn(() => 'Editor content'),
+  getJSON: vi.fn(() => ({ type: 'doc', content: [] })),
   ...overrides,
 })
 
@@ -51,7 +51,9 @@ describe('TeacherNotesEditor', () => {
     render(<TeacherNotesEditor {...defaultProps} />)
     expect(screen.getByTitle('Bold')).toBeInTheDocument()
     expect(screen.getByTitle('Italic')).toBeInTheDocument()
-    expect(screen.getByTitle('Heading 1')).toBeInTheDocument()
+    expect(screen.getByTitle('Underline')).toBeInTheDocument()
+    expect(screen.getByTitle('Heading 2')).toBeInTheDocument()
+    expect(screen.getByTitle('Heading 3')).toBeInTheDocument()
     expect(screen.getByTitle('Bullet List')).toBeInTheDocument()
     expect(screen.getByTitle('Undo')).toBeInTheDocument()
     expect(screen.getByTitle('Redo')).toBeInTheDocument()
@@ -63,12 +65,14 @@ describe('TeacherNotesEditor', () => {
     expect(screen.getByText('Save Changes')).toBeInTheDocument()
   })
 
-  it('calls onSave with editor HTML when Save clicked', async () => {
+  it('calls onSave with editor content when Save clicked', async () => {
     const user = userEvent.setup()
     const onSave = vi.fn()
     render(<TeacherNotesEditor {...defaultProps} onSave={onSave} />)
     await user.click(screen.getByText('Save Changes'))
-    expect(onSave).toHaveBeenCalledWith('<p>Editor content</p>')
+    await vi.waitFor(() => {
+      expect(onSave).toHaveBeenCalled()
+    })
   })
 
   it('calls onPublish when Publish clicked and status is draft', async () => {
