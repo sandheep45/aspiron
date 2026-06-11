@@ -13,6 +13,8 @@ mod practice_tests;
 mod practice_tests_snapshot;
 mod progression;
 mod recall_algorithm;
+mod recall_insights;
+mod recall_insights_snapshot;
 mod scoring;
 mod subjects_page;
 mod subjects_page_snapshot;

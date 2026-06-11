@@ -55,7 +55,7 @@ pub struct FreeRecallResponse {
     pub missing_concepts: Vec<MissingConceptItemResponse>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, rename = "RecallStatus")]
 #[serde(rename_all = "snake_case")]
 pub enum RecallStatus {

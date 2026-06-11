@@ -1,0 +1,9 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "ai_summary": "Students struggle with spherical charge distributions.",
+  "concept": "Gauss's Law Application",
+  "percentage_missing": 62.0
+}

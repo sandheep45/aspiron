@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "memory_decay_curve": [],
+  "recall_by_difficulty": [],
+  "recall_trend": [],
+  "retention_distribution": []
+}

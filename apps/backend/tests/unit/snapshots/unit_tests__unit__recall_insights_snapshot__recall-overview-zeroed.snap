@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "avg_recall_score": 0.0,
+  "completion_rate": 0.0,
+  "last_recall_run": "No recall runs",
+  "memory_decay": "critical"
+}

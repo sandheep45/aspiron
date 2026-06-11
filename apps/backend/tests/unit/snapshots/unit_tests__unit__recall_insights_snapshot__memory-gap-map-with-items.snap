@@ -1,0 +1,22 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "items": [
+    {
+      "concept": "Gauss's Law Statement",
+      "confidence": 85.0,
+      "correctness": 90.0,
+      "mismatch_alert": null,
+      "recall_status": "remembered"
+    },
+    {
+      "concept": "Flux Calculation",
+      "confidence": 60.0,
+      "correctness": 50.0,
+      "mismatch_alert": null,
+      "recall_status": "partial"
+    }
+  ]
+}

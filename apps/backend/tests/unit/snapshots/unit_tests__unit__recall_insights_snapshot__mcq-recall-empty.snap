@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "difficulty_breakdown": [],
+  "overall_accuracy": 0.0,
+  "questions": [],
+  "total_questions_attempted": 0
+}

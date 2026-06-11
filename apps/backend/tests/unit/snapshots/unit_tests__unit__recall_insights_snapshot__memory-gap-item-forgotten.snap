@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "concept": "Planar Symmetry",
+  "confidence": 25.0,
+  "correctness": 15.0,
+  "mismatch_alert": null,
+  "recall_status": "forgotten"
+}

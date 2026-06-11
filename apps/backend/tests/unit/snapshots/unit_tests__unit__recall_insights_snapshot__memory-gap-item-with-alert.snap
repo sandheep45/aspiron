@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "concept": "Flux Calculation",
+  "confidence": 85.0,
+  "correctness": 33.0,
+  "mismatch_alert": "High Confidence, Low Accuracy",
+  "recall_status": "partial"
+}

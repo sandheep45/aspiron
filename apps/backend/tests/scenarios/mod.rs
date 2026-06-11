@@ -8,6 +8,7 @@ mod pain_points_flow;
 mod permission_evolution;
 mod practice_tests_flow;
 mod quiz_lifecycle;
+mod recall_insights_flow;
 mod recall_session_completion;
 pub mod scenario_builder;
 mod student_onboarding;

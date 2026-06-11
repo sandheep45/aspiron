@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "concept": "Gauss's Law Statement",
+  "confidence": 72.0,
+  "correctness": 90.0,
+  "mismatch_alert": null,
+  "recall_status": "remembered"
+}

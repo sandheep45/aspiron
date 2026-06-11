@@ -1,0 +1,11 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "attempts": 1,
+  "concept": "What is the derivative of x²?",
+  "difficulty": "Medium",
+  "question_number": "Q-0001",
+  "recall_accuracy": 100.0
+}

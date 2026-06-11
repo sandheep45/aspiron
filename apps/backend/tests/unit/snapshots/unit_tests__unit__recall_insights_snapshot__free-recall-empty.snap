@@ -1,0 +1,10 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "ai_clarity_score": 0.0,
+  "average_response_length": 0,
+  "missing_concepts": [],
+  "participation_rate": 0.0
+}

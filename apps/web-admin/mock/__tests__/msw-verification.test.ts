@@ -453,4 +453,88 @@ describe('MSW', () => {
     const body = await response.json()
     expect(body).toHaveProperty('total_questions')
   })
+
+  // ── Recall Insights endpoints ────────────────────────────────────────────
+
+  it('intercepts recall overview endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/recall/overview')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('avg_recall_score')
+    expect(body).toHaveProperty('completion_rate')
+    expect(body).toHaveProperty('memory_decay')
+    expect(body).toHaveProperty('last_recall_run')
+  })
+
+  it('intercepts recall mcq endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/recall/mcq')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('overall_accuracy')
+    expect(body).toHaveProperty('total_questions_attempted')
+    expect(body).toHaveProperty('difficulty_breakdown')
+    expect(body).toHaveProperty('questions')
+  })
+
+  it('intercepts recall free-response endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/recall/free-response')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('participation_rate')
+    expect(body).toHaveProperty('ai_clarity_score')
+    expect(body).toHaveProperty('missing_concepts')
+  })
+
+  it('intercepts recall gaps endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/recall/gaps')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('items')
+    expect(Array.isArray(body.items)).toBe(true)
+    if (body.items.length > 0) {
+      expect(body.items[0]).toHaveProperty('concept')
+      expect(body.items[0]).toHaveProperty('recall_status')
+      expect(body.items[0]).toHaveProperty('confidence')
+      expect(body.items[0]).toHaveProperty('correctness')
+    }
+  })
+
+  it('intercepts recall actions endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/recall/actions')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('detected_issue')
+      expect(body[0]).toHaveProperty('primary_cta')
+    }
+  })
+
+  it('intercepts recall trends endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/recall/trends')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('recall_trend')
+    expect(body).toHaveProperty('memory_decay_curve')
+    expect(body).toHaveProperty('recall_by_difficulty')
+    expect(body).toHaveProperty('retention_distribution')
+  })
+
+  it('returns 404 for unknown topic on recall endpoints', async () => {
+    const endpoints = [
+      '/api/v1/topics/unknown/recall/overview',
+      '/api/v1/topics/unknown/recall/mcq',
+      '/api/v1/topics/unknown/recall/free-response',
+      '/api/v1/topics/unknown/recall/gaps',
+      '/api/v1/topics/unknown/recall/actions',
+      '/api/v1/topics/unknown/recall/trends',
+    ]
+    for (const endpoint of endpoints) {
+      const response = await fetch(endpoint)
+      expect(response.status).toBe(404)
+      const body = await response.json()
+      expect(body.error.code).toBe('NOT_FOUND')
+    }
+  })
 })

@@ -1,0 +1,41 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "difficulty_breakdown": [
+    {
+      "accuracy": 92.0,
+      "count": 4,
+      "difficulty": "Easy"
+    },
+    {
+      "accuracy": 75.0,
+      "count": 5,
+      "difficulty": "Medium"
+    },
+    {
+      "accuracy": 55.0,
+      "count": 3,
+      "difficulty": "Hard"
+    }
+  ],
+  "overall_accuracy": 75.0,
+  "questions": [
+    {
+      "attempts": 1,
+      "concept": "Gauss's Law Statement",
+      "difficulty": "Easy",
+      "question_number": "Q-0001",
+      "recall_accuracy": 100.0
+    },
+    {
+      "attempts": 1,
+      "concept": "Flux Calculation",
+      "difficulty": "Medium",
+      "question_number": "Q-0002",
+      "recall_accuracy": 0.0
+    }
+  ],
+  "total_questions_attempted": 12
+}

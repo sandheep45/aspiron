@@ -155,7 +155,7 @@ export function MemoryGapTable({
                     </span>
                   ) : (
                     <span className='text-[0.65rem] text-slate-600'>
-                      \u2014
+                      {'\u2014'}
                     </span>
                   )}
                 </td>

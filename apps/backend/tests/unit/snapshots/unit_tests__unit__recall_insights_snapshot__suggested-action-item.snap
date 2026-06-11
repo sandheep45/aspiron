@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "detected_issue": "Students struggle with spherical symmetry calculations",
+  "explanation": "62% of students missed mathematical derivation for spherical symmetry.",
+  "icon": "alert-triangle",
+  "id": "spherical-symmetry",
+  "primary_cta": "Review Video",
+  "suggested_fix": "Review derivation video at 7:20."
+}

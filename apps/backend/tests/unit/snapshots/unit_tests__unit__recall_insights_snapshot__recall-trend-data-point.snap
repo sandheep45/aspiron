@@ -1,0 +1,8 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "date": "2026-01-15",
+  "value": 72.5
+}

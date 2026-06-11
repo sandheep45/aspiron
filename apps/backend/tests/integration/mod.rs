@@ -9,3 +9,4 @@ mod topics_page;
 
 mod notes_manager;
 mod practice_tests;
+mod recall_insights;

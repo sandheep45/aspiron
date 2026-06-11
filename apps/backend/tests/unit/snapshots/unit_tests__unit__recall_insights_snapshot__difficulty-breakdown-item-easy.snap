@@ -1,0 +1,9 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "accuracy": 92.5,
+  "count": 4,
+  "difficulty": "Easy"
+}

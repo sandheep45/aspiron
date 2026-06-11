@@ -1,0 +1,21 @@
+---
+source: apps/backend/tests/unit/recall_insights_snapshot.rs
+expression: value
+---
+{
+  "ai_clarity_score": 72.5,
+  "average_response_length": 85,
+  "missing_concepts": [
+    {
+      "ai_summary": "Students consistently omit the derivation steps.",
+      "concept": "Mathematical derivation for spherical symmetry",
+      "percentage_missing": 62.0
+    },
+    {
+      "ai_summary": "Positive and negative charge signs frequently misapplied.",
+      "concept": "Sign conventions for enclosed charge",
+      "percentage_missing": 48.0
+    }
+  ],
+  "participation_rate": 60.0
+}
