@@ -34,6 +34,10 @@ use crate::http::handlers::practice_tests::{
     handler_get_practice_signals, handler_get_questions, handler_get_test_analytics,
     handler_get_topic_tests,
 };
+use crate::http::handlers::recall_insights::{
+    handler_get_free_recall, handler_get_mcq_recall, handler_get_memory_gaps,
+    handler_get_recall_actions, handler_get_recall_overview, handler_get_recall_trends,
+};
 use crate::http::handlers::subjects_page::{
     handler_get_subjects_page, handler_get_subjects_page_signals, handler_get_subjects_page_summary,
 };
@@ -107,6 +111,27 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         .route(
             "/topics/{topic_id}/practice/analytics",
             get(handler_get_test_analytics),
+        )
+        .route(
+            "/topics/{topic_id}/recall/overview",
+            get(handler_get_recall_overview),
+        )
+        .route("/topics/{topic_id}/recall/mcq", get(handler_get_mcq_recall))
+        .route(
+            "/topics/{topic_id}/recall/free-response",
+            get(handler_get_free_recall),
+        )
+        .route(
+            "/topics/{topic_id}/recall/gaps",
+            get(handler_get_memory_gaps),
+        )
+        .route(
+            "/topics/{topic_id}/recall/actions",
+            get(handler_get_recall_actions),
+        )
+        .route(
+            "/topics/{topic_id}/recall/trends",
+            get(handler_get_recall_trends),
         )
         .route(
             "/videos/{video_id}/offline-token",

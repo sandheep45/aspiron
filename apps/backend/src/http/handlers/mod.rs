@@ -11,6 +11,7 @@ pub mod notes_manager;
 pub mod notification;
 pub mod practice_tests;
 pub mod rbac;
+pub mod recall_insights;
 pub mod subjects_page;
 pub mod topic_detail;
 pub mod topics_page;

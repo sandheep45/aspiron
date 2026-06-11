@@ -30,6 +30,7 @@ import { Route as PrivateRoutesContentContentLayoutIndexRouteImport } from './ro
 import { Route as PrivateRoutesContentContentLayoutSubjectsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/index'
 import { Route as PrivateRoutesContentContentLayoutTopicIdRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id'
 import { Route as PrivateRoutesContentContentLayoutTopicIdIndexRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/index'
+import { Route as PrivateRoutesContentContentLayoutTopicIdRecallInsightsRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/recall-insights'
 import { Route as PrivateRoutesContentContentLayoutTopicIdPracticeTestsRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/practice-tests'
 import { Route as PrivateRoutesContentContentLayoutTopicIdNotesRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/notes'
 import { Route as PrivateRoutesContentContentLayoutTopicIdCreateTestRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/create-test'
@@ -156,6 +157,12 @@ const PrivateRoutesContentContentLayoutTopicIdIndexRoute =
     path: '/',
     getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
   } as any)
+const PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute =
+  PrivateRoutesContentContentLayoutTopicIdRecallInsightsRouteImport.update({
+    id: '/recall-insights',
+    path: '/recall-insights',
+    getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
+  } as any)
 const PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute =
   PrivateRoutesContentContentLayoutTopicIdPracticeTestsRouteImport.update({
     id: '/practice-tests',
@@ -221,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/content/topic/$id/create-test': typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   '/content/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
   '/content/topic/$id/practice-tests': typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
+  '/content/topic/$id/recall-insights': typeof PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute
   '/content/topic/$id/': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/content/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/content/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
@@ -246,6 +254,7 @@ export interface FileRoutesByTo {
   '/content/topic/$id/create-test': typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   '/content/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
   '/content/topic/$id/practice-tests': typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
+  '/content/topic/$id/recall-insights': typeof PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/content/subjects/$subjectId/chapters': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/content/subjects/$subjectId/chapters/$chapterId/topics': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
@@ -276,6 +285,7 @@ export interface FileRoutesById {
   '/_private-routes/content/_content-layout/topic/$id/create-test': typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   '/_private-routes/content/_content-layout/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
   '/_private-routes/content/_content-layout/topic/$id/practice-tests': typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
+  '/_private-routes/content/_content-layout/topic/$id/recall-insights': typeof PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute
   '/_private-routes/content/_content-layout/topic/$id/': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/content/topic/$id/create-test'
     | '/content/topic/$id/notes'
     | '/content/topic/$id/practice-tests'
+    | '/content/topic/$id/recall-insights'
     | '/content/topic/$id/'
     | '/content/subjects/$subjectId/chapters/'
     | '/content/subjects/$subjectId/chapters/$chapterId/topics/'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/content/topic/$id/create-test'
     | '/content/topic/$id/notes'
     | '/content/topic/$id/practice-tests'
+    | '/content/topic/$id/recall-insights'
     | '/content/topic/$id'
     | '/content/subjects/$subjectId/chapters'
     | '/content/subjects/$subjectId/chapters/$chapterId/topics'
@@ -360,6 +372,7 @@ export interface FileRouteTypes {
     | '/_private-routes/content/_content-layout/topic/$id/create-test'
     | '/_private-routes/content/_content-layout/topic/$id/notes'
     | '/_private-routes/content/_content-layout/topic/$id/practice-tests'
+    | '/_private-routes/content/_content-layout/topic/$id/recall-insights'
     | '/_private-routes/content/_content-layout/topic/$id/'
     | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/'
     | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/'
@@ -520,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdIndexRouteImport
       parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
     }
+    '/_private-routes/content/_content-layout/topic/$id/recall-insights': {
+      id: '/_private-routes/content/_content-layout/topic/$id/recall-insights'
+      path: '/recall-insights'
+      fullPath: '/content/topic/$id/recall-insights'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdRecallInsightsRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+    }
     '/_private-routes/content/_content-layout/topic/$id/practice-tests': {
       id: '/_private-routes/content/_content-layout/topic/$id/practice-tests'
       path: '/practice-tests'
@@ -570,6 +590,7 @@ interface PrivateRoutesContentContentLayoutTopicIdRouteChildren {
   PrivateRoutesContentContentLayoutTopicIdCreateTestRoute: typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   PrivateRoutesContentContentLayoutTopicIdNotesRoute: typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
   PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute: typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
+  PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute: typeof PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute
   PrivateRoutesContentContentLayoutTopicIdIndexRoute: typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
 }
 
@@ -583,6 +604,8 @@ const PrivateRoutesContentContentLayoutTopicIdRouteChildren: PrivateRoutesConten
       PrivateRoutesContentContentLayoutTopicIdNotesRoute,
     PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute:
       PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute,
+    PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute:
+      PrivateRoutesContentContentLayoutTopicIdRecallInsightsRoute,
     PrivateRoutesContentContentLayoutTopicIdIndexRoute:
       PrivateRoutesContentContentLayoutTopicIdIndexRoute,
   }

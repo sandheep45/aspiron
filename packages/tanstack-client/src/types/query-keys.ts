@@ -120,6 +120,21 @@ export const queryKeys = {
         'submissions',
       ] as const,
   },
+  recallInsights: {
+    all: (topicId: string) => ['recallInsights', topicId] as const,
+    overview: (topicId: string) =>
+      [...queryKeys.recallInsights.all(topicId), 'overview'] as const,
+    mcq: (topicId: string) =>
+      [...queryKeys.recallInsights.all(topicId), 'mcq'] as const,
+    freeRecall: (topicId: string) =>
+      [...queryKeys.recallInsights.all(topicId), 'freeRecall'] as const,
+    gaps: (topicId: string) =>
+      [...queryKeys.recallInsights.all(topicId), 'gaps'] as const,
+    actions: (topicId: string) =>
+      [...queryKeys.recallInsights.all(topicId), 'actions'] as const,
+    trends: (topicId: string) =>
+      [...queryKeys.recallInsights.all(topicId), 'trends'] as const,
+  },
   practiceTests: {
     all: (topicId: string) => ['practiceTests', topicId] as const,
     overview: (topicId: string) =>

@@ -49,6 +49,7 @@ function RouteComponent() {
   const componentRoutes: Record<string, string> = {
     'study-notes': '/content/topic/$id/notes',
     'practice-questions': '/content/topic/$id/practice-tests',
+    recall: '/content/topic/$id/recall-insights',
   }
 
   const handleActionClick = (componentId: string) => {
