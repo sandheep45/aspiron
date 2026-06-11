@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/practice_tests_snapshot.rs
+expression: value
+---
+{
+  "assertion_reason_assertion": "All prime numbers are odd",
+  "assertion_reason_reason": "2 is the only even prime number",
+  "correct_answer": "Both A and R are true, and R is the correct explanation of A",
+  "difficulty": "Hard",
+  "question": "Assertion-Reason question",
+  "question_type": "Assertion Reason"
+}

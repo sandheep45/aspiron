@@ -1,0 +1,7 @@
+---
+source: apps/backend/tests/unit/practice_tests_snapshot.rs
+expression: value
+---
+{
+  "identifier": "Q-0042"
+}

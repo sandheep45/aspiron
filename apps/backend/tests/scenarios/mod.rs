@@ -6,6 +6,7 @@ pub mod helpers;
 mod note_sharing_workflow;
 mod pain_points_flow;
 mod permission_evolution;
+mod practice_tests_flow;
 mod quiz_lifecycle;
 mod recall_session_completion;
 pub mod scenario_builder;

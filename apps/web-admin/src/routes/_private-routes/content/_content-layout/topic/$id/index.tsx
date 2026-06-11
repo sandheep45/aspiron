@@ -46,9 +46,15 @@ function RouteComponent() {
     })
   }
 
+  const componentRoutes: Record<string, string> = {
+    'study-notes': '/content/topic/$id/notes',
+    'practice-questions': '/content/topic/$id/practice-tests',
+  }
+
   const handleActionClick = (componentId: string) => {
-    if (componentId === 'study-notes') {
-      navigate({ to: '/content/topic/$id/notes', params: { id } })
+    const route = componentRoutes[componentId]
+    if (route) {
+      navigate({ to: route, params: { id } })
     }
   }
 

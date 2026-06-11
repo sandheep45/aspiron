@@ -46,6 +46,21 @@ export default defineConfig({
       },
     },
     {
+      name: 'practice-tests-msw',
+      testDir: './e2e/practice-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://local.aspiron.test:3000',
+        ignoreHTTPSErrors: true,
+      },
+      webServer: {
+        command: 'bash -c "source ../../.env && pnpm dev --filter web-admin"',
+        port: 3000,
+        reuseExistingServer: !process.env.CI,
+        timeout: 30000,
+      },
+    },
+    {
       name: 'real-api',
       testDir: './e2e/real-api',
       use: {

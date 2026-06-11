@@ -29,6 +29,11 @@ use crate::http::handlers::notes_manager::{
     handler_get_teacher_notes, handler_publish_teacher_notes, handler_toggle_reference_visibility,
     handler_unpublish_teacher_notes, handler_update_teacher_note,
 };
+use crate::http::handlers::practice_tests::{
+    handler_create_question, handler_create_test, handler_get_practice_overview,
+    handler_get_practice_signals, handler_get_questions, handler_get_test_analytics,
+    handler_get_topic_tests,
+};
 use crate::http::handlers::subjects_page::{
     handler_get_subjects_page, handler_get_subjects_page_signals, handler_get_subjects_page_summary,
 };
@@ -83,6 +88,26 @@ pub fn router(app_state: &AppState) -> Router<AppState> {
         )
         .route("/topics/{topic_id}/actions", get(handler_get_topic_actions))
         .route("/topics/{topic_id}/trends", get(handler_get_topic_trends))
+        .route(
+            "/topics/{topic_id}/practice/overview",
+            get(handler_get_practice_overview),
+        )
+        .route(
+            "/topics/{topic_id}/practice/questions",
+            get(handler_get_questions).post(handler_create_question),
+        )
+        .route(
+            "/topics/{topic_id}/practice/tests",
+            get(handler_get_topic_tests).post(handler_create_test),
+        )
+        .route(
+            "/topics/{topic_id}/practice/signals",
+            get(handler_get_practice_signals),
+        )
+        .route(
+            "/topics/{topic_id}/practice/analytics",
+            get(handler_get_test_analytics),
+        )
         .route(
             "/videos/{video_id}/offline-token",
             get(handler_get_offline_token_by_video_id),

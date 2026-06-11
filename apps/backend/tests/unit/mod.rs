@@ -9,6 +9,8 @@ mod notification_rules;
 mod openapi_snapshot;
 mod pain_points;
 mod permissions;
+mod practice_tests;
+mod practice_tests_snapshot;
 mod progression;
 mod recall_algorithm;
 mod scoring;

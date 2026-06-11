@@ -1,0 +1,8 @@
+---
+source: apps/backend/tests/unit/practice_tests_snapshot.rs
+expression: value
+---
+{
+  "questions_count": 5,
+  "title": "Algebra Test"
+}

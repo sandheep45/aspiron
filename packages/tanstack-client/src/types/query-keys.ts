@@ -120,4 +120,21 @@ export const queryKeys = {
         'submissions',
       ] as const,
   },
+  practiceTests: {
+    all: (topicId: string) => ['practiceTests', topicId] as const,
+    overview: (topicId: string) =>
+      [...queryKeys.practiceTests.all(topicId), 'overview'] as const,
+    questions: (topicId: string, params?: Record<string, unknown>) =>
+      [
+        ...queryKeys.practiceTests.all(topicId),
+        'questions',
+        ...(params ? [params] : []),
+      ] as const,
+    tests: (topicId: string) =>
+      [...queryKeys.practiceTests.all(topicId), 'tests'] as const,
+    signals: (topicId: string) =>
+      [...queryKeys.practiceTests.all(topicId), 'signals'] as const,
+    analytics: (topicId: string) =>
+      [...queryKeys.practiceTests.all(topicId), 'analytics'] as const,
+  },
 } as const

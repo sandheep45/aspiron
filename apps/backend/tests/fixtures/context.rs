@@ -24,3 +24,5 @@ pub struct TestRecallSession {
 pub struct TestNote {
     pub id: Uuid,
 }
+
+pub struct TestQuestion;

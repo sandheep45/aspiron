@@ -8,3 +8,4 @@ mod topic_detail;
 mod topics_page;
 
 mod notes_manager;
+mod practice_tests;

@@ -1,0 +1,13 @@
+---
+source: apps/backend/tests/unit/practice_tests_snapshot.rs
+expression: value
+---
+{
+  "correct_answer": "78.54",
+  "difficulty": "Hard",
+  "question": "Calculate the area of a circle with radius 5",
+  "question_type": "Numerical",
+  "status": "Draft",
+  "tolerance": "0.5",
+  "unit": "cm²"
+}

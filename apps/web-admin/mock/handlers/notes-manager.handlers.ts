@@ -38,11 +38,25 @@ function initTopic(topicId: string) {
   }
 }
 
-function getOverview(topicId: string): NotesOverview {
+function getTeacherNote(topicId: string): TeacherNote {
   initTopic(topicId)
-  const teacher = teacherNotesStore.get(topicId)!
-  const aiNotes = aiNotesStore.get(topicId)!
-  const refs = referencesStore.get(topicId)!
+  return teacherNotesStore.get(topicId) as TeacherNote
+}
+
+function getAiNotes(topicId: string): AiNote[] {
+  initTopic(topicId)
+  return aiNotesStore.get(topicId) as AiNote[]
+}
+
+function getReferences(topicId: string): Reference[] {
+  initTopic(topicId)
+  return referencesStore.get(topicId) as Reference[]
+}
+
+function getOverview(topicId: string): NotesOverview {
+  const teacher = getTeacherNote(topicId)
+  const aiNotes = getAiNotes(topicId)
+  const refs = getReferences(topicId)
   return {
     teacher_notes_status: teacher.status,
     ai_notes_status: aiNotes.some((n) => n.status === 'pending_review')
@@ -69,20 +83,18 @@ export const notesManagerHandlers = [
   http.get('*/api/v1/topics/:topicId/notes', ({ params }) => {
     const topicId = params.topicId as string
     if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-    initTopic(topicId)
-    return HttpResponse.json(teacherNotesStore.get(topicId)!)
+    return HttpResponse.json(getTeacherNote(topicId))
   }),
 
   // PUT /topics/:topicId/notes — update teacher notes
   http.put('*/api/v1/topics/:topicId/notes', async ({ params, request }) => {
     const topicId = params.topicId as string
     if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-    initTopic(topicId)
+    const existing = getTeacherNote(topicId)
     const body = (await request.json()) as {
       content?: string
       status?: string | null
     }
-    const existing = teacherNotesStore.get(topicId)!
     const updated: TeacherNote = {
       ...existing,
       content: body.content ?? existing.content,
@@ -97,8 +109,7 @@ export const notesManagerHandlers = [
   http.post('*/api/v1/topics/:topicId/notes/publish', ({ params }) => {
     const topicId = params.topicId as string
     if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-    initTopic(topicId)
-    const existing = teacherNotesStore.get(topicId)!
+    const existing = getTeacherNote(topicId)
     const updated: TeacherNote = {
       ...existing,
       status: 'published',
@@ -112,8 +123,7 @@ export const notesManagerHandlers = [
   http.post('*/api/v1/topics/:topicId/notes/unpublish', ({ params }) => {
     const topicId = params.topicId as string
     if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-    initTopic(topicId)
-    const existing = teacherNotesStore.get(topicId)!
+    const existing = getTeacherNote(topicId)
     const updated: TeacherNote = {
       ...existing,
       status: 'draft',
@@ -127,8 +137,7 @@ export const notesManagerHandlers = [
   http.get('*/api/v1/topics/:topicId/ai-notes', ({ params }) => {
     const topicId = params.topicId as string
     if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-    initTopic(topicId)
-    return HttpResponse.json(aiNotesStore.get(topicId)!)
+    return HttpResponse.json(getAiNotes(topicId))
   }),
 
   // POST /topics/:topicId/ai-notes/:noteId/approve
@@ -138,8 +147,7 @@ export const notesManagerHandlers = [
       const topicId = params.topicId as string
       const noteId = params.noteId as string
       if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-      initTopic(topicId)
-      const notes = aiNotesStore.get(topicId)!
+      const notes = getAiNotes(topicId)
       const idx = notes.findIndex((n) => n.id === noteId)
       if (idx === -1) return HttpResponse.json(null, { status: 404 })
       const updated: AiNote = { ...notes[idx], status: 'approved' }
@@ -153,8 +161,7 @@ export const notesManagerHandlers = [
   http.get('*/api/v1/topics/:topicId/references', ({ params }) => {
     const topicId = params.topicId as string
     if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-    initTopic(topicId)
-    return HttpResponse.json(referencesStore.get(topicId)!)
+    return HttpResponse.json(getReferences(topicId))
   }),
 
   // POST /topics/:topicId/references — create reference
@@ -163,7 +170,6 @@ export const notesManagerHandlers = [
     async ({ params, request }) => {
       const topicId = params.topicId as string
       if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-      initTopic(topicId)
       const body = (await request.json()) as {
         title?: string
         source?: string
@@ -176,7 +182,7 @@ export const notesManagerHandlers = [
         reference_type: body.reference_type ?? 'URL',
         url: body.url ?? '',
       })
-      const refs = referencesStore.get(topicId)!
+      const refs = getReferences(topicId)
       refs.push(ref)
       referencesStore.set(topicId, refs)
       return HttpResponse.json(ref, { status: 201 })
@@ -190,8 +196,7 @@ export const notesManagerHandlers = [
       const topicId = params.topicId as string
       const referenceId = params.referenceId as string
       if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-      initTopic(topicId)
-      const refs = referencesStore.get(topicId)!
+      const refs = getReferences(topicId)
       const idx = refs.findIndex((r) => r.id === referenceId)
       if (idx === -1) return HttpResponse.json(null, { status: 404 })
       refs.splice(idx, 1)
@@ -207,8 +212,7 @@ export const notesManagerHandlers = [
       const topicId = params.topicId as string
       const referenceId = params.referenceId as string
       if (topicId === 'unknown') return HttpResponse.json(null, { status: 404 })
-      initTopic(topicId)
-      const refs = referencesStore.get(topicId)!
+      const refs = getReferences(topicId)
       const idx = refs.findIndex((r) => r.id === referenceId)
       if (idx === -1) return HttpResponse.json(null, { status: 404 })
       const updated: Reference = {

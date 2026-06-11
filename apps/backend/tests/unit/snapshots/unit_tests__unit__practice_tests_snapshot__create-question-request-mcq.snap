@@ -1,0 +1,26 @@
+---
+source: apps/backend/tests/unit/practice_tests_snapshot.rs
+expression: value
+---
+{
+  "choices": [
+    "x",
+    "2x",
+    "x²",
+    "2"
+  ],
+  "common_mistakes": "Students often forget to multiply by the exponent",
+  "correct_answer": "2x",
+  "difficulty": "Medium",
+  "estimated_time": 2,
+  "explanation": "The power rule states that d/dx(x^n) = nx^(n-1)",
+  "hints": "Remember the power rule",
+  "learning_objective": "Understand differentiation",
+  "question": "What is the derivative of x²?",
+  "question_type": "MCQ",
+  "status": "Active",
+  "tags": [
+    "calculus",
+    "derivatives"
+  ]
+}

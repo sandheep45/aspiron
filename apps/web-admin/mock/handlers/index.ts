@@ -12,6 +12,7 @@ import { notesHandlers } from './notes.handlers'
 import { notesManagerHandlers } from './notes-manager.handlers'
 import { notificationHandlers } from './notification.handlers'
 import { painPointsHandlers } from './pain-points.handlers'
+import { practiceTestsHandlers } from './practice-tests.handlers'
 import { subjectsPageHandlers } from './subjects-page.handlers'
 import { topicDetailHandlers } from './topic-detail.handlers'
 import { topicPerformanceHandlers } from './topic-performance.handlers'
@@ -33,6 +34,7 @@ export const handlers = [
   ...notesManagerHandlers,
   ...notificationHandlers,
   ...painPointsHandlers,
+  ...practiceTestsHandlers,
   ...subjectsPageHandlers,
   ...topicPerformanceHandlers,
   ...topicDetailHandlers,

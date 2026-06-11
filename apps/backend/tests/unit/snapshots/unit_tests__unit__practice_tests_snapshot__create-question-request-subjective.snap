@@ -1,0 +1,12 @@
+---
+source: apps/backend/tests/unit/practice_tests_snapshot.rs
+expression: value
+---
+{
+  "correct_answer": "Photosynthesis converts light energy to chemical energy",
+  "difficulty": "Easy",
+  "evaluation_criteria": "Key terms must be present",
+  "question": "Explain the process of photosynthesis",
+  "question_type": "Subjective",
+  "rubric": "Full credit for mentioning light, water, CO2, and glucose"
+}

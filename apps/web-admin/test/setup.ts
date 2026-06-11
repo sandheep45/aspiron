@@ -11,6 +11,9 @@ beforeAll(() => {
     disconnect() {}
   } as unknown as typeof ResizeObserver
   Element.prototype.scrollIntoView = () => {}
+  if (!document.elementFromPoint) {
+    document.elementFromPoint = () => document.createElement('div')
+  }
 })
 afterEach(() => {
   cleanup()

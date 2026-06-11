@@ -1,4 +1,4 @@
-# Implementation Plan: Notes Manager — Full Test Coverage
+# Implementation Plan: Create Practice Question & Create Topic Test — Full Test Coverage
 
 ## Legend
 - `[ ]` — pending
@@ -7,20 +7,18 @@
 
 ---
 
-## Phase 0: New Fixtures & Harness Methods — `[ ]` pending
+## Phase 0: New Fixtures & Helpers — `[ ]` pending
 
 ### `tests/fixtures/context.rs`
-- [ ] Add `TestNote` struct
-- [ ] Add `TestReference` struct
+- [ ] Add `TestQuestion` struct (id, quiz_id, question text)
+- [ ] Add `TestQuiz` with `questions: Vec<TestQuestion>` if missing
 
 ### `tests/fixtures/helpers.rs`
-- [ ] Add `create_test_teacher_note(db, topic_id, content, status) -> TestNote`
-- [ ] Add `create_test_ai_note(db, topic_id, title, content, status) -> TestNote`
-- [ ] Add `create_test_reference(db, topic_id, title, source, ref_type, url, visible) -> TestReference`
-
-### `tests/harness.rs`
-- [ ] Add `put_json(&self, path, body)` method
-- [ ] Add `delete_request(&self, path)` method
+- [ ] Add `create_test_question(db, quiz_id, question, correct_answer, options) -> Uuid`
+  - Inserts `assessment_question::ActiveModel` with provided quiz_id
+  - Stores optional metadata in `options` JSONB
+- [ ] Add `create_test_assessment_attempt(db, quiz_id, user_id, score, submitted_at) -> Uuid` if variant needed
+  - Current signature exists but may need submitted_at variant
 
 ### Verify
 - [ ] `cargo check --all-targets --all-features` passes
@@ -29,127 +27,150 @@
 
 ## Phase 1: MSW Infrastructure — `[ ]` pending
 
-### `mock/factories/notes-manager.factory.ts`
-- [ ] `buildNotesOverview(overrides?) -> NotesOverview`
-  - [ ] Default values: teacher_notes_status, ai_notes_status, external_references_count, student_engagement
-  - [ ] Overrides merge correctly
-- [ ] `buildTeacherNote(overrides?) -> TeacherNote`
-  - [ ] Default values: id, content, status, updated_at
-  - [ ] Content is valid HTML for Tiptap
-- [ ] `buildAiNote(overrides?) -> AiNote`
-  - [ ] Default values: id, title, content, status, generated_at
-- [ ] `buildReference(overrides?) -> Reference`
-  - [ ] Default values: id, title, source, reference_type, url, visible
-- [ ] `buildAiNoteList(count, overrides?)`
-- [ ] `buildReferenceList(count, overrides?)`
-- [ ] Counter-based ID generation with `uid()` and `resetIdCounter()`
+### `mock/handlers/practice-tests.handlers.ts`
 
-### `mock/handlers/notes-manager.handlers.ts`
-- [ ] `GET */api/v1/topics/:topicId/notes/overview` — returns `NotesOverview`
-- [ ] `GET */api/v1/topics/:topicId/notes` — returns `TeacherNote`
-- [ ] `PUT */api/v1/topics/:topicId/notes` — updates and returns `TeacherNote`
-- [ ] `POST */api/v1/topics/:topicId/notes/publish` — changes status to published
-- [ ] `POST */api/v1/topics/:topicId/notes/unpublish` — changes status to draft
-- [ ] `GET */api/v1/topics/:topicId/ai-notes` — returns `AiNote[]`
-- [ ] `POST */api/v1/topics/:topicId/ai-notes/:noteId/approve` — changes status to approved
-- [ ] `GET */api/v1/topics/:topicId/references` — returns `Reference[]`
-- [ ] `POST */api/v1/topics/:topicId/references` — creates and returns `Reference`
-- [ ] `DELETE */api/v1/topics/:topicId/references/:referenceId` — returns 204 or 200
-- [ ] `POST */api/v1/topics/:topicId/references/:referenceId/toggle` — flips `visible` and returns `Reference`
-- [ ] All return 404 for `topicId === 'unknown'`
+Inline builder functions (no separate factory file):
+
+- [ ] `buildQuestionItem(overrides?) -> QuestionItem`
+- [ ] `buildQuestionsResponse(overrides?) -> QuestionsResponse`
+- [ ] `buildCreateQuestionResponse(overrides?) -> CreateQuestionResponse`
+- [ ] `buildTopicTestItem(overrides?) -> TopicTestItem`
+- [ ] `buildCreateTestResponse(overrides?) -> CreateTestResponse`
+- [ ] `buildPracticeSignal(overrides?) -> PracticeSignal`
+- [ ] `buildTestAnalytics(overrides?) -> TestAnalytics | null`
+
+Handlers (7 endpoints):
+
+- [ ] `GET */api/v1/topics/:topicId/practice/overview` — returns mock overview
+- [ ] `GET */api/v1/topics/:topicId/practice/questions` — returns paginated questions, supports `search`/`sort_by`/`page`/`limit`/`question_type`/`difficulty` query params
+- [ ] `POST */api/v1/topics/:topicId/practice/questions` — returns `CreateQuestionResponse`
+- [ ] `GET */api/v1/topics/:topicId/practice/tests` — returns array of TopicTestItem
+- [ ] `POST */api/v1/topics/:topicId/practice/tests` — returns `CreateTestResponse`
+- [ ] `GET */api/v1/topics/:topicId/practice/signals` — returns array of PracticeSignal
+- [ ] `GET */api/v1/topics/:topicId/practice/analytics` — returns TestAnalytics or null (based on query param like `?empty=true`)
 
 ### `mock/handlers/index.ts`
-- [ ] Import `notesManagerHandlers` and spread into `handlers` array
+- [ ] Import `practiceTestsHandlers` and spread into `handlers` array
+
+### MSW verification — extend `mock/__tests__/msw-verification.test.ts`
+- [ ] All 7 practice-tests endpoints return expected shapes
+- [ ] Handler override + reset works
 
 ---
 
 ## Phase 2: Rust Backend Tests — `[ ]` pending
 
-### 1. Rust Snapshot — `tests/unit/notes_manager_snapshot.rs`
-- [ ] Register `mod notes_manager_snapshot;` in `tests/unit/mod.rs`
-- [ ] `notes_overview_empty` — `NotesOverviewResponse` all zeros
-- [ ] `notes_overview_populated` — teacher published, ai approved, 5 references, 78% engagement
-- [ ] `teacher_note_draft` — `TeacherNoteResponse` with status draft, has content
-- [ ] `teacher_note_published` — published status, has content
-- [ ] `ai_note_pending` — `AiNoteResponse` with pending_review
-- [ ] `ai_note_approved` — approved status
-- [ ] `reference_visible` — `ReferenceResponse` with visible=true, all fields
-- [ ] `reference_hidden` — visible=false
+### 1. Rust Unit — `tests/unit/practice_tests.rs`
+- [ ] Register `mod practice_tests;` in `tests/unit/mod.rs`
+
+#### `derive_question_type` (6 tests)
+- [ ] `derive_question_type_returns_mcq` — array of 4 short strings → `"MCQ"`
+- [ ] `derive_question_type_returns_multiple_select` — array of 5 strings → `"Multiple Select"`
+- [ ] `derive_question_type_returns_subjective` — array with a string >50 chars → `"Subjective"`
+- [ ] `derive_question_type_returns_assertion_reason` — `["true","false"]` → `"Assertion Reason"`
+- [ ] `derive_question_type_returns_numerical_for_non_array` — `serde_json::json!({})` → `"Numerical"`
+- [ ] `derive_question_type_returns_numerical_for_null` — `serde_json::Value::Null` → `"Numerical"`
+
+#### `derive_difficulty` (4 tests)
+- [ ] `derive_difficulty_cycles_easy_medium_hard` — index 0→"Easy", 1→"Medium", 2→"Hard", 3→"Easy"
+- [ ] `derive_difficulty_handles_mod_three_for_large_indices` — index 100→"Easy"
+
+#### `derive_question_status` (2 tests)
+- [ ] `derive_question_status_always_active` — any model → `"Active"`
 
 #### Verify
-- [ ] `cargo test -p backend --lib unit::notes_manager_snapshot -- --nocapture`
+- [ ] `cargo test -p backend --lib unit::practice_tests -- --nocapture`
+
+### 2. Rust Snapshot — `tests/unit/practice_tests_snapshot.rs`
+- [ ] Register `mod practice_tests_snapshot;` in `tests/unit/mod.rs`
+
+- [ ] `create_question_request_mcq` — full MCQ request with choices
+- [ ] `create_question_request_numerical` — with tolerance + unit
+- [ ] `create_question_request_subjective` — with rubric + evaluation_criteria
+- [ ] `create_question_request_assertion_reason` — with assertion + reason
+- [ ] `create_test_request` — full test request with 3 question_ids
+- [ ] `create_question_response` — strip id (UUID), snapshot identifier pattern
+- [ ] `create_test_response` — strip id (UUID), snapshot title + questions_count
+
+#### Verify
+- [ ] `cargo test -p backend --lib unit::practice_tests_snapshot -- --nocapture`
 - [ ] `cargo insta review && cargo insta accept`
 
-### 2. Rust Integration — `tests/integration/notes_manager.rs`
-- [ ] Register `mod notes_manager;` in `tests/integration/mod.rs`
+### 3. Rust Integration — `tests/integration/practice_tests.rs`
+- [ ] Register `mod practice_tests;` in `tests/integration/mod.rs`
 
-#### Overview endpoint (3 tests)
-- [ ] `overview_returns_counts_when_notes_exist`
-  - [ ] Create teacher note + AI note + 2 references
-  - [ ] GET → assert teacher_notes_status, ai_notes_status, external_references_count = 2
-- [ ] `overview_returns_zeros_when_no_notes`
-  - [ ] Create topic with no notes
-  - [ ] GET → all fields zero/null
-- [ ] `overview_excludes_soft_deleted_items`
-  - [ ] Create reference then soft-delete it
-  - [ ] GET → external_references_count = 0
+#### Auth behavior (1 test)
+- [ ] `create_question_returns_200_without_auth` — same pattern as topic_detail (content routes don't require auth currently)
 
-#### Teacher notes (5 tests)
-- [ ] `teacher_notes_returns_empty_when_missing`
-  - [ ] GET for topic without teacher note → status 200, content empty, status draft
-- [ ] `teacher_notes_returns_content_when_exists`
-  - [ ] Create teacher note via fixture
-  - [ ] GET returns same content + status
-- [ ] `update_teacher_note_creates_new`
-  - [ ] PUT on topic without existing note → creates, returns with status draft
-- [ ] `update_teacher_note_updates_existing`
-  - [ ] Create teacher note, PUT with new content → returns updated content
-- [ ] `publish_and_unpublish_roundtrip`
-  - [ ] Create draft → publish → status published → unpublish → status draft
+#### POST /practice/questions (5 tests)
+- [ ] `create_question_returns_201` — POST valid question → 201, body has `id` + `identifier` matching `Q-\d+`
+- [ ] `create_question_creates_practice_quiz_implicitly` — First question for topic creates "Practice Questions" quiz
+- [ ] `create_question_reuses_existing_quiz` — Second question uses same quiz_id as first
+- [ ] `create_question_handles_empty_body` — POST `{}` → 422 validation error
+- [ ] `create_question_stores_metadata_in_options` — POST with explanation/hints/tags → GET questions shows them in options
 
-#### AI notes (3 tests)
-- [ ] `ai_notes_returns_list_when_exist`
-  - [ ] Create 2 AI notes → GET returns array of 2
-- [ ] `ai_notes_returns_empty_when_none`
-  - [ ] GET without AI notes → empty array
-- [ ] `approve_ai_note_changes_status`
-  - [ ] Create AI note with pending_review → approve → status approved
+#### POST /practice/tests (4 tests)
+- [ ] `create_test_returns_201` — POST valid test with 3 question_ids → 201, body has `id`, `title`, `questions_count`
+- [ ] `create_test_updates_question_quiz_ids` — Creates questions, creates test → questions now point to new quiz
+- [ ] `create_test_without_questions` — POST test with empty `question_ids` → creates empty quiz
+- [ ] `create_test_invalid_question_ids` — POST with nonexistent UUIDs → graceful handling (still creates quiz)
 
-#### References CRUD (6 tests)
-- [ ] `references_returns_list`
-  - [ ] Create 3 references → GET returns array of 3
-- [ ] `references_returns_empty_when_none`
-  - [ ] GET without references → empty array
-- [ ] `create_reference_adds_external_reference`
-  - [ ] POST valid reference → returns created reference with ID
-  - [ ] Verify overview count increments
-- [ ] `delete_reference_soft_deletes`
-  - [ ] Create reference → DELETE → GET returns empty array
-  - [ ] Verify overview count decrements
-- [ ] `toggle_visibility_flips_flag`
-  - [ ] Create reference with visible=true → toggle → visible=false → toggle again → visible=true
-- [ ] `delete_nonexistent_reference_returns_404`
-  - [ ] DELETE random UUID → 404
+#### GET /practice/overview (3 tests)
+- [ ] `overview_returns_defaults` — Unknown topic → total_questions=0, total_tests=0, last_test_conducted="No tests conducted"
+- [ ] `overview_returns_counts` — Seed questions + quizzes → total_questions > 0, total_tests > 0
+- [ ] `overview_returns_relative_time` — Seed quiz with recent attempt → last_test_conducted is "X hours ago" or "X days ago"
+
+#### GET /practice/questions (4 tests)
+- [ ] `questions_returns_paginated` — Seed 15 questions → page 1 returns limit=10, total=15, total_pages=2
+- [ ] `questions_returns_all_for_no_limit` — No limit param → uses default 10
+- [ ] `questions_supports_search` — Seed "Algebra" and "Geometry" → search "Alg" returns 1
+- [ ] `questions_supports_sorting` — Sort by difficulty desc → correct order
+
+#### GET /practice/tests (2 tests)
+- [ ] `tests_returns_array` — Seed 2 quizzes → returns array of 2 with questions_count, difficulty_mix
+- [ ] `tests_returns_empty` — No quizzes → empty array
+
+#### GET /practice/signals (3 tests)
+- [ ] `signals_returns_positive_when_high_accuracy` — Seed high avg score → "high-accuracy" Positive signal present
+- [ ] `signals_returns_warning_when_low_accuracy` — Seed low avg score → "low-accuracy" Negative signal present
+- [ ] `signals_returns_info_signal_always` — Always includes "application-based" Info signal
+
+#### GET /practice/analytics (3 tests)
+- [ ] `analytics_returns_null_when_no_attempts` — No submitted attempts → null
+- [ ] `analytics_returns_data_with_attempts` — Seed attempts → non-null with trend data
+- [ ] `analytics_returns_difficulty_distribution` — Has difficulty_distribution with percentages summing to 100
 
 #### Verify
-- [ ] `cargo test -p backend --test integration_tests -- integration::notes_manager -- --nocapture`
+- [ ] `cargo test -p backend --test integration_tests -- integration::practice_tests -- --nocapture`
 
-### 3. Rust Scenario — `tests/scenarios/notes_manager_flow.rs` (optional, lower priority)
-- [ ] Register `mod notes_manager_flow;` in `tests/scenarios/mod.rs`
-- [ ] **Teacher creates notes and references workflow**
-  - [ ] Create admin user with ScenarioBuilder
-  - [ ] Create content hierarchy (subject → chapter → topic)
-  - [ ] Add teacher note as draft
-  - [ ] Publish teacher notes
-  - [ ] Add 2 AI notes (pending_review)
-  - [ ] Approve one AI note
-  - [ ] Add 3 references
-  - [ ] Toggle one reference visibility
-  - [ ] Delete one reference
-  - [ ] GET overview and verify counts
+### 4. Rust Scenario — `tests/scenarios/practice_tests_flow.rs`
+- [ ] Register `mod practice_tests_flow;` in `tests/scenarios/mod.rs`
+
+- [ ] **scenario_create_question_lifecycle**
+  - [ ] Create user + subject + chapter + topic via ScenarioBuilder
+  - [ ] POST a practice question
+  - [ ] GET overview → total_questions = 1
+  - [ ] GET questions → items has 1 entry
+  - [ ] Login as the user → verify cookie auth works
+
+- [ ] **scenario_create_test_with_selected_questions**
+  - [ ] Create user + content hierarchy
+  - [ ] POST 5 questions individually
+  - [ ] POST test with 3 of those question_ids
+  - [ ] GET tests → array with 1 test, questions_count = 3
+  - [ ] GET signals → array non-empty
+
+- [ ] **scenario_full_practice_workflow**
+  - [ ] Create admin user + topic
+  - [ ] Create 3 questions via fixture helpers
+  - [ ] Create test with all 3 questions
+  - [ ] Create assessment attempt (simulate student taking test)
+  - [ ] GET overview → counts reflect all seed data
+  - [ ] GET signals → accuracy-related signals present
+  - [ ] GET analytics → non-null with trend data
 
 #### Verify
-- [ ] `cargo test -p backend --test scenarios -- scenarios::notes_manager_flow`
+- [ ] `cargo test -p backend --test scenarios -- scenarios::practice_tests_flow`
 
 ---
 
@@ -157,149 +178,190 @@
 
 Each test file follows: `vi.hoisted()` → `vi.mock()` → `afterEach(vi.clearAllMocks())` → loading/error/empty/success patterns.
 
-### 4. `status-badge.test.tsx`
-- [ ] Renders "published" with emerald dot
-- [ ] Renders "draft" with slate dot
-- [ ] Renders "pending_review" with amber dot
-- [ ] Renders "approved" with emerald dot
-- [ ] Renders "archived" with red dot
-- [ ] Renders "none" with slate dot
-- [ ] Falls back to slate for unknown status
+### Create Question feature
 
-### 5. `loading-skeleton.test.tsx`
-- [ ] `OverviewCardSkeleton` renders 4 animated pulse columns
-- [ ] `EditorSkeleton` renders toolbar + 5 content lines
-- [ ] `TableSkeleton` renders header + default 3 rows
-- [ ] `TableSkeleton` accepts custom row count
+#### 5. `create-question-page.test.tsx`
+- [ ] Renders page heading "Create Practice Question"
+- [ ] Renders back button → calls `onBack` on click
+- [ ] Renders question type/difficulty/status selects with default values
+- [ ] Renders RichTextEditor for question statement
+- [ ] Preview toggle shows/hides QuestionPreview
+- [ ] ValidationPanel renders with quality checks (some fail initially)
+- [ ] Submit button is disabled when all checks don't pass
+- [ ] Submit button is disabled during mutation pending
+- [ ] Successful mutation calls `toast.success` + `onBack`
+- [ ] Failed mutation calls `toast.error`
+- [ ] All question-type-specific answer config sections render correctly (MCQ, MS, Numerical, Assertion Reason, Subjective)
 
-### 6. `notes-overview-card.test.tsx`
-- [ ] **Loading**: 4 animated pulse blocks, no metric text visible
-- [ ] **Success**: renders 4 metrics with correct labels and values
-- [ ] Handles teacher_notes_status="published" → icon background matches
+#### 6. `rich-text-editor.test.tsx`
+- [ ] Renders Tiptap toolbar with formatting buttons
+- [ ] Shows placeholder text when empty
+- [ ] Calls `onChange` with HTML content on input
+- [ ] Accepts `minHeight` prop
 
-### 7. `quick-actions-bar.test.tsx`
-- [ ] Renders all 6 action buttons with icons + labels
-- [ ] Disabled buttons have `disabled` attribute and muted styling
-- [ ] Enabled buttons call `onAction(id)` on click
+#### 7. `question-preview.test.tsx`
+- [ ] Renders empty state when no question provided
+- [ ] Renders MCQ preview with choices rendered as list
+- [ ] Renders Assertion Reason preview with A/R labels
+- [ ] Shows question type badge and difficulty badge
+- [ ] Uses `dangerouslySetInnerHTML` for question content
 
-### 8. `references-table.test.tsx`
-- [ ] **Loading**: skeleton rows rendered
-- [ ] **Empty**: EmptyState with "Add Reference" button visible
-- [ ] **Success**: renders rows with icon, title, "Open link", source, type badge, visibility Switch, delete button
-- [ ] Type badge renders correct icon + color for PDF/Document/URL/Video/Research Paper
-- [ ] Switch toggle calls `onToggleVisibility(referenceId)`
-- [ ] Delete button calls `onDelete(referenceId)`
+#### 8. `validation-panel.test.tsx`
+- [ ] Shows "Quality Checklist" heading
+- [ ] Displays passed/total count
+- [ ] Shows check with pass=true → green checkmark
+- [ ] Shows check with pass=false → red X + message text
+- [ ] Handles empty checks array
 
-### 9. `reference-dialog.test.tsx`
+### Create Test feature
 
-#### Form rendering
-- [ ] **URL mode**: renders Title, Source, Type dropdown (`<Select>`), URL input fields, Submit + Cancel buttons
-- [ ] **Upload mode**: renders file picker button with dashed border, hides URL input, shows filename chip after upload
-- [ ] **Default values**: title empty, source empty, referenceType="URL", url empty
-- [ ] **Default tab**: URL tab is selected on open
+#### 9. `create-test-page.test.tsx`
+- [ ] Renders page heading "Create Topic Test"
+- [ ] Renders back button → calls `onBack` on click
+- [ ] Test Settings section renders all form fields with default values
+- [ ] Question Selection section shows available questions table
+- [ ] Question selection toggles a question into the test builder
+- [ ] Test Builder shows selected questions with DnD ordering
+- [ ] Analytics Preview renders when questions are selected
+- [ ] Publishing Checklist renders with checks
+- [ ] Student Preview toggle shows/hides preview
+- [ ] Submit button is disabled until all checklist checks pass
+- [ ] Successful mutation calls `toast.success` + `onBack`
+- [ ] Failed mutation calls `toast.error`
+- [ ] Search/filter/difficulty dropdowns filter question list
+- [ ] Pagination controls render when multiple pages
+- [ ] Save Draft button shows toast
 
-#### Form validation (Zod schema via TanStack Form)
-- [ ] **Empty title**: clears title field, submits → `'Title is required'` error shown
-- [ ] **Invalid URL**: types `not-a-url` → `'Must be a valid URL'` error shown
-- [ ] **Empty URL**: clears url field → `'URL is required'` error shown
-- [ ] **Valid form**: fills all fields → no validation errors, submit succeeds
-- [ ] **Errors clear on fix**: invalid URL → type valid URL → error disappears
-- [ ] **Touched state**: errors only show after field is touched (interacted with)
+#### 10. `selected-questions-panel.test.tsx`
+- [ ] Renders with drag handle, identifier badge, question text, difficulty badge
+- [ ] Points input changes call `onPointsChange`
+- [ ] Remove button calls `onRemove`
+- [ ] Shows index number
+- [ ] Drag state styling applied when `isDragging` is true
 
-#### File upload flow
-- [ ] **Upload success**: pick file → calls `uploadService.uploadFile(filename, type, file)` → auto-populates url field with S3 URL
-- [ ] **Auto-title**: when title is empty, upload sets title from filename (without extension)
-- [ ] **Preserve title**: when title already typed, upload does NOT overwrite it
-- [ ] **Filename chip**: after upload, shows uploaded filename in emerald chip with `extractFileName()`
-- [ ] **Upload error**: upload rejects → shows red error banner with message
+#### 11. `publishing-checklist.test.tsx`
+- [ ] Shows "Publishing Checklist" heading
+- [ ] Displays passed/total count
+- [ ] Check with pass=true → green checkmark
+- [ ] Check with pass=false → red X + message text
+- [ ] Handles empty checks array
+- [ ] Style matches ValidationPanel (identical structure)
 
-#### Submit behavior
-- [ ] **Submit valid**: calls `onSubmit` with `{ title, source, referenceType, url }`
-- [ ] **Submit resets form**: after successful submit, form fields reset to defaults
-- [ ] **Cancel**: `onOpenChange(false)` is called via DialogClose, form resets to defaults
+#### 12. `test-analytics-preview.test.tsx`
+- [ ] Renders 4 metric cards: Total Questions, Est. Time, Coverage Score, Predicted Difficulty
+- [ ] Difficulty Breakdown bar chart renders
+- [ ] Coverage Breakdown bar chart renders
+- [ ] Question type badges show counts
+- [ ] Predicted difficulty text color matches (Easy=emerald, Medium=amber, Hard=red)
+- [ ] Coverage progress bar width matches score percentage
 
-#### Tab switching
-- [ ] **Switch to URL tab**: URL input visible, Upload button hidden
-- [ ] **Switch to Upload tab**: file picker visible, URL input replaced by dashed button
+#### 13. `student-preview.test.tsx`
+- [ ] Shows test header with duration and question count
+- [ ] Renders question sequence with numbers and identifiers
+- [ ] Shows empty state when no questions
+- [ ] Truncates long question text to 100 chars
+- [ ] Navigation mock shows numbered buttons with first highlighted
+- [ ] Submit button is disabled
+- [ ] Shows "X more" indicator when >8 questions
 
-### 10. `ai-notes-review.test.tsx`
-- [ ] **Loading**: skeleton placeholder visible
-- [ ] **Empty**: "No AI generated notes" message with Sparkles icon
-- [ ] **Success**: renders note cards with title, StatusBadge, generated date, content preview
-- [ ] **Approve**: calls `onApprove(noteId)` with correct ID
-- [ ] **Edit**: calls `onEdit(noteId)`
-- [ ] **Reject**: calls `onReject(noteId)`
+### PracticeTestsPage sub-components
 
-### 11. `teacher-notes-editor.test.tsx`
-- [ ] **Loading**: centered spinner, no toolbar
-- [ ] **Success**: Tiptap editor renders with toolbar (formatting buttons visible)
-- [ ] **Toolbar buttons**: click Bold → wraps selection in `<strong>`
-- [ ] **Save**: calls `onSave(editor.getHTML())`
-- [ ] **Publish**: button enabled when status is draft, calls `onPublish`
-- [ ] **Unpublish**: button enabled when status is published, calls `onUnpublish`
-- [ ] **Preview**: calls `onPreview()`
+#### 14. `practice-overview-card.test.tsx`
+- [ ] **Loading**: skeleton renders (loading prop)
+- [ ] **Success**: renders total_questions, average_accuracy, total_tests, last_test_conducted
+- [ ] Handles missing optional fields gracefully
 
-### 12. `notes-manager-page.test.tsx`
+#### 15. `questions-table.test.tsx`
+- [ ] **Loading**: skeleton rows
+- [ ] **Empty**: "No questions" empty state
+- [ ] **Success**: renders rows with identifier, question, type, difficulty, status
+- [ ] **Error**: error message with retry button
+- [ ] Difficulty badge renders correct color for each level
+- [ ] Status badge renders correct variant for each status
+
+#### 16. `difficulty-badge.test.tsx`
+- [ ] Renders "Easy" with emerald styling
+- [ ] Renders "Medium" with amber styling
+- [ ] Renders "Hard" with red styling
+- [ ] Renders unknown difficulty with default styling
+
+#### 17. `question-status-badge.test.tsx`
+- [ ] Renders "Active" with green variant
+- [ ] Renders "Draft" with slate variant
+- [ ] Renders "Archived" with red variant
+
+#### 18. `topic-test-card.test.tsx`
+- [ ] Renders test title, status, questions_count, difficulty_mix, average_score, attempts
+- [ ] Shows progress bar for average_score
+- [ ] Handles missing average_score gracefully (null → no bar or dash)
+
+#### 19. `quality-signals-section.test.tsx`
+- [ ] **Loading**: skeleton
+- [ ] **Empty**: "No signals" empty state
+- [ ] **Success**: renders signal cards with id, message, signal_type
+- [ ] Positive signals render with green accent
+- [ ] Warning signals render with amber accent
+- [ ] Negative signals render with red accent
+- [ ] Info signals render with blue accent
+
+#### 20. `insight-card.test.tsx`
+- [ ] Renders message text
+- [ ] Positive type renders green icon/background
+- [ ] Warning type renders amber icon/background
+- [ ] Negative type renders red icon/background
+- [ ] Info type renders blue icon/background
+
+#### 21. `quick-actions-bar.test.tsx`
+- [ ] Renders action buttons with icons and labels
+- [ ] Action buttons have correct onClick handlers
+
+#### 22. `loading-skeleton.test.tsx`
+- [ ] Renders animated pulse elements for each section
+- [ ] OverviewSkeleton renders 4 columns
+- [ ] TableSkeleton renders header + rows
+
+#### 23. `practice-tests-page.test.tsx` (integration)
 - [ ] **Loading**: all 5 section skeletons visible
-- [ ] **Empty**: overview shows zeros, editor shows placeholder, AI notes shows empty state, references shows empty state
+- [ ] **Error**: error state with retry button
+- [ ] **Empty**: overview shows zeros, questions empty state, tests empty state, signals empty state
 - [ ] **Success**: all 5 sections rendered with provided data
-- [ ] **Save mutation success**: calls `toast.success`
-- [ ] **Save mutation failure**: calls `toast.error`
-- [ ] **All 7 mutation handlers fire toast on success/error**
 
 #### Verify
-- [ ] `pnpm --filter web-admin exec vitest run src/features/notes-manager/`
+- [ ] `pnpm --filter web-admin exec vitest run src/features/practice-tests/`
+- [ ] `pnpm --filter web-admin exec vitest run src/features/create-question/`
+- [ ] `pnpm --filter web-admin exec vitest run src/features/create-test/`
 
 ---
 
 ## Phase 4: Utility & Factory Tests — `[ ]` pending
 
-### 13. Schema validation — `schema.test.ts`
-Tests the Zod validation schema directly (pure function tests, no DOM needed).
+### 24. Schema validation — `src/features/create-question/schema.test.ts`
+- [ ] **Valid payload**: all required fields → passes
+- [ ] **Empty question_type**: `question_type: ''` → `'Question type is required'`
+- [ ] **Empty difficulty**: `difficulty: ''` → `'Difficulty is required'`
+- [ ] **Empty correct_answer**: `correct_answer: ''` → `'Correct answer is required'`
+- [ ] **Estimated time**: `estimated_time: 0` fails (min 1), `estimated_time: 1` passes
+- [ ] **Optional fields**: status, learning_objective, choices, tolerance, etc. can be undefined
+- [ ] **Default values match**: enum from form-option (MCQ, Medium, Draft)
 
-- [ ] **Valid payload**: all fields correct → `{ title: 'My Ref', source: 'Web', referenceType: 'URL', url: 'https://example.com' }` passes
-- [ ] **Empty title**: `title: ''` → `'Title is required'`
-- [ ] **Invalid URL**: `url: 'not-a-url'` → `'Must be a valid URL'`
-- [ ] **Empty URL**: `url: ''` → `'URL is required'`
-- [ ] **Missing referenceType**: `referenceType: ''` → `'Type is required'`
-- [ ] **Source optional**: `source: ''` passes (optional field)
-- [ ] **Source missing**: omit source → passes
-- [ ] **Boundary**: `title: 'a'` (min length 1) passes
-- [ ] **Partial parse**: parse partial data and verify behavior
+### 25. Schema validation — `src/features/create-test/schema.test.ts`
+- [ ] **Valid payload**: all required fields → passes
+- [ ] **Empty title**: `title: ''` → `'Test name is required'`
+- [ ] **Duration bounds**: `duration_minutes: 0` fails, `duration_minutes: 1` passes
+- [ ] **Passing score bounds**: `passing_score: -1` fails, `passing_score: 101` fails, `passing_score: 50` passes
+- [ ] **Optional fields**: description, instructions, etc. can be undefined
+- [ ] **Default values match**: form-option defaults
 
-### 14. Utility — `extractFileName`
-- [ ] Extract `extractFileName` from `reference-dialog.tsx` to `@/lib/utils.ts`
-  - [ ] Or test inline by importing from the component file
-- [ ] Normal URL: `extractFileName('https://example.com/file.pdf')` → `'file.pdf'`
-- [ ] UUID-prefixed S3 URL: `'uuid_filename.ext'` → `'filename.ext'`
-- [ ] Non-UUID prefix: keeps last segment as-is
-- [ ] Invalid URL: returns raw input string
-
-### 14. Factory test — `mock/__tests__/notes-manager.factory.test.ts`
-- [ ] `buildNotesOverview` creates with default values
-- [ ] `buildTeacherNote` creates with default values
-- [ ] `buildAiNote` creates with default values
-- [ ] `buildReference` creates with default values
-- [ ] All four support `overrides` merge correctly
-- [ ] `buildAiNoteList(3)` creates array of 3
-- [ ] `buildReferenceList(3)` creates array of 3
-- [ ] Counter increments across multiple `build*()` calls
-- [ ] `resetIdCounter()` resets counter
-
-### 15. MSW verification — extend `mock/__tests__/msw-verification.test.ts`
-- [ ] `GET notes/overview endpoint returns expected shape`
-- [ ] `GET teacher notes endpoint returns expected shape`
-- [ ] `PUT teacher notes endpoint returns updated shape`
-- [ ] `POST publish endpoint changes status`
-- [ ] `POST unpublish endpoint changes status`
-- [ ] `GET ai-notes endpoint returns array`
-- [ ] `POST approve endpoint changes status`
-- [ ] `GET references endpoint returns array`
-- [ ] `POST create reference endpoint returns created`
-- [ ] `DELETE reference endpoint returns 200`
-- [ ] `POST toggle visibility endpoint flips flag`
-- [ ] All endpoints return 404 for unknown topicId
-- [ ] Handler override + reset works
+### 26. Factory tests — `mock/__tests__/practice-tests.factory.test.ts`
+- [ ] `buildQuestionItem` creates with default values
+- [ ] `buildQuestionsResponse` creates with items array
+- [ ] `buildCreateQuestionResponse` creates with identifier matching Q- pattern
+- [ ] `buildTopicTestItem` creates with default title, status, etc.
+- [ ] `buildCreateTestResponse` creates with title and questions_count
+- [ ] `buildPracticeSignal` creates with all signal types
+- [ ] `buildTestAnalytics` creates with trend data arrays
+- [ ] All support `overrides` merge correctly
+- [ ] Counter-based ID generation increments across calls
 
 #### Verify
 - [ ] `pnpm --filter web-admin exec vitest run mock/`
@@ -308,51 +370,83 @@ Tests the Zod validation schema directly (pure function tests, no DOM needed).
 
 ## Phase 5: E2E Tests — `[ ]` pending
 
-### 16. E2E Mocked — `e2e/dashboard/notes-manager.spec.ts`
-- [ ] ~~Skipped — SSR loader constraint (same as topic-detail: `$id/notes.tsx` has a route loader calling `getTopicById`, `page.route()` can't intercept server-side SSR calls)~~
-- [ ] ~Alternative: test only the NotesManagerPage component directly (without routing) if needed~
+### 27. E2E Mocked — `e2e/practice-tests/create-question.spec.ts`
+- [ ] ~~Skipped — SSR loader constraint (same as topic-detail: route loader calls `getTopicById`, `page.route()` can't intercept SSR calls)~~
+- [ ] ~Test only the page component directly (without routing) via Vitest instead~
 
-### 17. E2E Real API — `e2e/real-api/notes-manager.spec.ts`
-- [x] Create test file with `loginAsCDAdmin` auth helper (reuse from topic-detail)
-- [x] Navigate to `/content/topic/$id/notes` for CD seed topic
+### 28. E2E Mocked — `e2e/practice-tests/create-test.spec.ts`
+- [ ] ~~Skipped — same SSR loader constraint~~
+- [ ] ~Test via Vitest component tests instead~
 
-#### Page structure tests
-- [ ] **Page renders Notes Manager heading**
-- [ ] **Shows Notes Overview card with metrics** — teacher/AI status, references count, student engagement
-- [ ] **Shows Teacher Notes Editor section** — Tiptap editor with toolbar
-- [ ] **Shows AI Generated Notes section** — empty state with "No AI notes" or cards
-- [ ] **Shows External References section** — empty table with "Add Reference" button
-- [ ] **Shows Quick Actions bar** — 6 action buttons
-- [ ] **No hydration mismatch warnings**
+### 29. E2E Mocked — `e2e/practice-tests/practice-tests.spec.ts`
+- [ ] ~~Skipped — same SSR loader constraint~~
+- [ ] ~Test via Vitest component tests instead~
 
-#### ReferenceDialog: open / close / cancel
-- [ ] **Dialog opens from "Add Reference" button** — click → dialog visible with both tabs
-- [ ] **Cancel closes dialog** — open → Cancel → dialog closes
-- [ ] **Re-open shows clean form** — type in field → Cancel → re-open → form reset
+### 30. E2E Real API — `e2e/real-api/create-question.spec.ts`
+- [ ] Create test file with `loginAsCDAdmin` auth helper (reuse from topic-detail, same CD seed topic `CD Quadratic Equations`)
+- [ ] Navigate to `/content/topic/30000000-0000-0000-0000-000000000041/create-question`
 
-#### ReferenceDialog: form validation
-- [ ] **Validation: empty submission** — submit empty form → "Title is required" + "URL is required" errors
-- [ ] **Validation: invalid URL** — type `not-a-url` → "Must be a valid URL" error
-- [ ] **Validation: clear errors** — fix invalid URL → error disappears
+#### Page structure
+- [ ] Page heading "Create Practice Question" visible
+- [ ] Back button navigates to practice-tests page
+- [ ] Question Type select defaults to "MCQ"
+- [ ] Difficulty select defaults to "Medium"
+- [ ] Rich text editor visible
 
-#### ReferenceDialog: tab switching
-- [ ] **Switch to Upload tab** — file picker shown, URL input hidden
-- [ ] **Switch to URL tab** — URL input shown again
+#### Form fill and submit
+- [ ] Fill question statement via rich text editor
+- [ ] Fill all 4 MCQ choices (A-D)
+- [ ] Select correct answer
+- [ ] Toggle preview to see student view
+- [ ] Submit → success toast with identifier
+- [ ] Redirect back to practice-tests page
+- [ ] New question appears in questions table
 
-#### ReferenceDialog: submit URL reference
-- [ ] **Submit valid form** — fill title + source + URL → Submit → dialog closes
-- [ ] **Reference appears in table** — after creation, row visible with title + "Open link"
-- [ ] **Overview count increments** — "External References" shows `1` after creation
+#### Validation
+- [ ] Submit with empty question → blocked by checks
+- [ ] Submit with empty correct_answer → blocked
 
-#### Reference table interactions
-- [ ] **Toggle visibility** — click Switch → visibility state flips
-- [ ] **Delete reference** — click Delete → row removed from table
+### 31. E2E Real API — `e2e/real-api/create-test.spec.ts`
+- [ ] Navigate to `/content/topic/30000000-0000-0000-0000-000000000041/create-test`
 
-### 18. E2E Visual Regression — `e2e/real-api/notes-manager-visual.spec.ts`
-- [ ] Full-page screenshot: `toHaveScreenshot('notes-manager-full.png', { maxDiffPixelRatio: 0.05 })`
+#### Page structure
+- [ ] Page heading "Create Topic Test" visible
+- [ ] All 6 sections rendered: Settings, Question Selection, Test Builder, Analytics Preview, Publishing Checklist, Submit
+
+#### Test creation flow
+- [ ] Fill test name
+- [ ] Select 3+ questions from the question table
+- [ ] Verify Test Builder shows selected questions
+- [ ] Verify Analytics Preview updates with metrics
+- [ ] Verify Publishing Checklist shows all green
+- [ ] Submit → success toast
+- [ ] Redirect back to practice-tests page
+- [ ] New test appears in tests list
+
+#### Validation
+- [ ] Submit without selecting questions → submit disabled (or toast error)
+- [ ] Submit without test name → submit disabled
+
+### 32. E2E Real API — `e2e/real-api/practice-tests.spec.ts`
+- [ ] Navigate to `/content/topic/30000000-0000-0000-0000-000000000041/practice-tests`
+
+#### Page structure
+- [ ] Page heading "Practice & Tests" visible
+- [ ] Practice Overview card visible with metrics
+- [ ] Practice Questions table visible
+- [ ] Topic Tests section visible
+- [ ] Quality Signals visible
+- [ ] Quick Actions bar visible
+- [ ] Test Performance Analytics visible
+- [ ] No hydration mismatch warnings
+
+### 33. E2E Visual Regression — `e2e/real-api/practice-tests-visual.spec.ts`
+- [ ] Full-page screenshot: `toHaveScreenshot('practice-tests-full.png', { maxDiffPixelRatio: 0.05 })`
+- [ ] Create-question page screenshot: `toHaveScreenshot('create-question.png', { maxDiffPixelRatio: 0.05 })`
+- [ ] Create-test page screenshot: `toHaveScreenshot('create-test.png', { maxDiffPixelRatio: 0.05 })`
 
 #### Verify
-- [ ] `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/notes-manager*.spec.ts`
+- [ ] `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/practice-tests*.spec.ts`
 
 ---
 
@@ -360,21 +454,21 @@ Tests the Zod validation schema directly (pure function tests, no DOM needed).
 
 | # | Test Kind | File(s) | Phase | Test Count |
 |---|---|---|---|---|
-| — | Fixtures + harness | `helpers.rs`, `context.rs`, `harness.rs` | 0 | 5 helpers + 2 methods |
-| — | MSW factories | `notes-manager.factory.ts` | 1 | 6 builders |
-| — | MSW handlers | `notes-manager.handlers.ts` | 1 | 11 handlers |
-| 1 | Rust snapshot | `tests/unit/notes_manager_snapshot.rs` | 2 | 8 |
-| 2 | Rust integration | `tests/integration/notes_manager.rs` | 2 | 20 |
-| 3 | Rust scenario | `tests/scenarios/notes_manager_flow.rs` | 2 | 1 |
-| 4–12 | JS component | 9 files in `features/notes-manager/` | 3 | ~80 |
-| 13 | JS schema validation | `schema.test.ts` | 4 | 9 |
-| 14 | JS utility | `lib/utils.test.ts` (extend) | 4 | 4 |
-| 15 | JS factory | `mock/__tests__/notes-manager.factory.test.ts` | 4 | 9 |
-| 16 | MSW verification | `msw-verification.test.ts` (extend) | 4 | 13 |
-| 17 | E2E mocked | `e2e/dashboard/notes-manager.spec.ts` | 5 | [~] 0 (SSR loader) |
-| 18 | E2E real API | `e2e/real-api/notes-manager.spec.ts` | 5 | ~20 |
-| 19 | E2E visual | `e2e/real-api/notes-manager-visual.spec.ts` | 5 | 1 |
-| | **Total** | | | **~155 tests** |
+| — | Fixtures + helpers | `helpers.rs`, `context.rs` | 0 | 2 helpers + 2 structs |
+| — | MSW handlers | `practice-tests.handlers.ts` | 1 | 7 handlers |
+| 1 | Rust unit | `tests/unit/practice_tests.rs` | 2 | 12 |
+| 2 | Rust snapshot | `tests/unit/practice_tests_snapshot.rs` | 2 | 7 |
+| 3 | Rust integration | `tests/integration/practice_tests.rs` | 2 | 25 |
+| 4 | Rust scenario | `tests/scenarios/practice_tests_flow.rs` | 2 | 3 |
+| 5–13 | JS component (create-question) | 4 files in `features/create-question/` | 3 | ~25 |
+| 14–23 | JS component (create-test) | 5 files in `features/create-test/` | 3 | ~30 |
+| 24–25 | JS component (practice-tests-page) | 10 files in `features/practice-tests/` | 3 | ~35 |
+| 26–27 | JS schema validation | 2 `schema.test.ts` files | 4 | ~12 |
+| 28 | JS factory + MSW verification | `mock/__tests__/*.test.ts` | 4 | ~9 |
+| 29–31 | E2E mocked | `e2e/practice-tests/*.spec.ts` | 5 | [~] 0 (SSR loader) |
+| 32–34 | E2E real API | `e2e/real-api/practice-tests*.spec.ts` | 5 | ~20 |
+| 35–37 | E2E visual regression | `e2e/real-api/*-visual.spec.ts` | 5 | 3 |
+| | **Total** | | | **~180 tests** |
 
 ---
 
@@ -382,13 +476,15 @@ Tests the Zod validation schema directly (pure function tests, no DOM needed).
 
 | Layer | Command |
 |---|---|
-| Rust snapshot | `cargo test -p backend --lib unit::notes_manager_snapshot -- --nocapture && cargo insta review` |
-| Rust integration | `cargo test -p backend --test integration_tests -- integration::notes_manager -- --nocapture` |
-| Rust scenario | `cargo test -p backend --test scenarios -- scenarios::notes_manager_flow` |
+| Rust snapshot | `cargo test -p backend --lib unit::practice_tests_snapshot -- --nocapture && cargo insta review` |
+| Rust integration | `cargo test -p backend --test integration_tests -- integration::practice_tests -- --nocapture` |
+| Rust scenario | `cargo test -p backend --test scenarios -- scenarios::practice_tests_flow` |
 | Rust all | `cargo test -p backend` |
 | JS/TS all | `pnpm --filter web-admin exec vitest run` |
-| JS component | `pnpm --filter web-admin exec vitest run src/features/notes-manager/` |
-| Factory + MSW | `pnpm --filter web-admin exec vitest run mock/` |
-| E2E real API | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/notes-manager*.spec.ts` |
-| E2E visual | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/notes-manager-visual.spec.ts` |
+| JS create-question | `pnpm --filter web-admin exec vitest run src/features/create-question/` |
+| JS create-test | `pnpm --filter web-admin exec vitest run src/features/create-test/` |
+| JS practice-tests | `pnpm --filter web-admin exec vitest run src/features/practice-tests/` |
+| MSW + factory | `pnpm --filter web-admin exec vitest run mock/` |
+| E2E real API | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/practice-tests*.spec.ts` |
+| E2E visual | `pnpm --filter web-admin exec playwright test --project=real-api e2e/real-api/practice-tests-visual.spec.ts` |
 | CI | `just ci` |

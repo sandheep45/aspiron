@@ -4,9 +4,9 @@ use sea_orm::{
 use uuid::Uuid;
 
 use backend::entries::entities::{
-    assessment_attempt, assessment_quiz, content_chapter, content_subject, content_topic,
-    learning_notes, learning_progress, learning_recall_answer, learning_recall_session, permission,
-    role, role_permission, user, user_profile, user_role,
+    assessment_attempt, assessment_question, assessment_quiz, content_chapter, content_subject,
+    content_topic, learning_notes, learning_progress, learning_recall_answer,
+    learning_recall_session, permission, role, role_permission, user, user_profile, user_role,
 };
 use backend::entries::entity_enums::action_types::ActionTypeEnum;
 use backend::entries::entity_enums::exam_types::ExamTypeEnums;
@@ -21,7 +21,7 @@ use backend::entries::entity_enums::notes_content_type::NotesContentTypeEnum;
 use backend::entries::entity_enums::trust_level::TrustLevelEnum;
 
 use crate::fixtures::context::{
-    TestChapter, TestNote, TestRecallSession, TestSubject, TestTopic, TestUser,
+    TestChapter, TestNote, TestQuestion, TestRecallSession, TestSubject, TestTopic, TestUser,
 };
 
 /// Ensure a role exists in the roles table. Creates it if missing.
@@ -454,4 +454,24 @@ pub async fn create_test_reference(
     model.insert(db).await.expect("insert reference");
 
     TestNote { id }
+}
+
+/// Create a test question for a quiz.
+pub async fn create_test_question(
+    db: &DatabaseConnection,
+    quiz_id: Uuid,
+    question: &str,
+    correct_answer: &str,
+    options: serde_json::Value,
+) -> TestQuestion {
+    let model = assessment_question::ActiveModel {
+        id: Set(Uuid::new_v4()),
+        question: Set(question.to_string()),
+        correct_answer: Set(correct_answer.to_string()),
+        options: Set(options),
+        quiz_id: Set(quiz_id),
+    };
+    model.insert(db).await.expect("insert question");
+
+    TestQuestion
 }

@@ -30,7 +30,10 @@ import { Route as PrivateRoutesContentContentLayoutIndexRouteImport } from './ro
 import { Route as PrivateRoutesContentContentLayoutSubjectsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/index'
 import { Route as PrivateRoutesContentContentLayoutTopicIdRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id'
 import { Route as PrivateRoutesContentContentLayoutTopicIdIndexRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/index'
+import { Route as PrivateRoutesContentContentLayoutTopicIdPracticeTestsRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/practice-tests'
 import { Route as PrivateRoutesContentContentLayoutTopicIdNotesRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/notes'
+import { Route as PrivateRoutesContentContentLayoutTopicIdCreateTestRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/create-test'
+import { Route as PrivateRoutesContentContentLayoutTopicIdCreateQuestionRouteImport } from './routes/_private-routes/content/_content-layout/topic/$id/create-question'
 import { Route as PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/$subjectId/chapters/index'
 import { Route as PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRouteImport } from './routes/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/index'
 
@@ -153,10 +156,28 @@ const PrivateRoutesContentContentLayoutTopicIdIndexRoute =
     path: '/',
     getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
   } as any)
+const PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute =
+  PrivateRoutesContentContentLayoutTopicIdPracticeTestsRouteImport.update({
+    id: '/practice-tests',
+    path: '/practice-tests',
+    getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
+  } as any)
 const PrivateRoutesContentContentLayoutTopicIdNotesRoute =
   PrivateRoutesContentContentLayoutTopicIdNotesRouteImport.update({
     id: '/notes',
     path: '/notes',
+    getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
+  } as any)
+const PrivateRoutesContentContentLayoutTopicIdCreateTestRoute =
+  PrivateRoutesContentContentLayoutTopicIdCreateTestRouteImport.update({
+    id: '/create-test',
+    path: '/create-test',
+    getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
+  } as any)
+const PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute =
+  PrivateRoutesContentContentLayoutTopicIdCreateQuestionRouteImport.update({
+    id: '/create-question',
+    path: '/create-question',
     getParentRoute: () => PrivateRoutesContentContentLayoutTopicIdRoute,
   } as any)
 const PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute =
@@ -196,7 +217,10 @@ export interface FileRoutesByFullPath {
   '/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRouteWithChildren
   '/content/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
+  '/content/topic/$id/create-question': typeof PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute
+  '/content/topic/$id/create-test': typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   '/content/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  '/content/topic/$id/practice-tests': typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
   '/content/topic/$id/': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/content/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/content/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
@@ -218,7 +242,10 @@ export interface FileRoutesByTo {
   '/content': typeof PrivateRoutesContentContentLayoutIndexRoute
   '/live-classes/create': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/content/subjects': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
+  '/content/topic/$id/create-question': typeof PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute
+  '/content/topic/$id/create-test': typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   '/content/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  '/content/topic/$id/practice-tests': typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
   '/content/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/content/subjects/$subjectId/chapters': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/content/subjects/$subjectId/chapters/$chapterId/topics': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
@@ -245,7 +272,10 @@ export interface FileRoutesById {
   '/_private-routes/live-classes/create/': typeof PrivateRoutesLiveClassesCreateIndexRoute
   '/_private-routes/content/_content-layout/topic/$id': typeof PrivateRoutesContentContentLayoutTopicIdRouteWithChildren
   '/_private-routes/content/_content-layout/subjects/': typeof PrivateRoutesContentContentLayoutSubjectsIndexRoute
+  '/_private-routes/content/_content-layout/topic/$id/create-question': typeof PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute
+  '/_private-routes/content/_content-layout/topic/$id/create-test': typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   '/_private-routes/content/_content-layout/topic/$id/notes': typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  '/_private-routes/content/_content-layout/topic/$id/practice-tests': typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
   '/_private-routes/content/_content-layout/topic/$id/': typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
   '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersIndexRoute
   '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/': typeof PrivateRoutesContentContentLayoutSubjectsSubjectIdChaptersChapterIdTopicsIndexRoute
@@ -272,7 +302,10 @@ export interface FileRouteTypes {
     | '/live-classes/create/'
     | '/content/topic/$id'
     | '/content/subjects/'
+    | '/content/topic/$id/create-question'
+    | '/content/topic/$id/create-test'
     | '/content/topic/$id/notes'
+    | '/content/topic/$id/practice-tests'
     | '/content/topic/$id/'
     | '/content/subjects/$subjectId/chapters/'
     | '/content/subjects/$subjectId/chapters/$chapterId/topics/'
@@ -294,7 +327,10 @@ export interface FileRouteTypes {
     | '/content'
     | '/live-classes/create'
     | '/content/subjects'
+    | '/content/topic/$id/create-question'
+    | '/content/topic/$id/create-test'
     | '/content/topic/$id/notes'
+    | '/content/topic/$id/practice-tests'
     | '/content/topic/$id'
     | '/content/subjects/$subjectId/chapters'
     | '/content/subjects/$subjectId/chapters/$chapterId/topics'
@@ -320,7 +356,10 @@ export interface FileRouteTypes {
     | '/_private-routes/live-classes/create/'
     | '/_private-routes/content/_content-layout/topic/$id'
     | '/_private-routes/content/_content-layout/subjects/'
+    | '/_private-routes/content/_content-layout/topic/$id/create-question'
+    | '/_private-routes/content/_content-layout/topic/$id/create-test'
     | '/_private-routes/content/_content-layout/topic/$id/notes'
+    | '/_private-routes/content/_content-layout/topic/$id/practice-tests'
     | '/_private-routes/content/_content-layout/topic/$id/'
     | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/'
     | '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/$chapterId/topics/'
@@ -481,11 +520,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdIndexRouteImport
       parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
     }
+    '/_private-routes/content/_content-layout/topic/$id/practice-tests': {
+      id: '/_private-routes/content/_content-layout/topic/$id/practice-tests'
+      path: '/practice-tests'
+      fullPath: '/content/topic/$id/practice-tests'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+    }
     '/_private-routes/content/_content-layout/topic/$id/notes': {
       id: '/_private-routes/content/_content-layout/topic/$id/notes'
       path: '/notes'
       fullPath: '/content/topic/$id/notes'
       preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdNotesRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+    }
+    '/_private-routes/content/_content-layout/topic/$id/create-test': {
+      id: '/_private-routes/content/_content-layout/topic/$id/create-test'
+      path: '/create-test'
+      fullPath: '/content/topic/$id/create-test'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRouteImport
+      parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
+    }
+    '/_private-routes/content/_content-layout/topic/$id/create-question': {
+      id: '/_private-routes/content/_content-layout/topic/$id/create-question'
+      path: '/create-question'
+      fullPath: '/content/topic/$id/create-question'
+      preLoaderRoute: typeof PrivateRoutesContentContentLayoutTopicIdCreateQuestionRouteImport
       parentRoute: typeof PrivateRoutesContentContentLayoutTopicIdRoute
     }
     '/_private-routes/content/_content-layout/subjects/$subjectId/chapters/': {
@@ -506,14 +566,23 @@ declare module '@tanstack/react-router' {
 }
 
 interface PrivateRoutesContentContentLayoutTopicIdRouteChildren {
+  PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute: typeof PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute
+  PrivateRoutesContentContentLayoutTopicIdCreateTestRoute: typeof PrivateRoutesContentContentLayoutTopicIdCreateTestRoute
   PrivateRoutesContentContentLayoutTopicIdNotesRoute: typeof PrivateRoutesContentContentLayoutTopicIdNotesRoute
+  PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute: typeof PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute
   PrivateRoutesContentContentLayoutTopicIdIndexRoute: typeof PrivateRoutesContentContentLayoutTopicIdIndexRoute
 }
 
 const PrivateRoutesContentContentLayoutTopicIdRouteChildren: PrivateRoutesContentContentLayoutTopicIdRouteChildren =
   {
+    PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute:
+      PrivateRoutesContentContentLayoutTopicIdCreateQuestionRoute,
+    PrivateRoutesContentContentLayoutTopicIdCreateTestRoute:
+      PrivateRoutesContentContentLayoutTopicIdCreateTestRoute,
     PrivateRoutesContentContentLayoutTopicIdNotesRoute:
       PrivateRoutesContentContentLayoutTopicIdNotesRoute,
+    PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute:
+      PrivateRoutesContentContentLayoutTopicIdPracticeTestsRoute,
     PrivateRoutesContentContentLayoutTopicIdIndexRoute:
       PrivateRoutesContentContentLayoutTopicIdIndexRoute,
   }

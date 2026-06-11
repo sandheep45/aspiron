@@ -350,4 +350,107 @@ describe('MSW', () => {
     const response = await fetch('/api/v1/topics/unknown/references')
     expect(response.status).toBe(404)
   })
+
+  // ── Practice Tests endpoints ─────────────────────────────────────────────
+
+  it('intercepts practice overview endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/practice/overview')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('total_questions')
+    expect(body).toHaveProperty('average_accuracy')
+    expect(body).toHaveProperty('total_tests')
+    expect(body).toHaveProperty('last_test_conducted')
+  })
+
+  it('intercepts practice questions endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/practice/questions')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('items')
+    expect(body).toHaveProperty('total')
+    expect(body).toHaveProperty('page')
+    expect(Array.isArray(body.items)).toBe(true)
+    if (body.items.length > 0) {
+      expect(body.items[0]).toHaveProperty('id')
+      expect(body.items[0]).toHaveProperty('identifier')
+      expect(body.items[0]).toHaveProperty('question')
+    }
+  })
+
+  it('intercepts practice questions search', async () => {
+    const response = await fetch(
+      '/api/v1/topics/topic-1/practice/questions?search=derivative',
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.items.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('intercepts practice tests endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/practice/tests')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('title')
+      expect(body[0]).toHaveProperty('status')
+    }
+  })
+
+  it('intercepts practice signals endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/practice/signals')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body)).toBe(true)
+    if (body.length > 0) {
+      expect(body[0]).toHaveProperty('id')
+      expect(body[0]).toHaveProperty('message')
+      expect(body[0]).toHaveProperty('signal_type')
+    }
+  })
+
+  it('intercepts practice analytics endpoint', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/practice/analytics')
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('average_score_trend')
+    expect(body).toHaveProperty('attempts_trend')
+    expect(body).toHaveProperty('difficulty_distribution')
+    expect(body).toHaveProperty('question_performance')
+  })
+
+  it('intercepts practice analytics empty', async () => {
+    const response = await fetch(
+      '/api/v1/topics/topic-1/practice/analytics?empty=true',
+    )
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body).toBeNull()
+  })
+
+  it('allows per-test practice overview override', async () => {
+    server.use(
+      http.get('*/api/v1/topics/:topicId/practice/overview', () => {
+        return HttpResponse.json({
+          total_questions: 50,
+          average_accuracy: 90.0,
+          total_tests: 10,
+          last_test_conducted: '1 hour ago',
+        })
+      }),
+    )
+
+    const response = await fetch('/api/v1/topics/custom/practice/overview')
+    const body = await response.json()
+    expect(body.total_questions).toBe(50)
+    expect(body.average_accuracy).toBe(90.0)
+  })
+
+  it('resets practice overview handler between tests', async () => {
+    const response = await fetch('/api/v1/topics/topic-1/practice/overview')
+    const body = await response.json()
+    expect(body).toHaveProperty('total_questions')
+  })
 })

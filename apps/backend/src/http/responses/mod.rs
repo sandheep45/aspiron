@@ -10,6 +10,7 @@ pub mod learning;
 pub mod live_session;
 pub mod notes_manager;
 pub mod notification;
+pub mod practice_tests;
 pub mod rbac;
 pub mod subjects_page;
 pub mod topic_detail;
